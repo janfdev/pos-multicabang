@@ -1,5 +1,5 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
-import { Store, ShoppingCart, ArrowLeftRight, PackageSearch, Building2 } from 'lucide-react';
+import { Store, ShoppingCart, ArrowLeftRight, PackageSearch, Building2, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 
 export const Route = createRootRoute({
@@ -14,12 +14,12 @@ function RootComponent() {
       {/* Top Header Bar */}
       <header className="sticky top-0 z-30 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black">
+          <div className="size-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black shadow-xs">
             <Store className="size-5" />
           </div>
           <div>
-            <h1 className="font-extrabold text-sm sm:text-base leading-tight">POS Multi-Cabang</h1>
-            <p className="text-[11px] text-stone-500">Inventory & Kasir Terintegrasi</p>
+            <h1 className="font-extrabold text-sm sm:text-base leading-tight text-stone-900">POS Multi-Cabang</h1>
+            <p className="text-[11px] text-stone-500 font-medium">Inventory & Kasir Terintegrasi</p>
           </div>
         </div>
 
@@ -55,6 +55,13 @@ function RootComponent() {
 
       {/* Main Navigation Bar */}
       <nav className="bg-white border-b border-stone-200 px-4 flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
+        <Link
+          to="/dashboard"
+          className="py-3 px-3.5 border-b-2 font-bold flex items-center gap-1.5 transition-colors [&.active]:border-emerald-700 [&.active]:text-emerald-800 text-stone-500 hover:text-stone-900 border-transparent"
+        >
+          <LayoutDashboard className="size-4" />
+          <span>Ringkasan Dashboard</span>
+        </Link>
         <Link
           to="/"
           className="py-3 px-3.5 border-b-2 font-bold flex items-center gap-1.5 transition-colors [&.active]:border-emerald-700 [&.active]:text-emerald-800 text-stone-500 hover:text-stone-900 border-transparent"
