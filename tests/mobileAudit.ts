@@ -30,8 +30,19 @@ async function runAudit() {
     stderr: 'inherit',
   });
 
-  // Wait 3s for server to start
-  await new Promise((r) => setTimeout(r, 3000));
+  // Wait up to 10s for server to be responsive
+  let started = false;
+  for (let i = 0; i < 20; i++) {
+    try {
+      const res = await fetch('http://127.0.0.1:4173/api/health');
+      if (res.ok) {
+        started = true;
+        break;
+      }
+    } catch {}
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  if (!started) console.log('Warning: Server did not respond to health check in time');
 
   let hasErrors = false;
 
