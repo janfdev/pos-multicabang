@@ -166,27 +166,29 @@ function TransfersPage() {
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-white border border-stone-200 rounded-xl text-xs w-fit">
-        {[
-          { label: 'Semua Status', value: 'ALL' },
-          { label: 'Menunggu Pengiriman', value: 'REQUESTED' },
-          { label: 'Dalam Perjalanan', value: 'DISPATCHED' },
-          { label: 'Selesai Diterima', value: 'RECEIVED' },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setStatusFilter(tab.value)}
-            className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-              statusFilter === tab.value
-                ? 'bg-stone-900 text-white shadow-2xs'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Filter Tabs (Horizontal Scroll on Mobile) */}
+      <div className="overflow-x-auto scrollbar-none max-w-full py-0.5">
+        <div className="flex items-center gap-1.5 p-1 bg-white border border-stone-200 rounded-xl text-xs w-fit shrink-0">
+          {[
+            { label: 'Semua Status', value: 'ALL' },
+            { label: 'Menunggu Pengiriman', value: 'REQUESTED' },
+            { label: 'Dalam Perjalanan', value: 'DISPATCHED' },
+            { label: 'Selesai Diterima', value: 'RECEIVED' },
+          ].map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setStatusFilter(tab.value)}
+              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                statusFilter === tab.value
+                  ? 'bg-stone-900 text-white shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Transfer List */}
