@@ -158,13 +158,25 @@ app.get('/outlets', (c) => c.json(OUTLETS));
 // 2. Master Products & Search
 app.get('/products', (c) => {
   const q = c.req.query('q')?.toLowerCase() || '';
+  const outletId = c.req.query('outletId') || 'toko-2';
   const filtered = PRODUCTS.filter(
     (p) =>
       p.name.toLowerCase().includes(q) ||
       p.sku.toLowerCase().includes(q) ||
       (p.barcode && p.barcode.includes(q)) ||
       p.category.toLowerCase().includes(q)
-  );
+  ).map((p) => {
+    const inv = INVENTORY[p.id] || { t1Stock: 0, t2Stock: 0, minAlert: 5 };
+    const stock = outletId === 'toko-1' ? inv.t1Stock : inv.t2Stock;
+    return {
+      ...p,
+      stock,
+      t1Stock: inv.t1Stock,
+      t2Stock: inv.t2Stock,
+      minAlert: inv.minAlert,
+      isLow: stock <= inv.minAlert,
+    };
+  });
   return c.json(filtered);
 });
 
@@ -189,19 +201,43 @@ app.post('/pos/checkout', async (c) => {
   const body = await c.req.json();
   const { outletId, items, paymentMethod, cashReceived } = body;
 
-  const currentOutlet = OUTLETS.find((o) => o.id === outletId) || OUTLETS[1];
+  const targetOutletId = outletId === 'toko-1' ? 'toko-1' : 'toko-2';
+  const currentOutlet = OUTLETS.find((o) => o.id === targetOutletId) || OUTLETS[1];
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return c.json({ success: false, error: 'Keranjang belanja kosong' }, 400);
+  }
+
+  // 1. Validasi Ketersediaan Stok Sebelum Pengurangan (Anti-Negativity Guard)
+  for (const item of items) {
+    const inv = INVENTORY[item.productId];
+    const available = targetOutletId === 'toko-1' ? (inv?.t1Stock ?? 0) : (inv?.t2Stock ?? 0);
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    const prodName = prod?.name || item.name || item.productId;
+
+    if (available < item.qty) {
+      return c.json(
+        {
+          success: false,
+          error: `Stok "${prodName}" tidak mencukupi di ${currentOutlet.name}. Tersedia: ${available}, Diminta: ${item.qty}`,
+        },
+        400
+      );
+    }
+  }
+
   let totalAmount = 0;
 
   const processedItems = items.map((item: any) => {
     const prod = PRODUCTS.find((p) => p.id === item.productId);
-    const unitPrice = prod?.sellingPrice || item.unitPrice || 0;
+    const unitPrice = prod?.sellingPrice || item.price || item.unitPrice || 0;
     const subtotal = unitPrice * item.qty;
     totalAmount += subtotal;
 
     // Deduct stock atomik dari outlet terkait
     const inv = INVENTORY[item.productId];
     if (inv) {
-      if (outletId === 'toko-1') {
+      if (targetOutletId === 'toko-1') {
         inv.t1Stock = Math.max(0, inv.t1Stock - item.qty);
       } else {
         inv.t2Stock = Math.max(0, inv.t2Stock - item.qty);
@@ -210,7 +246,7 @@ app.post('/pos/checkout', async (c) => {
 
     return {
       productId: item.productId,
-      productName: prod?.name || item.productName,
+      productName: prod?.name || item.name || item.productName,
       qty: item.qty,
       unitPrice,
       subtotal,
@@ -239,15 +275,32 @@ app.get('/transfers', (c) => c.json(TRANSFERS));
 
 app.post('/transfers/request', async (c) => {
   const body = await c.req.json();
+  const rawItems = Array.isArray(body.items) ? body.items : [body];
+  if (rawItems.length === 0) {
+    return c.json({ success: false, error: 'Daftar item mutasi tidak boleh kosong' }, 400);
+  }
+
+  const items = rawItems.map((item: any) => {
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    return {
+      productId: item.productId,
+      productName: prod?.name || item.productName || item.productId,
+      qtyRequested: Math.max(1, Number(item.qtyRequested) || 1),
+      qtyDispatched: 0,
+      qtyReceived: 0,
+    };
+  });
+
   const newTransfer = {
     id: `MUT-${Date.now().toString().slice(-6)}`,
     fromOutletId: 'toko-1',
     toOutletId: 'toko-2',
     status: 'REQUESTED',
     notes: body.notes || 'Permintaan stok tambahan Toko 2',
-    items: body.items,
+    items,
     requestedAt: new Date().toISOString(),
   };
+
   TRANSFERS.unshift(newTransfer);
   return c.json({ success: true, transfer: newTransfer });
 });
@@ -257,17 +310,18 @@ app.post('/transfers/:id/dispatch', async (c) => {
   const transfer = TRANSFERS.find((t) => t.id === id);
   if (!transfer) return c.json({ error: 'Transfer not found' }, 404);
 
-  transfer.status = 'DISPATCHED';
-  transfer.dispatchedAt = new Date().toISOString();
-
   // Deduct from Toko 1 Gudang
   transfer.items.forEach((item: any) => {
     const inv = INVENTORY[item.productId];
     if (inv) {
-      inv.t1Stock = Math.max(0, inv.t1Stock - item.qtyRequested);
-      item.qtyDispatched = item.qtyRequested;
+      const dispatchQty = Math.min(inv.t1Stock, item.qtyRequested);
+      inv.t1Stock = Math.max(0, inv.t1Stock - dispatchQty);
+      item.qtyDispatched = dispatchQty;
     }
   });
+
+  transfer.status = 'DISPATCHED';
+  transfer.dispatchedAt = new Date().toISOString();
 
   return c.json({ success: true, transfer });
 });
@@ -277,17 +331,18 @@ app.post('/transfers/:id/receive', async (c) => {
   const transfer = TRANSFERS.find((t) => t.id === id);
   if (!transfer) return c.json({ error: 'Transfer not found' }, 404);
 
-  transfer.status = 'RECEIVED';
-  transfer.receivedAt = new Date().toISOString();
-
   // Add to Toko 2 Cabang
   transfer.items.forEach((item: any) => {
     const inv = INVENTORY[item.productId];
     if (inv) {
-      inv.t2Stock += item.qtyDispatched || item.qtyRequested;
-      item.qtyReceived = item.qtyDispatched || item.qtyRequested;
+      const receiveQty = item.qtyDispatched ?? item.qtyRequested;
+      inv.t2Stock += receiveQty;
+      item.qtyReceived = receiveQty;
     }
   });
+
+  transfer.status = 'RECEIVED';
+  transfer.receivedAt = new Date().toISOString();
 
   return c.json({ success: true, transfer });
 });
@@ -313,5 +368,19 @@ app.get('/analytics/dashboard', (c) => {
     recentOrders: ORDERS.slice(0, 5),
   });
 });
+
+// Helper testing state accessors
+export const _testing = {
+  getInventory: () => INVENTORY,
+  getProducts: () => PRODUCTS,
+  getOrders: () => ORDERS,
+  getTransfers: () => TRANSFERS,
+  setStock: (productId: string, t1: number, t2: number) => {
+    if (INVENTORY[productId]) {
+      INVENTORY[productId].t1Stock = t1;
+      INVENTORY[productId].t2Stock = t2;
+    }
+  },
+};
 
 export default app;

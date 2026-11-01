@@ -1,13 +1,23 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
 import { Store, ShoppingCart, ArrowLeftRight, PackageSearch, Building2, LayoutDashboard } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { outletStore, OutletId } from '@/lib/outletStore';
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
 function RootComponent() {
-  const [activeOutlet, setActiveOutlet] = useState<'toko-1' | 'toko-2'>('toko-2');
+  const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
+
+  useEffect(() => {
+    const unsub = outletStore.subscribe((id) => setActiveOutlet(id));
+    return unsub;
+  }, []);
+
+  const handleSwitchOutlet = (id: OutletId) => {
+    outletStore.setOutlet(id);
+  };
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col font-sans">
@@ -19,17 +29,17 @@ function RootComponent() {
           </div>
           <div>
             <h1 className="font-extrabold text-sm sm:text-base leading-tight text-stone-900">POS Multi-Cabang</h1>
-            <p className="text-[11px] text-stone-500 font-medium">Inventory & Kasir Terintegrasi</p>
+            <p className="text-[11px] text-stone-500 font-medium">Inventory &amp; Kasir Terintegrasi</p>
           </div>
         </div>
 
         {/* Outlet Switcher */}
         <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs">
-          <span className="text-[10px] font-bold text-stone-400 pl-2 hidden sm:inline">Outlet Aktif:</span>
+          <span className="text-[10px] font-bold text-stone-400 pl-2 hidden sm:inline">Outlet Kasir:</span>
           <button
             type="button"
-            onClick={() => setActiveOutlet('toko-1')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1 ${
+            onClick={() => handleSwitchOutlet('toko-1')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
               activeOutlet === 'toko-1'
                 ? 'bg-emerald-700 text-white shadow-xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -40,8 +50,8 @@ function RootComponent() {
           </button>
           <button
             type="button"
-            onClick={() => setActiveOutlet('toko-2')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1 ${
+            onClick={() => handleSwitchOutlet('toko-2')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
               activeOutlet === 'toko-2'
                 ? 'bg-emerald-700 text-white shadow-xs'
                 : 'text-stone-600 hover:text-stone-900'
