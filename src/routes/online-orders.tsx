@@ -99,6 +99,32 @@ function OnlineOrdersPage() {
 
   const formatRupiah = (val: number) => `Rp ${val.toLocaleString('id-ID')}`;
 
+  const getWhatsAppUrl = (order: OnlineOrder) => {
+    const rawDigits = order.customerPhone.replace(/\D/g, '');
+    const phone = rawDigits.startsWith('0') ? `62${rawDigits.slice(1)}` : rawDigits;
+    let msg = `Halo Kak ${order.customerName}, terima kasih telah berbelanja di ${getOutletName(order.outletId)}.\n\n` +
+      `No. Pesanan: *${order.id}*\n` +
+      `Total Belanja: *${formatRupiah(order.totalAmount)}*\n` +
+      `Layanan: *${order.fulfillmentType === 'PICKUP' ? 'Ambil di Toko' : 'Kirim Kurir'}*\n\n`;
+
+    if (order.status === 'PENDING') {
+      msg += `Status: *MENUNGGU PEMBAYARAN*\nMohon konfirmasi jika sudah melakukan transfer agar barang segera kami siapkan.`;
+    } else if (order.status === 'PROCESSING') {
+      msg += `Status: *SEDANG DIPROSES / PACKING*\nPembayaran telah diterima dan staf toko kami sedang menyiapkan barang Anda.`;
+    } else if (order.status === 'READY') {
+      msg += `Status: *PESANAN SUDAH SIAP!*\n` +
+        (order.fulfillmentType === 'PICKUP'
+          ? `Silakan datang ke toko untuk mengambil barang dan tunjukkan nomor pesanan ini kepada kasir.`
+          : `Barang Anda sudah dipacking rapi dan siap diserahkan kepada kurir pengiriman.`);
+    } else if (order.status === 'COMPLETED') {
+      msg += `Status: *PESANAN SELESAI*\nTerima kasih telah berbelanja bersama kami!`;
+    } else {
+      msg += `Status: *PESANAN DIBATALKAN*`;
+    }
+
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
@@ -348,6 +374,16 @@ function OnlineOrdersPage() {
                   </span>
 
                   <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+                    <a
+                      href={getWhatsAppUrl(order)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                      title="Kirim notifikasi update status pesanan via WhatsApp"
+                    >
+                      <MessageCircle className="size-3.5" />
+                      <span>Chat WA Pelanggan</span>
+                    </a>
                     {order.status === 'PENDING' && (
                       <>
                         <button

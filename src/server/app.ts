@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { DbService } from '../db/service';
 
 export const app = new Hono().basePath('/api');
 
@@ -284,6 +285,18 @@ app.post('/pos/checkout', async (c) => {
   };
 
   ORDERS.unshift(order);
+
+  // Persist to Neon DB asynchronously
+  DbService.recordOrder({
+    id: order.id,
+    outletId: order.outletId,
+    totalAmount: order.totalAmount,
+    paymentMethod: order.paymentMethod,
+    cashReceived: order.cashReceived,
+    cashChange: order.cashChange,
+    items: order.items,
+  }).catch((err) => console.error('DB async order record error:', err));
+
   return c.json({ success: true, order });
 });
 
@@ -327,6 +340,20 @@ app.post('/transfers/request', async (c) => {
   };
 
   TRANSFERS.unshift(newTransfer);
+
+  // Persist to Neon DB asynchronously
+  DbService.recordStockTransfer({
+    id: newTransfer.id,
+    fromOutletId: newTransfer.fromOutletId,
+    toOutletId: newTransfer.toOutletId,
+    type: newTransfer.type,
+    notes: newTransfer.notes,
+    items: newTransfer.items.map((i: any) => ({
+      productId: i.productId,
+      qtyRequested: i.qtyRequested,
+    })),
+  }).catch((err) => console.error('DB async transfer record error:', err));
+
   return c.json({ success: true, transfer: newTransfer });
 });
 
@@ -502,6 +529,20 @@ app.post('/online-orders', async (c) => {
   };
 
   ONLINE_ORDERS.unshift(newOrder);
+
+  // Persist to Neon DB asynchronously
+  DbService.recordOnlineOrder({
+    id: newOrder.id,
+    outletId: newOrder.outletId,
+    customerName: newOrder.customerName,
+    customerPhone: newOrder.customerPhone,
+    fulfillmentType: newOrder.fulfillmentType,
+    deliveryAddress: newOrder.deliveryAddress || undefined,
+    totalAmount: newOrder.totalAmount,
+    notes: newOrder.notes,
+    items: newOrder.items,
+  }).catch((err) => console.error('DB async online order record error:', err));
+
   return c.json({ success: true, order: newOrder });
 });
 
@@ -645,6 +686,92 @@ app.get('/analytics/dashboard', (c) => {
     recentOnlineOrders: ONLINE_ORDERS.slice(0, 5),
     toko1RecentOrders: toko1PosOrders.slice(0, 5),
     toko2RecentOrders: toko2PosOrders.slice(0, 5),
+  });
+});
+
+// 8. Financial Report & Profit/Loss Analysis
+app.get('/reports/financial', (c) => {
+  const outletId = c.req.query('outletId') || 'ALL';
+
+  const filteredOrders = outletId === 'ALL'
+    ? ORDERS
+    : ORDERS.filter((o) => o.outletId === outletId);
+
+  const filteredOnline = outletId === 'ALL'
+    ? ONLINE_ORDERS.filter((o) => o.status === 'COMPLETED' || o.status === 'READY' || o.status === 'PROCESSING')
+    : ONLINE_ORDERS.filter((o) => o.outletId === outletId && (o.status === 'COMPLETED' || o.status === 'READY' || o.status === 'PROCESSING'));
+
+  let grossRevenue = 0;
+  let totalCost = 0;
+  let totalItemsSold = 0;
+  const productSalesMap: Record<string, { name: string; qty: number; revenue: number; cost: number }> = {};
+
+  filteredOrders.forEach((o) => {
+    grossRevenue += o.totalAmount;
+    o.items?.forEach((it: any) => {
+      totalItemsSold += it.qty;
+      const prod = PRODUCTS.find((p) => p.id === it.productId);
+      const cost = (prod?.costPrice || 0) * it.qty;
+      totalCost += cost;
+
+      if (!productSalesMap[it.productId]) {
+        productSalesMap[it.productId] = {
+          name: it.productName || prod?.name || it.productId,
+          qty: 0,
+          revenue: 0,
+          cost: 0,
+        };
+      }
+      productSalesMap[it.productId].qty += it.qty;
+      productSalesMap[it.productId].revenue += it.subtotal;
+      productSalesMap[it.productId].cost += cost;
+    });
+  });
+
+  filteredOnline.forEach((o) => {
+    grossRevenue += o.totalAmount;
+    o.items?.forEach((it: any) => {
+      totalItemsSold += it.qty;
+      const prod = PRODUCTS.find((p) => p.id === it.productId);
+      const cost = (prod?.costPrice || 0) * it.qty;
+      totalCost += cost;
+
+      if (!productSalesMap[it.productId]) {
+        productSalesMap[it.productId] = {
+          name: it.productName || prod?.name || it.productId,
+          qty: 0,
+          revenue: 0,
+          cost: 0,
+        };
+      }
+      productSalesMap[it.productId].qty += it.qty;
+      productSalesMap[it.productId].revenue += it.subtotal;
+      productSalesMap[it.productId].cost += cost;
+    });
+  });
+
+  const grossProfit = grossRevenue - totalCost;
+  const grossMarginPct = grossRevenue > 0 ? ((grossProfit / grossRevenue) * 100).toFixed(1) : '0';
+
+  const topProducts = Object.values(productSalesMap)
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5)
+    .map((p) => ({
+      ...p,
+      profit: p.revenue - p.cost,
+      margin: p.revenue > 0 ? ((p.revenue - p.cost) / p.revenue * 100).toFixed(1) : '0',
+    }));
+
+  return c.json({
+    outletId,
+    grossRevenue,
+    totalCost,
+    grossProfit,
+    grossMarginPct: Number(grossMarginPct),
+    totalTransactions: filteredOrders.length + filteredOnline.length,
+    totalItemsSold,
+    topProducts,
+    allOrders: filteredOrders,
   });
 });
 

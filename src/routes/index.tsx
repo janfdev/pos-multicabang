@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Search,
   ShoppingBag,
@@ -13,9 +13,18 @@ import {
   Minus,
   Banknote,
   Sparkles,
+  Camera,
+  Printer,
+  Wallet,
+  Barcode,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore, UserProfile } from '@/lib/authStore';
+import { playBeep } from '@/lib/audio';
+import { shiftStore, ShiftSession } from '@/lib/shiftStore';
+import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/ThermalReceiptModal';
+import { ShiftModal } from '@/components/pos/ShiftModal';
+import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
 
 export const Route = createFileRoute('/')({
   component: PosPage,
@@ -45,6 +54,14 @@ function PosPage() {
   const [lastOrder, setLastOrder] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New Modals State
+  const [thermalModalOrder, setThermalModalOrder] = useState<ThermalReceiptData | null>(null);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [currentShift, setCurrentShift] = useState<ShiftSession | null>(() =>
+    shiftStore.getActiveShift(activeOutlet)
+  );
 
   useEffect(() => {
     const unsubOutlet = outletStore.subscribe((id) => {
@@ -76,7 +93,7 @@ function PosPage() {
     loadProducts();
   }, [search, activeOutlet]);
 
-  const addToCart = (prod: any) => {
+  const addToCart = useCallback((prod: any) => {
     const available = prod.stock ?? 0;
     if (available <= 0) {
       setErrorMessage(`Stok "${prod.name}" habis di outlet ini.`);
@@ -84,6 +101,7 @@ function PosPage() {
     }
 
     setErrorMessage(null);
+    playBeep(1400, 0.06);
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === prod.id);
       if (existing) {
@@ -100,7 +118,45 @@ function PosPage() {
         { productId: prod.id, name: prod.name, price: prod.sellingPrice, qty: 1, maxStock: available },
       ];
     });
-  };
+  }, []);
+
+  // Hardware USB Barcode Scanner Gun Listener
+  useEffect(() => {
+    let buffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastKeyTime > 120) {
+        buffer = '';
+      }
+      lastKeyTime = now;
+
+      if (e.key === 'Enter') {
+        if (buffer.length >= 3) {
+          const matched = products.find(
+            (p) =>
+              (p.barcode && p.barcode.toLowerCase() === buffer.toLowerCase()) ||
+              (p.sku && p.sku.toLowerCase() === buffer.toLowerCase())
+          );
+          if (matched) {
+            addToCart(matched);
+          }
+        }
+        buffer = '';
+      } else if (e.key.length === 1) {
+        buffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [products, addToCart]);
 
   const updateQty = (id: string, delta: number) => {
     setCart((prev) =>
@@ -151,7 +207,15 @@ function PosPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        playBeep(1200, 0.12);
         setLastOrder(data.order);
+        shiftStore.recordTransaction(activeOutlet, 'CASH', data.order.totalAmount);
+        setCurrentShift(shiftStore.getActiveShift(activeOutlet));
+        setThermalModalOrder({
+          ...data.order,
+          outletAddress: currentOutletInfo.address,
+          cashierName: currentUser?.name || 'Kasir',
+        });
         setCart([]);
         setCashReceived(0);
         loadProducts(); // Refresh stock counts immediately
@@ -213,9 +277,19 @@ function PosPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
-            Stok otomatis terisolasi per cabang
-          </span>
+          <button
+            type="button"
+            onClick={() => setIsShiftModalOpen(true)}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
+              currentShift
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+                : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+            }`}
+          >
+            <Wallet className="size-3.5" />
+            <span>{currentShift ? `Shift Aktif (${currentShift.totalTransactions} Trx)` : 'Buka Shift Kasir'}</span>
+            <span className={`size-2 rounded-full ${currentShift ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+          </button>
         </div>
       </div>
 
@@ -229,15 +303,27 @@ function PosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* Left: Product Catalog & Search */}
         <div className="lg:col-span-7 space-y-3">
-          <div className="relative">
-            <Search className="size-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={`Cari stok barang di ${currentOutletInfo.shortName} (beras, minyak, kecap)...`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium shadow-2xs"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="size-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder={`Cari stok barang di ${currentOutletInfo.shortName} (beras, minyak, kecap)...`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium shadow-2xs"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsScannerModalOpen(true)}
+              className="px-3.5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer shrink-0"
+              title="Pindai barcode via kamera atau scanner gun USB"
+            >
+              <Camera className="size-4" />
+              <span className="hidden sm:inline">Scan Barcode</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -470,18 +556,59 @@ function PosPage() {
                 <span>Kembali: Rp {lastOrder.cashChange.toLocaleString('id-ID')}</span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setLastOrder(null)}
-                className="w-full mt-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <RotateCcw className="size-3.5" />
-                <span>Transaksi Baru</span>
-              </button>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setThermalModalOrder({
+                      ...lastOrder,
+                      outletAddress: currentOutletInfo.address,
+                      cashierName: currentUser?.name || 'Kasir',
+                    });
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
+                >
+                  <Printer className="size-3.5" />
+                  <span>Cetak Struk Thermal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLastOrder(null)}
+                  className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                >
+                  <RotateCcw className="size-3.5" />
+                  <span>Selesai</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Thermal Receipt Print Modal */}
+      <ThermalReceiptModal
+        order={thermalModalOrder}
+        onClose={() => setThermalModalOrder(null)}
+      />
+
+      {/* Cashier Shift Modal */}
+      <ShiftModal
+        isOpen={isShiftModalOpen}
+        outletId={activeOutlet}
+        outletName={currentOutletInfo.name}
+        cashierName={currentUser?.name || 'Kasir Toko'}
+        onClose={() => setIsShiftModalOpen(false)}
+        onShiftChanged={(sh) => setCurrentShift(sh)}
+      />
+
+      {/* Barcode Scanner Camera Modal */}
+      <BarcodeScannerModal
+        isOpen={isScannerModalOpen}
+        products={products}
+        onScanSuccess={(prod) => addToCart(prod)}
+        onClose={() => setIsScannerModalOpen(false)}
+      />
     </div>
   );
 }

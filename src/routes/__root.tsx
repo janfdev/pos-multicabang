@@ -20,11 +20,13 @@ import {
   LogOut,
   User,
   UserCheck,
+  BarChart3,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { themeStore, Theme } from '@/lib/themeStore';
 import { authStore, UserProfile, DEMO_ACCOUNTS } from '@/lib/authStore';
+import { FinancialReportModal } from '@/components/pos/FinancialReportModal';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -34,6 +36,7 @@ function RootComponent() {
   const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(authStore.getUser());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(themeStore.getTheme());
   const routerState = useRouterState();
   const navigate = useNavigate();
@@ -399,6 +402,16 @@ function RootComponent() {
 
           {/* Right Header: Active Store Badge & Profile Link */}
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsReportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 bg-white dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700/60 transition-colors shadow-2xs cursor-pointer"
+              title="Buka Laporan Keuangan & Laba Rugi"
+            >
+              <BarChart3 className="size-3.5 text-purple-600 dark:text-purple-400" />
+              <span className="hidden lg:inline">Laporan Laba/Rugi</span>
+            </button>
+
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold">
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-zinc-800 dark:text-zinc-200">{currentOutletInfo.name}</span>
@@ -419,6 +432,13 @@ function RootComponent() {
           <Outlet />
         </main>
       </div>
+
+      {/* Financial & Profit/Loss Report Modal */}
+      <FinancialReportModal
+        isOpen={isReportModalOpen}
+        initialOutletId={activeOutlet}
+        onClose={() => setIsReportModalOpen(false)}
+      />
     </div>
   );
 }
