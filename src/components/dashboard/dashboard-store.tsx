@@ -1433,8 +1433,8 @@ function Sidebar({
     >
       <div className="flex items-center justify-between p-4">
         <div className="flex min-w-0 items-center gap-3 rounded-xl px-1.5 py-1">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-black text-xs shadow-xs">
-            POS
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 shadow-xs overflow-hidden">
+            <img src="/brand-logo.svg" alt="POS Logo" className="h-full w-full object-contain" />
           </div>
 
           <div className="min-w-0 text-left">

@@ -262,9 +262,7 @@ export function PublicShopPage() {
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-neutral-800 shadow-2xs">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-9 rounded-xl bg-gray-900 dark:bg-neutral-50 text-white dark:text-neutral-900 flex items-center justify-center font-bold shadow-xs shrink-0">
-              <ShoppingBag className="size-4" />
-            </div>
+            <img src="/brand-logo.svg" alt="POS Logo" className="size-9 rounded-xl shadow-xs shrink-0 object-contain" />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h1 className="font-extrabold text-sm leading-tight text-gray-900 dark:text-neutral-50 tracking-tight truncate">

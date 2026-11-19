@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>POS Multi-Cabang - Interlocking Nexus</title>
+  <g transform="translate(128, 128)">
+    <!-- Top Face: Gudang Pusat -->
+    <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+    <!-- Left Face: Toko 1 Retail -->
+    <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+    <!-- Right Face: Toko 2 Cabang -->
+    <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+    <!-- Core Hub -->
+    <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+  </g>
+</svg>

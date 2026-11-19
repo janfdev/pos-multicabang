@@ -244,6 +244,7 @@ function PosPage() {
           >
             <ArrowLeft className="size-4" />
           </Link>
+          <img src="/brand-logo.svg" alt="POS Logo" className="size-9 rounded-xl shadow-2xs shrink-0" />
           <div>
             <h1 className="font-extrabold text-base text-gray-900 dark:text-neutral-50 tracking-tight flex items-center gap-2">
               <span>Terminal Kasir POS</span>

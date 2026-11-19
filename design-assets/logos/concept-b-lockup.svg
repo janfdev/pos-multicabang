@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" width="840" height="256">
+  <title>POS Multi-Cabang - Nexus Lockup</title>
+  <g transform="translate(16, 0)">
+    <g transform="translate(128, 128)">
+      <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+      <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+      <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+      <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <text x="290" y="112" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#09090B">NEXUS POS</text>
+  <text x="292" y="174" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="4" fill="#71717A">DISTRIBUTED COMMERCE</text>
+  <rect x="292" y="196" width="72" height="6" rx="3" fill="#09090B"/>
+</svg>

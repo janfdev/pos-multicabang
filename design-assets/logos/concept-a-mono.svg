@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Central Hub / Main Store Stem -->
+  <rect x="44" y="44" width="48" height="168" rx="16" fill="#000000"/>
+  <!-- Top Loop -->
+  <path d="M 92 44 L 160 44 C 190.93 44 216 69.07 216 100 C 216 130.93 190.93 156 160 156 L 92 156 Z" fill="#000000"/>
+  <rect x="92" y="80" width="56" height="40" rx="10" fill="#FFFFFF"/>
+  <!-- Branch Node -->
+  <circle cx="166" cy="188" r="24" fill="#000000"/>
+  <!-- Branch Link -->
+  <rect x="92" y="178" width="56" height="20" rx="8" fill="#000000"/>
+</svg>

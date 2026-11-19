@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="56" fill="#09090B"/>
+  <g transform="translate(128, 128)">
+    <!-- Top Face (Toko Pusat / Warehouse) -->
+    <path d="M 0 -84 L 70 -44 L 0 -4 L -70 -44 Z" fill="#FFFFFF"/>
+    <!-- Left Face (Toko 1 / POS Terminal) -->
+    <path d="M -70 -34 L 0 6 L 0 86 L -70 46 Z" fill="#E4E4E7"/>
+    <!-- Right Face (Toko 2 / Cabang Satelit) in Emerald Accent -->
+    <path d="M 0 6 L 70 -34 L 70 46 L 0 86 Z" fill="#10B981"/>
+    <!-- Center synchronization core -->
+    <circle cx="0" cy="6" r="10" fill="#09090B"/>
+  </g>
+</svg>

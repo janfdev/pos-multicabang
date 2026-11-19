@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="56" fill="#09090B"/>
+  <!-- Primary Store Pillar (Left) -->
+  <rect x="48" y="76" width="44" height="124" rx="14" fill="#FFFFFF"/>
+  <!-- Secondary Store Pillar (Right) -->
+  <rect x="164" y="76" width="44" height="124" rx="14" fill="#10B981"/>
+  <!-- Sync Bridge / Canopy Roof -->
+  <path d="M 48 64 C 48 48 64 36 84 36 L 172 36 C 192 36 208 48 208 64 L 208 84 L 48 84 Z" fill="#FFFFFF"/>
+  <!-- Central Pulse Indicator -->
+  <circle cx="128" cy="138" r="14" fill="#FFFFFF"/>
+  <rect x="92" y="132" width="72" height="12" rx="6" fill="#FFFFFF" opacity="0.3"/>
+</svg>

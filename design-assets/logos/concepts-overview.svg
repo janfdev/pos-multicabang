@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="984" viewBox="0 0 1600 984"><rect width="1600" height="984" fill="#f7f7f4"/><text x="60" y="78" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="40" font-weight="700" fill="#161616">POS Multi-Cabang — Identitas Visual &amp; Logo</text><text x="60" y="116" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" fill="#6b6b6b">Evaluasi 3 Konsep Mark: Skalabilitas Favicon 16px, PWA Icon, &amp; Monokrom</text><rect x="60" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#161616" stroke-width="2"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="90" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Branching Monogram P</title>
+  <!-- Main Monogram P (Compound path with true transparent hole) -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 48 36
+    L 156 36
+    C 191.35 36 220 64.65 220 100
+    C 220 135.35 191.35 164 156 164
+    L 96 164
+    L 96 220
+    L 48 220
+    Z
+    M 96 80
+    L 152 80
+    C 163.05 80 172 88.95 172 100
+    C 172 111.05 163.05 120 152 120
+    L 96 120
+    Z
+  " fill="#09090B"/>
+  <!-- Branch Link and Satellite Node -->
+  <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+  <circle cx="184" cy="184" r="24" fill="#09090B"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" x="90" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Lockup</title>
+  <g transform="translate(16, 0)">
+    <!-- Symbol -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="
+      M 48 36
+      L 156 36
+      C 191.35 36 220 64.65 220 100
+      C 220 135.35 191.35 164 156 164
+      L 96 164
+      L 96 220
+      L 48 220
+      Z
+      M 96 80
+      L 152 80
+      C 163.05 80 172 88.95 172 100
+      C 172 111.05 163.05 120 152 120
+      L 96 120
+      Z
+    " fill="#09090B"/>
+    <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+    <circle cx="184" cy="184" r="24" fill="#09090B"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="290" y="112" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#09090B">POS CABANG</text>
+  <text x="292" y="174" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="4" fill="#71717A">MULTI-OUTLET INVENTORY</text>
+  <rect x="292" y="196" width="72" height="6" rx="3" fill="#10B981"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="90" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Branching Monogram P</title>
+  <!-- Main Monogram P (Compound path with true transparent hole) -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 48 36
+    L 156 36
+    C 191.35 36 220 64.65 220 100
+    C 220 135.35 191.35 164 156 164
+    L 96 164
+    L 96 220
+    L 48 220
+    Z
+    M 96 80
+    L 152 80
+    C 163.05 80 172 88.95 172 100
+    C 172 111.05 163.05 120 152 120
+    L 96 120
+    Z
+  " fill="#09090B"/>
+  <!-- Branch Link and Satellite Node -->
+  <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+  <circle cx="184" cy="184" r="24" fill="#09090B"/>
+</svg></g><text x="122" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="180" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Branching Monogram P</title>
+  <!-- Main Monogram P (Compound path with true transparent hole) -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 48 36
+    L 156 36
+    C 191.35 36 220 64.65 220 100
+    C 220 135.35 191.35 164 156 164
+    L 96 164
+    L 96 220
+    L 48 220
+    Z
+    M 96 80
+    L 152 80
+    C 163.05 80 172 88.95 172 100
+    C 172 111.05 163.05 120 152 120
+    L 96 120
+    Z
+  " fill="#09090B"/>
+  <!-- Branch Link and Satellite Node -->
+  <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+  <circle cx="184" cy="184" r="24" fill="#09090B"/>
+</svg></g><text x="196" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="238" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Branching Monogram P</title>
+  <!-- Main Monogram P (Compound path with true transparent hole) -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 48 36
+    L 156 36
+    C 191.35 36 220 64.65 220 100
+    C 220 135.35 191.35 164 156 164
+    L 96 164
+    L 96 220
+    L 48 220
+    Z
+    M 96 80
+    L 152 80
+    C 163.05 80 172 88.95 172 100
+    C 172 111.05 163.05 120 152 120
+    L 96 120
+    Z
+  " fill="#09090B"/>
+  <!-- Branch Link and Satellite Node -->
+  <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+  <circle cx="184" cy="184" r="24" fill="#09090B"/>
+</svg></g><text x="246" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="90.0" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">A · Branching P (Recommended)</text><text x="90.0" y="808" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#161616" letter-spacing="1.5">RECOMMENDED</text><text x="90.0" y="842" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Monogram P where the counter &amp; lower branch</text><text x="90.0" y="868" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">form synchronized multi-outlet nodes.</text><text x="90.0" y="894" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Exceptional 16px favicon readability.</text><rect x="562.667" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="592.667" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Interlocking Nexus</title>
+  <g transform="translate(128, 128)">
+    <!-- Top Face: Gudang Pusat -->
+    <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+    <!-- Left Face: Toko 1 Retail -->
+    <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+    <!-- Right Face: Toko 2 Cabang -->
+    <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+    <!-- Core Hub -->
+    <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+  </g>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" x="592.667" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Nexus Lockup</title>
+  <g transform="translate(16, 0)">
+    <g transform="translate(128, 128)">
+      <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+      <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+      <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+      <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <text x="290" y="112" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#09090B">NEXUS POS</text>
+  <text x="292" y="174" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="4" fill="#71717A">DISTRIBUTED COMMERCE</text>
+  <rect x="292" y="196" width="72" height="6" rx="3" fill="#09090B"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="592.667" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Interlocking Nexus</title>
+  <g transform="translate(128, 128)">
+    <!-- Top Face: Gudang Pusat -->
+    <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+    <!-- Left Face: Toko 1 Retail -->
+    <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+    <!-- Right Face: Toko 2 Cabang -->
+    <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+    <!-- Core Hub -->
+    <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+  </g>
+</svg></g><text x="624.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="682.667" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Interlocking Nexus</title>
+  <g transform="translate(128, 128)">
+    <!-- Top Face: Gudang Pusat -->
+    <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+    <!-- Left Face: Toko 1 Retail -->
+    <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+    <!-- Right Face: Toko 2 Cabang -->
+    <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+    <!-- Core Hub -->
+    <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+  </g>
+</svg></g><text x="698.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="740.667" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Interlocking Nexus</title>
+  <g transform="translate(128, 128)">
+    <!-- Top Face: Gudang Pusat -->
+    <path d="M 0 -84 L 72 -42 L 0 0 L -72 -42 Z" fill="#09090B"/>
+    <!-- Left Face: Toko 1 Retail -->
+    <path d="M -72 -32 L 0 10 L 0 94 L -72 52 Z" fill="#27272A"/>
+    <!-- Right Face: Toko 2 Cabang -->
+    <path d="M 0 10 L 72 -32 L 72 52 L 0 94 Z" fill="#52525B"/>
+    <!-- Core Hub -->
+    <circle cx="0" cy="10" r="12" fill="#FFFFFF"/>
+  </g>
+</svg></g><text x="748.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="592.6666666666667" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">B · Interlocking Nexus</text><text x="592.6666666666667" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Geometric isometric cube linking Warehouse,</text><text x="592.6666666666667" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Toko 1 &amp; Toko 2 in perpetual inventory</text><text x="592.6666666666667" y="866" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">balance.</text><rect x="1065.33" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1095.33" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Dual Storefront</title>
+  <!-- Main Canopy / Warehouse Header -->
+  <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+  <!-- Left Pillar: Toko 1 -->
+  <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Right Pillar: Toko 2 -->
+  <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Center Transfer / Cloud Bridge Node -->
+  <circle cx="128" cy="144" r="20" fill="#09090B"/>
+  <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" x="1095.33" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Dual Storefront Lockup</title>
+  <g transform="translate(16, 0)">
+    <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+    <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+    <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+    <circle cx="128" cy="144" r="20" fill="#09090B"/>
+    <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+  </g>
+  <text x="290" y="112" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#09090B">PORTAL POS</text>
+  <text x="292" y="174" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="4" fill="#71717A">DUAL-BRANCH NETWORK</text>
+  <rect x="292" y="196" width="72" height="6" rx="3" fill="#09090B"/>
+</svg></g><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1095.33" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Dual Storefront</title>
+  <!-- Main Canopy / Warehouse Header -->
+  <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+  <!-- Left Pillar: Toko 1 -->
+  <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Right Pillar: Toko 2 -->
+  <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Center Transfer / Cloud Bridge Node -->
+  <circle cx="128" cy="144" r="20" fill="#09090B"/>
+  <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+</svg></g><text x="1127.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1185.33" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Dual Storefront</title>
+  <!-- Main Canopy / Warehouse Header -->
+  <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+  <!-- Left Pillar: Toko 1 -->
+  <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Right Pillar: Toko 2 -->
+  <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Center Transfer / Cloud Bridge Node -->
+  <circle cx="128" cy="144" r="20" fill="#09090B"/>
+  <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+</svg></g><text x="1201.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" x="1243.33" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title>POS Multi-Cabang - Dual Storefront</title>
+  <!-- Main Canopy / Warehouse Header -->
+  <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+  <!-- Left Pillar: Toko 1 -->
+  <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Right Pillar: Toko 2 -->
+  <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Center Transfer / Cloud Bridge Node -->
+  <circle cx="128" cy="144" r="20" fill="#09090B"/>
+  <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+</svg></g><text x="1251.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="1095.3333333333335" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">C · Dual Storefront</text><text x="1095.3333333333335" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">Minimalist architectural facade bridging</text><text x="1095.3333333333335" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">two independent store pillars via real-time</text><text x="1095.3333333333335" y="866" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">cloud data.</text></svg>

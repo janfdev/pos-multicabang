@@ -1,0 +1,23 @@
+<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>POS Multi-Cabang</title>
+  
+  <!-- Main Monogram P (Compound path with true transparent hole) -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 48 36
+    L 156 36
+    C 191.35 36 220 64.65 220 100
+    C 220 135.35 191.35 164 156 164
+    L 96 164
+    L 96 220
+    L 48 220
+    Z
+    M 96 80
+    L 152 80
+    C 163.05 80 172 88.95 172 100
+    C 172 111.05 163.05 120 152 120
+    L 96 120
+    Z
+  " fill="#000000"/>
+  <!-- Branch Link and Satellite Node -->
+  <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#000000"/>
+  <circle cx="184" cy="184" r="24" fill="#000000"/>
+</svg>

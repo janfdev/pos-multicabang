@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>POS Multi-Cabang - Dual Storefront</title>
+  <!-- Main Canopy / Warehouse Header -->
+  <path d="M 44 48 C 44 38 52 30 62 30 L 194 30 C 204 30 212 38 212 48 L 212 80 L 44 80 Z" fill="#09090B"/>
+  <!-- Left Pillar: Toko 1 -->
+  <rect x="44" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Right Pillar: Toko 2 -->
+  <rect x="164" y="94" width="48" height="126" rx="12" fill="#09090B"/>
+  <!-- Center Transfer / Cloud Bridge Node -->
+  <circle cx="128" cy="144" r="20" fill="#09090B"/>
+  <rect x="92" y="138" width="72" height="12" rx="6" fill="#09090B"/>
+</svg>

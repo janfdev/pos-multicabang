@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" width="840" height="256">
+  <title>POS Multi-Cabang - Lockup</title>
+  <g transform="translate(16, 0)">
+    <!-- Symbol -->
+    <path fill-rule="evenodd" clip-rule="evenodd" d="
+      M 48 36
+      L 156 36
+      C 191.35 36 220 64.65 220 100
+      C 220 135.35 191.35 164 156 164
+      L 96 164
+      L 96 220
+      L 48 220
+      Z
+      M 96 80
+      L 152 80
+      C 163.05 80 172 88.95 172 100
+      C 172 111.05 163.05 120 152 120
+      L 96 120
+      Z
+    " fill="#09090B"/>
+    <path d="M 96 172 L 156 172 C 162.63 172 168 177.37 168 184 C 168 190.63 162.63 196 156 196 L 96 196 Z" fill="#09090B"/>
+    <circle cx="184" cy="184" r="24" fill="#09090B"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="290" y="112" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#09090B">POS CABANG</text>
+  <text x="292" y="174" font-family="'Geist', 'Inter', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="4" fill="#71717A">MULTI-OUTLET INVENTORY</text>
+  <rect x="292" y="196" width="72" height="6" rx="3" fill="#10B981"/>
+</svg>
