@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Building2,
+  Store,
   Receipt,
   RotateCcw,
   Plus,

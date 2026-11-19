@@ -1,4 +1,5 @@
 export type ThemeMode = 'light' | 'dark';
+export type Theme = ThemeMode;
 
 const THEME_STORAGE_KEY = 'pos-multicabang-theme';
 

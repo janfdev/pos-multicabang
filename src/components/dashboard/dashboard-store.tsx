@@ -77,7 +77,21 @@ type Status =
   | "Draft"
   | "New"
   | "In Review"
-  | "Resolved";
+  | "Resolved"
+  | "COMPLETED"
+  | "ACTIVE"
+  | "RESTOCK"
+  | "DISPATCHED"
+  | "RECEIVED"
+  | "REQUESTED"
+  | "PROCESSING"
+  | "READY"
+  | "CANCELLED"
+  | "RETURN"
+  | "REBALANCE"
+  | "KRITIS"
+  | "AMAN"
+  | (string & {});
 
 type Row = {
   id: string;

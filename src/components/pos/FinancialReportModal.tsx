@@ -57,7 +57,7 @@ export function FinancialReportModal({
 
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      rows.map((e) => e.map((cell) => `"${cell ?? ''}"`).join(',')).join('\n');
+      rows.map((e) => e.map((cell: any) => `"${cell ?? ''}"`).join(',')).join('\n');
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
