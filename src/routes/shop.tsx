@@ -59,7 +59,23 @@ interface ProductItem {
   sellingPrice: number;
   stock: number;
   isLow: boolean;
+  image?: string;
 }
+
+export const FALLBACK_PRODUCT_IMAGES: Record<string, string> = {
+  'p-1': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&auto=format&fit=crop&q=80',
+  'p-2': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&auto=format&fit=crop&q=80',
+  'p-3': 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?w=500&auto=format&fit=crop&q=80',
+  'p-4': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80',
+  'p-5': 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80',
+  'p-6': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&auto=format&fit=crop&q=80',
+  'p-7': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=80',
+  'p-8': 'https://images.unsplash.com/photo-1627662168285-8a8b843355be?w=500&auto=format&fit=crop&q=80',
+  'p-9': 'https://images.unsplash.com/photo-1585670270677-b469b360b2ac?w=500&auto=format&fit=crop&q=80',
+  'p-10': 'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=500&auto=format&fit=crop&q=80',
+  'p-11': 'https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?w=500&auto=format&fit=crop&q=80',
+  'p-12': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500&auto=format&fit=crop&q=80',
+};
 
 interface CartItem {
   product: ProductItem;
@@ -468,24 +484,32 @@ export function PublicShopPage() {
               const inCart = cart.find((item) => item.product.id === p.id);
               const isAvailable = p.stock > 0;
               const isLowStock = isAvailable && p.stock <= 5;
+              const imgSrc = p.image || FALLBACK_PRODUCT_IMAGES[p.id] || FALLBACK_PRODUCT_IMAGES['p-1'];
 
               return (
                 <div
                   key={p.id}
-                  className="p-4 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200/80 dark:border-neutral-800 shadow-xs flex flex-col justify-between gap-3 hover:border-gray-300 dark:hover:border-neutral-700 transition-all group"
+                  className="p-3.5 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200/80 dark:border-neutral-800 shadow-xs flex flex-col justify-between hover:border-gray-300 dark:hover:border-neutral-700 transition-all group overflow-hidden"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 uppercase tracking-wider">
+                  <div className="space-y-3">
+                    {/* Real Product Photo */}
+                    <div className="relative aspect-4/3 w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-neutral-800 border border-gray-100 dark:border-neutral-800/80">
+                      <img
+                        src={imgSrc}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md text-gray-700 dark:text-neutral-300 shadow-2xs uppercase tracking-wider">
                         {p.category}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        className={`absolute top-2.5 right-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md border shadow-2xs ${
                           !isAvailable
-                            ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20'
+                            ? 'bg-rose-500/90 text-white border-rose-600'
                             : isLowStock
-                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
-                            : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+                            ? 'bg-amber-500/90 text-white border-amber-600'
+                            : 'bg-emerald-500/90 text-white border-emerald-600'
                         }`}
                       >
                         {!isAvailable
@@ -496,12 +520,14 @@ export function PublicShopPage() {
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-sm text-gray-900 dark:text-neutral-100 leading-snug line-clamp-2">
-                      {p.name}
-                    </h3>
-                    <p className="font-mono text-[11px] text-gray-400 dark:text-neutral-500">
-                      SKU: {p.sku} &bull; Satuan: {p.unit}
-                    </p>
+                    <div>
+                      <h3 className="font-bold text-sm text-gray-900 dark:text-neutral-100 leading-snug line-clamp-2">
+                        {p.name}
+                      </h3>
+                      <p className="font-mono text-[11px] text-gray-400 dark:text-neutral-500 mt-1">
+                        SKU: {p.sku} &bull; Satuan: {p.unit}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t border-gray-100 dark:border-neutral-800 flex items-center justify-between gap-2">
@@ -656,22 +682,31 @@ export function PublicShopPage() {
                     </button>
                   </div>
 
-                  {cart.map((item) => (
-                    <div
-                      key={item.product.id}
-                      className="p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-2xl border border-gray-200/60 dark:border-neutral-800 flex items-center justify-between gap-2"
-                    >
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-gray-900 dark:text-neutral-100 truncate text-xs">
-                          {item.product.name}
-                        </h4>
-                        <span className="font-mono text-[11px] text-gray-500 dark:text-neutral-400 block mt-0.5">
-                          {formatRupiah(item.product.sellingPrice)} &times; {item.qty} ={' '}
-                          <strong className="text-gray-900 dark:text-neutral-50 font-bold">
-                            {formatRupiah(item.product.sellingPrice * item.qty)}
-                          </strong>
-                        </span>
-                      </div>
+                  {cart.map((item) => {
+                    const cartImg = item.product.image || FALLBACK_PRODUCT_IMAGES[item.product.id] || FALLBACK_PRODUCT_IMAGES['p-1'];
+                    return (
+                      <div
+                        key={item.product.id}
+                        className="p-2.5 bg-gray-50 dark:bg-neutral-800/50 rounded-2xl border border-gray-200/60 dark:border-neutral-800 flex items-center justify-between gap-2.5"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={cartImg}
+                            alt={item.product.name}
+                            className="size-11 rounded-xl object-cover shrink-0 border border-gray-200/80 dark:border-neutral-700 bg-white"
+                          />
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-gray-900 dark:text-neutral-100 truncate text-xs">
+                              {item.product.name}
+                            </h4>
+                            <span className="font-mono text-[11px] text-gray-500 dark:text-neutral-400 block mt-0.5">
+                              {formatRupiah(item.product.sellingPrice)} &times; {item.qty} ={' '}
+                              <strong className="text-gray-900 dark:text-neutral-50 font-bold">
+                                {formatRupiah(item.product.sellingPrice * item.qty)}
+                              </strong>
+                            </span>
+                          </div>
+                        </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
@@ -701,8 +736,9 @@ export function PublicShopPage() {
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
 
                 {/* Fulfillment Option */}
                 <div className="space-y-1.5">

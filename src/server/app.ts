@@ -31,18 +31,18 @@ const OUTLETS = [
 
 // Rich Simulated Products (12 Realistic Retail Items)
 let PRODUCTS = [
-  { id: 'p-1', sku: 'BRG-001', barcode: '89912345601', name: 'Beras Pandan Wangi 5kg', category: 'Sembako', unit: 'SAK', costPrice: 65000, sellingPrice: 76000 },
-  { id: 'p-2', sku: 'BRG-002', barcode: '89912345602', name: 'Minyak Goreng Sawit 2L', category: 'Sembako', unit: 'POUCH', costPrice: 31000, sellingPrice: 36500 },
-  { id: 'p-3', sku: 'BRG-003', barcode: '89912345603', name: 'Gula Pasir Kristal 1kg', category: 'Sembako', unit: 'BKS', costPrice: 15000, sellingPrice: 17500 },
-  { id: 'p-4', sku: 'BRG-004', barcode: '89912345604', name: 'Tepung Terigu Segitiga 1kg', category: 'Bahan Kue', unit: 'BKS', costPrice: 11500, sellingPrice: 13500 },
-  { id: 'p-5', sku: 'BRG-005', barcode: '89912345605', name: 'Kopi Kapal Api Spesial 165g', category: 'Minuman', unit: 'BKS', costPrice: 14000, sellingPrice: 16500 },
-  { id: 'p-6', sku: 'BRG-006', barcode: '89912345606', name: 'Susu Kental Manis Putih 370g', category: 'Minuman', unit: 'KALENG', costPrice: 11000, sellingPrice: 13000 },
-  { id: 'p-7', sku: 'BRG-007', barcode: '89912345607', name: 'Mie Instan Goreng Spesial', category: 'Makanan Cepat', unit: 'DUS', costPrice: 108000, sellingPrice: 122000 },
-  { id: 'p-8', sku: 'BRG-008', barcode: '89912345608', name: 'Kecap Manis Botol 600ml', category: 'Bumbu Dapur', unit: 'BOTOL', costPrice: 20000, sellingPrice: 24000 },
-  { id: 'p-9', sku: 'BRG-009', barcode: '89912345609', name: 'Sabun Cuci Piring Jeruk Nipis 780ml', category: 'Kebersihan', unit: 'POUCH', costPrice: 13500, sellingPrice: 16000 },
-  { id: 'p-10', sku: 'BRG-010', barcode: '89912345610', name: 'Deterjen Bubuk Konsentrat 800g', category: 'Kebersihan', unit: 'BKS', costPrice: 17500, sellingPrice: 21000 },
-  { id: 'p-11', sku: 'BRG-011', barcode: '89912345611', name: 'Telur Ayam Ras 1 Tray (30 butir)', category: 'Sembako', unit: 'TRAY', costPrice: 48000, sellingPrice: 55000 },
-  { id: 'p-12', sku: 'BRG-012', barcode: '89912345612', name: 'Biskuit Kaleng Aneka Rasa 350g', category: 'Snack', unit: 'KALENG', costPrice: 38000, sellingPrice: 46000 },
+  { id: 'p-1', sku: 'BRG-001', barcode: '89912345601', name: 'Beras Pandan Wangi 5kg', category: 'Sembako', unit: 'SAK', costPrice: 65000, sellingPrice: 76000, image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-2', sku: 'BRG-002', barcode: '89912345602', name: 'Minyak Goreng Sawit 2L', category: 'Sembako', unit: 'POUCH', costPrice: 31000, sellingPrice: 36500, image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-3', sku: 'BRG-003', barcode: '89912345603', name: 'Gula Pasir Kristal 1kg', category: 'Sembako', unit: 'BKS', costPrice: 15000, sellingPrice: 17500, image: 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-4', sku: 'BRG-004', barcode: '89912345604', name: 'Tepung Terigu Segitiga 1kg', category: 'Bahan Kue', unit: 'BKS', costPrice: 11500, sellingPrice: 13500, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-5', sku: 'BRG-005', barcode: '89912345605', name: 'Kopi Kapal Api Spesial 165g', category: 'Minuman', unit: 'BKS', costPrice: 14000, sellingPrice: 16500, image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-6', sku: 'BRG-006', barcode: '89912345606', name: 'Susu Kental Manis Putih 370g', category: 'Minuman', unit: 'KALENG', costPrice: 11000, sellingPrice: 13000, image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-7', sku: 'BRG-007', barcode: '89912345607', name: 'Mie Instan Goreng Spesial', category: 'Makanan Cepat', unit: 'DUS', costPrice: 108000, sellingPrice: 122000, image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-8', sku: 'BRG-008', barcode: '89912345608', name: 'Kecap Manis Botol 600ml', category: 'Bumbu Dapur', unit: 'BOTOL', costPrice: 20000, sellingPrice: 24000, image: 'https://images.unsplash.com/photo-1627662168285-8a8b843355be?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-9', sku: 'BRG-009', barcode: '89912345609', name: 'Sabun Cuci Piring Jeruk Nipis 780ml', category: 'Kebersihan', unit: 'POUCH', costPrice: 13500, sellingPrice: 16000, image: 'https://images.unsplash.com/photo-1585670270677-b469b360b2ac?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-10', sku: 'BRG-010', barcode: '89912345610', name: 'Deterjen Bubuk Konsentrat 800g', category: 'Kebersihan', unit: 'BKS', costPrice: 17500, sellingPrice: 21000, image: 'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-11', sku: 'BRG-011', barcode: '89912345611', name: 'Telur Ayam Ras 1 Tray (30 butir)', category: 'Sembako', unit: 'TRAY', costPrice: 48000, sellingPrice: 55000, image: 'https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?w=500&auto=format&fit=crop&q=80' },
+  { id: 'p-12', sku: 'BRG-012', barcode: '89912345612', name: 'Biskuit Kaleng Aneka Rasa 350g', category: 'Snack', unit: 'KALENG', costPrice: 38000, sellingPrice: 46000, image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500&auto=format&fit=crop&q=80' },
 ];
 
 // Inventory stock mapping with realistic replenishment alert thresholds

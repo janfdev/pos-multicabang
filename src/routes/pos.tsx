@@ -16,6 +16,7 @@ import {
   Store,
   ArrowLeft,
   LayoutDashboard,
+  Package,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore, UserProfile } from '@/lib/authStore';
@@ -24,6 +25,7 @@ import { shiftStore, ShiftSession } from '@/lib/shiftStore';
 import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/ThermalReceiptModal';
 import { ShiftModal } from '@/components/pos/ShiftModal';
 import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
+import { FALLBACK_PRODUCT_IMAGES } from '@/routes/shop';
 
 export const Route = createFileRoute('/pos')({
   component: PosPage,
@@ -39,6 +41,7 @@ interface CartItem {
   price: number;
   qty: number;
   maxStock: number;
+  image?: string;
 }
 
 function PosPage() {
@@ -118,7 +121,14 @@ function PosPage() {
       }
       return [
         ...prev,
-        { productId: prod.id, name: prod.name, price: prod.sellingPrice, qty: 1, maxStock: available },
+        {
+          productId: prod.id,
+          name: prod.name,
+          price: prod.sellingPrice,
+          qty: 1,
+          maxStock: available,
+          image: prod.image || FALLBACK_PRODUCT_IMAGES[prod.id],
+        },
       ];
     });
   }, []);
@@ -393,25 +403,52 @@ function PosPage() {
             {products.map((p) => {
               const isOutOfStock = p.stock <= 0;
               const otherBranchStock = activeOutlet === 'toko-2' ? p.t1Stock : p.t2Stock;
+              const imgUrl = p.image || FALLBACK_PRODUCT_IMAGES[p.id];
 
               return (
                 <div
                   key={p.id}
                   onClick={() => !isOutOfStock && addToCart(p)}
-                  className={`p-3 bg-white dark:bg-neutral-900 border border-gray-200/80 dark:border-neutral-800 rounded-2xl flex flex-col justify-between transition-all select-none ${
+                  className={`group p-2.5 bg-white dark:bg-neutral-900 border border-gray-200/80 dark:border-neutral-800 rounded-2xl flex flex-col justify-between transition-all select-none ${
                     isOutOfStock
                       ? 'opacity-50 cursor-not-allowed bg-gray-50/50 dark:bg-neutral-950/40'
                       : 'hover:border-gray-400 dark:hover:border-neutral-600 hover:shadow-sm cursor-pointer active:scale-[0.98]'
                   }`}
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-mono text-gray-400 dark:text-neutral-500 font-semibold">{p.sku}</span>
-                      <span className="text-gray-400 dark:text-neutral-500">{p.unit}</span>
+                  <div>
+                    {/* Product Image Thumbnail */}
+                    <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden bg-gray-100 dark:bg-neutral-800/80 mb-2">
+                      {imgUrl ? (
+                        <img
+                          src={imgUrl}
+                          alt={p.name}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-neutral-600">
+                          <Package className="size-6" />
+                        </div>
+                      )}
+                      {p.category && (
+                        <span className="absolute bottom-1.5 left-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-xs">
+                          {p.category}
+                        </span>
+                      )}
                     </div>
-                    <h3 className="font-bold text-xs text-gray-900 dark:text-neutral-100 line-clamp-2 leading-tight">
-                      {p.name}
-                    </h3>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="font-mono text-gray-400 dark:text-neutral-500 font-semibold">{p.sku}</span>
+                        <span className="text-gray-400 dark:text-neutral-500">{p.unit}</span>
+                      </div>
+                      <h3 className="font-bold text-xs text-gray-900 dark:text-neutral-100 line-clamp-2 leading-tight">
+                        {p.name}
+                      </h3>
+                    </div>
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-gray-100 dark:border-neutral-800/80 space-y-1.5">
@@ -484,11 +521,24 @@ function PosPage() {
                     key={item.productId}
                     className="flex items-center justify-between text-xs p-2 rounded-xl bg-gray-50 dark:bg-neutral-800/40 border border-gray-100 dark:border-neutral-800"
                   >
-                    <div className="min-w-0 pr-2">
-                      <p className="font-bold text-gray-900 dark:text-neutral-100 truncate">{item.name}</p>
-                      <p className="font-mono text-[11px] text-gray-500 dark:text-neutral-400">
-                        Rp {item.price.toLocaleString('id-ID')} &times; {item.qty}
-                      </p>
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="size-9 rounded-lg object-cover shrink-0 border border-gray-200 dark:border-neutral-700"
+                        />
+                      ) : (
+                        <div className="size-9 rounded-lg bg-gray-200 dark:bg-neutral-700 flex items-center justify-center shrink-0">
+                          <Package className="size-4 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-bold text-gray-900 dark:text-neutral-100 truncate">{item.name}</p>
+                        <p className="font-mono text-[11px] text-gray-500 dark:text-neutral-400">
+                          Rp {item.price.toLocaleString('id-ID')} &times; {item.qty}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
