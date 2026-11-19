@@ -1513,7 +1513,7 @@ function Sidebar({
         <SectionLabel>Akses Cepat Kasir</SectionLabel>
         <div className="flex flex-col gap-0.5">
           <a
-            href="/"
+            href="/pos"
             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
           >
             <ShoppingCart size={16} className="text-gray-400 dark:text-neutral-500" />

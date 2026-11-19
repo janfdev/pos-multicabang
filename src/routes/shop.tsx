@@ -35,6 +35,10 @@ export const Route = createFileRoute('/shop')({
   component: PublicShopPage,
 });
 
+const font = {
+  fontFamily: "var(--font-geist-sans), Geist, Inter, system-ui, sans-serif",
+} as const;
+
 interface ProductItem {
   id: string;
   sku: string;
@@ -253,7 +257,7 @@ export function PublicShopPage() {
   }[selectedOutlet];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-neutral-100 font-sans pb-28 transition-colors">
+    <div style={font} className="min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-neutral-100 font-sans pb-28 transition-colors">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-neutral-800 shadow-2xs">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
@@ -293,11 +297,17 @@ export function PublicShopPage() {
 
             {/* Back to POS Kasir */}
             <Link
-              to="/"
+              to="/pos"
               className="px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
             >
               <Store className="size-3.5" />
               <span className="hidden sm:inline">Kasir POS</span>
+            </Link>
+            <Link
+              to="/dashboard"
+              className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-neutral-50 text-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 transition-opacity shadow-2xs"
+            >
+              Dashboard
             </Link>
           </div>
         </div>
