@@ -23,6 +23,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import DashboardStore from '@/components/Dashboard/dashboard-finance';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -30,6 +31,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function DashboardPage() {
   const [data, setData] = useState<any>(null);
+  const [activeView, setActiveView] = useState<'OPERATIONAL' | 'BAGUI'>('OPERATIONAL');
 
   useEffect(() => {
     fetch('/api/analytics/dashboard')
@@ -50,8 +52,43 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Module Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs">
+      {/* View Switcher: Operational vs BagUI Modern Store */}
+      <div className="flex items-center gap-2 p-1 bg-stone-200/80 rounded-xl w-fit text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => setActiveView('OPERATIONAL')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+            activeView === 'OPERATIONAL'
+              ? 'bg-white text-stone-900 shadow-2xs'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Ringkasan Multi-Cabang (Live)
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveView('BAGUI')}
+          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeView === 'BAGUI'
+              ? 'bg-emerald-800 text-white shadow-2xs'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          <span>Modern Store Dashboard (BagUI)</span>
+          <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.2 rounded-full font-mono">
+            New
+          </span>
+        </button>
+      </div>
+
+      {activeView === 'BAGUI' ? (
+        <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-sm bg-white">
+          <DashboardStore />
+        </div>
+      ) : (
+        <>
+          {/* Module Page Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
@@ -300,6 +337,8 @@ function DashboardPage() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
