@@ -79,7 +79,9 @@ import {
   Sun,
   Moon,
   Crown,
+  ArrowLeftRight,
 } from "lucide-react";
+import { themeStore } from "@/lib/themeStore";
 
 // ─── Font (applied once, inherited everywhere) ─────────────────────────────
 const font = {
@@ -147,13 +149,12 @@ const MAIN_MENU: NavItem[] = [
   { label: "Product", icon: Package },
   { label: "Order", icon: ShoppingCart },
   { label: "Customer", icon: Users },
-  { label: "Message", icon: MessageSquare },
+  { label: "Mutasi Stok", icon: ArrowLeftRight },
 ];
 const TOOLS_MENU: NavItem[] = [
-  { label: "Email", icon: Mail },
-  { label: "Automation", icon: Zap },
   { label: "Analytics", icon: BarChart3 },
   { label: "Integration", icon: Plug },
+  { label: "Automation", icon: Zap },
 ];
 
 const BOTTOM_MENU: NavItem[] = [
@@ -163,8 +164,9 @@ const BOTTOM_MENU: NavItem[] = [
 ];
 
 const WORKSPACES = [
-  { label: "Campaign", count: 5, color: "bg-gray-900 dark:bg-neutral-100" },
-  { label: "Product Plan", count: 4, color: "bg-gray-400 dark:bg-neutral-600" },
+  { label: "Toko 1 (Pusat & Gudang)", count: 797, color: "bg-blue-600 dark:bg-blue-400", outletId: "toko-1" },
+  { label: "Toko 2 (Cabang Satelit)", count: 126, color: "bg-emerald-600 dark:bg-emerald-400", outletId: "toko-2" },
+  { label: "Konsolidasi Semua Cabang", count: 923, color: "bg-purple-600 dark:bg-purple-400", outletId: "all" },
 ];
 
 // Strictly black / white / gray. Status is communicated through the pill's
@@ -178,6 +180,7 @@ const STATUS_META: Record<string, { tone: Tone }> = {
   Restock: { tone: "subtle" },
   Active: { tone: "solid" },
   Pending: { tone: "subtle" },
+  Processing: { tone: "subtle" },
   Completed: { tone: "solid" },
   Cancelled: { tone: "outline" },
   Read: { tone: "outline" },
@@ -225,796 +228,777 @@ function buildDatasets(): Record<string, Dataset> {
   return {
     Dashboard: {
       key: "Dashboard",
-      title: "Dashboard",
-      addLabel: "Add Widget",
+      title: "Dashboard Eksekutif Multi-Cabang",
+      addLabel: "Tambah Indikator",
       columns: [
-        { key: "name", label: "Metric" },
-        { key: "value", label: "Value" },
-        { key: "change", label: "Change" },
-        { key: "period", label: "Period" },
+        { key: "name", label: "Indikator / Kanal" },
+        { key: "value", label: "Nilai Real-time" },
+        { key: "change", label: "Pertumbuhan" },
+        { key: "period", label: "Cakupan Outlet" },
       ],
       stats: [
-        { label: "Total Revenue", value: "$48,290", delta: "+ 12%" },
-        { label: "Active Users", value: "3,204", delta: "+ 4%" },
-        { label: "Conversion Rate", value: "3.8%", delta: "+ 0.6%" },
-        { label: "Churn Rate", value: "1.2%", delta: "+ 0.2%" },
+        { label: "Total Omzet Konsolidasi", value: "Rp 48.290.000", delta: "+ 14%" },
+        { label: "Total Stok Multi-Cabang", value: "923 Unit", delta: "+ 65 unit" },
+        { label: "Transaksi POS Hari Ini", value: "42 Trx", delta: "+ 18%" },
+        { label: "Rata-rata Keranjang", value: "Rp 78.500", delta: "+ 6.2%" },
       ],
       rows: [
         {
           id: "d1",
-          status: "Active",
+          status: "Completed",
           cells: {
-            name: "Monthly Recurring Revenue",
-            value: "$48,290",
-            change: "+12%",
-            period: "This month",
+            name: "Penjualan Toko 1 (Pusat & Gudang)",
+            value: "Rp 34.250.000",
+            change: "+16%",
+            period: "Bulan Berjalan",
           },
         },
         {
           id: "d2",
-          status: "Active",
+          status: "Completed",
           cells: {
-            name: "New Signups",
-            value: "312",
-            change: "+18%",
-            period: "This month",
+            name: "Penjualan Toko 2 (Cabang Satelit)",
+            value: "Rp 14.040.000",
+            change: "+9%",
+            period: "Bulan Berjalan",
           },
         },
         {
           id: "d3",
-          status: "Pending",
+          status: "Completed",
           cells: {
-            name: "Support Tickets",
-            value: "27",
-            change: "-5%",
-            period: "This week",
+            name: "Penjualan Toko Online (/shop)",
+            value: "Rp 3.850.000",
+            change: "+24%",
+            period: "Bulan Berjalan",
           },
         },
         {
           id: "d4",
-          status: "Completed",
+          status: "Active",
           cells: {
-            name: "Deployments",
-            value: "9",
-            change: "+2",
-            period: "This week",
+            name: "Stok Gudang Toko 1 (Pusat)",
+            value: "797 Unit",
+            change: "Ready 12 SKU",
+            period: "Gudang Utama",
           },
         },
         {
           id: "d5",
-          status: "Active",
+          status: "Restock",
           cells: {
-            name: "Server Uptime",
-            value: "99.98%",
-            change: "+0.01%",
-            period: "This month",
+            name: "Stok Display Toko 2 (Cabang)",
+            value: "126 Unit",
+            change: "5 SKU Menipis",
+            period: "Cabang Kesambi",
           },
         },
         {
           id: "d6",
-          status: "Cancelled",
+          status: "Pending",
           cells: {
-            name: "Failed Payments",
-            value: "4",
-            change: "-2",
-            period: "This month",
+            name: "Mutasi Restock Antar Cabang",
+            value: "3 Mutasi",
+            change: "60 Unit Jalan",
+            period: "Logistik Internal",
           },
         },
       ],
     },
     Product: {
       key: "Product",
-      title: "Product",
-      addLabel: "Add New Product",
+      title: "Katalog & Stok Multi-Cabang",
+      addLabel: "Tambah Produk Baru",
       columns: [
-        { key: "name", label: "Product" },
-        { key: "price", label: "Price", numeric: true },
-        { key: "sales", label: "Sales" },
-        { key: "revenue", label: "Revenue", numeric: true },
-        { key: "stock", label: "Stock", numeric: true },
+        { key: "name", label: "Nama Produk" },
+        { key: "category", label: "Kategori" },
+        { key: "price", label: "Harga Jual", numeric: true },
+        { key: "toko1", label: "Stok T1 Gudang", numeric: true },
+        { key: "toko2", label: "Stok T2 Cabang", numeric: true },
+        { key: "totalStock", label: "Total Multi-Cabang", numeric: true },
         { key: "status", label: "Status" },
         { key: "rating", label: "Rating", numeric: true },
       ],
       stats: [
-        { label: "Total Product", value: "250", delta: "+ 3 product" },
-        { label: "Product Revenue", value: "$15,490", delta: "+ 9%" },
-        { label: "Product Sold", value: "2,355", delta: "+ 7%" },
-        { label: "Avg. Monthly Sales", value: "890", delta: "+ 6%" },
+        { label: "Total Produk SKU", value: "12 SKU", delta: "+ 2 SKU" },
+        { label: "Nilai Aset Stok", value: "Rp 41.850.000", delta: "+ 8.5%" },
+        { label: "Stok Menipis T2", value: "5 Produk", delta: "Perlu restock" },
+        { label: "Total Fisik Stok", value: "923 Unit", delta: "+ 65 unit" },
       ],
       rows: [
         {
           id: "p1",
-          status: "In Stock",
+          status: "Restock",
           rating: 5.0,
           cells: {
-            name: "Orbit T-Shirt #10 - White",
-            price: 1.35,
-            sales: "471 pcs",
-            revenue: 635.85,
-            stock: 100,
+            name: "Beras Pandan Wangi 5kg",
+            category: "Sembako",
+            price: 76000,
+            toko1: 85,
+            toko2: 4,
+            totalStock: 89,
           },
         },
         {
           id: "p2",
-          status: "Out of Stock",
-          rating: 5.0,
+          status: "Restock",
+          rating: 4.9,
           cells: {
-            name: "Orbit T-Shirt #10 - Black",
-            price: 1.35,
-            sales: "402 pcs",
-            revenue: 544.0,
-            stock: 20,
+            name: "Minyak Goreng Sawit 2L",
+            category: "Sembako",
+            price: 36500,
+            toko1: 120,
+            toko2: 3,
+            totalStock: 123,
           },
         },
         {
           id: "p3",
-          status: "Restock",
-          rating: 4.9,
+          status: "In Stock",
+          rating: 4.8,
           cells: {
-            name: "Orbit T-Shirt #19 - White",
-            price: 1.35,
-            sales: "455 pcs",
-            revenue: 645.25,
-            stock: 20,
+            name: "Gula Pasir Kristal 1kg",
+            category: "Sembako",
+            price: 17500,
+            toko1: 95,
+            toko2: 18,
+            totalStock: 113,
           },
         },
         {
           id: "p4",
-          status: "In Stock",
-          rating: 4.8,
+          status: "Restock",
+          rating: 4.7,
           cells: {
-            name: "SmartHome Hub",
-            price: 150,
-            sales: "7 pcs",
-            revenue: 1050.0,
-            stock: 12,
+            name: "Tepung Terigu Segitiga 1kg",
+            category: "Bahan Kue",
+            price: 13500,
+            toko1: 60,
+            toko2: 5,
+            totalStock: 65,
           },
         },
         {
           id: "p5",
-          status: "Out of Stock",
-          rating: 4.8,
+          status: "In Stock",
+          rating: 5.0,
           cells: {
-            name: "UltraSound Wireless Earbuds",
-            price: 200,
-            sales: "5 pcs",
-            revenue: 1000.0,
-            stock: 0,
+            name: "Kopi Kapal Api Spesial 165g",
+            category: "Minuman",
+            price: 16500,
+            toko1: 50,
+            toko2: 14,
+            totalStock: 64,
           },
         },
         {
           id: "p6",
-          status: "Restock",
-          rating: 4.7,
+          status: "In Stock",
+          rating: 4.9,
           cells: {
-            name: "ProVision 4K Monitor",
-            price: 400.25,
-            sales: "1 pcs",
-            revenue: 400.25,
-            stock: 3,
+            name: "Susu Kental Manis Putih 370g",
+            category: "Minuman",
+            price: 13000,
+            toko1: 72,
+            toko2: 22,
+            totalStock: 94,
           },
         },
         {
           id: "p7",
-          status: "In Stock",
-          rating: 4.7,
+          status: "Restock",
+          rating: 5.0,
           cells: {
-            name: "Orbit Retro Wave Shirt",
-            price: 1.35,
-            sales: "120 pcs",
-            revenue: 162.4,
-            stock: 0,
+            name: "Mie Instan Goreng Spesial",
+            category: "Makanan Cepat",
+            price: 122000,
+            toko1: 40,
+            toko2: 2,
+            totalStock: 42,
           },
         },
         {
           id: "p8",
-          status: "Out of Stock",
-          rating: 4.9,
+          status: "In Stock",
+          rating: 4.8,
           cells: {
-            name: "Orbit Graphic Art T-Shirt",
-            price: 1.35,
-            sales: "200 pcs",
-            revenue: 270.15,
-            stock: 0,
+            name: "Kecap Manis Botol 600ml",
+            category: "Bumbu Dapur",
+            price: 24000,
+            toko1: 65,
+            toko2: 16,
+            totalStock: 81,
           },
         },
         {
           id: "p9",
-          status: "In Stock",
-          rating: 4.8,
+          status: "Restock",
+          rating: 4.6,
           cells: {
-            name: "Orbit Classic Fit Crewneck",
-            price: 28.5,
-            sales: "130 pcs",
-            revenue: 3705.25,
-            stock: 11,
+            name: "Sabun Cuci Piring Jeruk Nipis 780ml",
+            category: "Kebersihan",
+            price: 16000,
+            toko1: 80,
+            toko2: 9,
+            totalStock: 89,
           },
         },
         {
           id: "p10",
           status: "In Stock",
+          rating: 4.7,
+          cells: {
+            name: "Deterjen Bubuk Konsentrat 800g",
+            category: "Kebersihan",
+            price: 21000,
+            toko1: 55,
+            toko2: 19,
+            totalStock: 74,
+          },
+        },
+        {
+          id: "p11",
+          status: "Restock",
+          rating: 4.9,
+          cells: {
+            name: "Telur Ayam Ras 1 Tray (30 butir)",
+            category: "Sembako",
+            price: 55000,
+            toko1: 30,
+            toko2: 3,
+            totalStock: 33,
+          },
+        },
+        {
+          id: "p12",
+          status: "In Stock",
           rating: 4.8,
           cells: {
-            name: "EchoWave Bluetooth Speaker",
-            price: 55.5,
-            sales: "10 pcs",
-            revenue: 555.0,
-            stock: 20,
+            name: "Biskuit Kaleng Aneka Rasa 350g",
+            category: "Snack",
+            price: 46000,
+            toko1: 45,
+            toko2: 11,
+            totalStock: 56,
           },
         },
       ],
     },
     Order: {
       key: "Order",
-      title: "Order",
-      addLabel: "Create Order",
+      title: "Pesanan & Transaksi Kasir",
+      addLabel: "Buat Transaksi Baru",
       columns: [
-        { key: "name", label: "Order" },
-        { key: "customer", label: "Customer" },
-        { key: "items", label: "Items" },
-        { key: "total", label: "Total", numeric: true },
+        { key: "name", label: "No. Transaksi" },
+        { key: "customer", label: "Pelanggan / Outlet" },
+        { key: "items", label: "Rincian Item" },
+        { key: "total", label: "Total Pembayaran", numeric: true },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Total Orders", value: "1,204", delta: "+ 5%" },
-        { label: "Order Revenue", value: "$62,140", delta: "+ 11%" },
-        { label: "Pending Orders", value: "38", delta: "+ 2" },
-        { label: "Avg. Order Value", value: "$51.60", delta: "+ 3%" },
+        { label: "Total Transaksi", value: "1.204 Trx", delta: "+ 18%" },
+        { label: "Omzet Transaksi", value: "Rp 48.290.000", delta: "+ 12%" },
+        { label: "Pesanan Online Pending", value: "3 Order", delta: "Verifikasi" },
+        { label: "Rata-rata Keranjang", value: "Rp 78.500", delta: "+ 6%" },
       ],
       rows: [
         {
           id: "o1",
           status: "Completed",
           cells: {
-            name: "#ORD-1042",
-            customer: "Alice Mensah",
-            items: "3 items",
-            total: 89.5,
+            name: "#TRX-1029-0820",
+            customer: "Pak Budi Santoso (Toko 1)",
+            items: "3 item (Beras, Minyak, Telur)",
+            total: 188500,
           },
         },
         {
           id: "o2",
-          status: "Pending",
+          status: "Completed",
           cells: {
-            name: "#ORD-1043",
-            customer: "Alex Chen",
-            items: "1 item",
-            total: 24.0,
+            name: "#TRX-1029-0831",
+            customer: "Ibu Siti Aminah (Toko 2)",
+            items: "2 item (Minyak Goreng, Gula)",
+            total: 49500,
           },
         },
         {
           id: "o3",
-          status: "Cancelled",
+          status: "Completed",
           cells: {
-            name: "#ORD-1044",
-            customer: "Isabella Green",
-            items: "2 items",
-            total: 61.2,
+            name: "#ONL-20261119-001",
+            customer: "Hendra Wijaya (/shop Online)",
+            items: "2 item (Beras Pandan 5kg, Minyak)",
+            total: 150000,
           },
         },
         {
           id: "o4",
-          status: "Completed",
+          status: "Pending",
           cells: {
-            name: "#ORD-1045",
-            customer: "Victoria Stone",
-            items: "5 items",
-            total: 154.9,
+            name: "#ONL-20261119-002",
+            customer: "Ibu Rina Melati (/shop Online)",
+            items: "1 item (Beras Pandan Wangi 5kg)",
+            total: 76000,
           },
         },
         {
           id: "o5",
-          status: "Pending",
+          status: "Completed",
           cells: {
-            name: "#ORD-1046",
-            customer: "Marc Dupont",
-            items: "1 item",
-            total: 18.75,
+            name: "#TRX-1029-0904",
+            customer: "Resto Sedap Rasa (Toko 1)",
+            items: "4 item (Minyak, Telur, Kecap)",
+            total: 198000,
           },
         },
         {
           id: "o6",
           status: "Completed",
           cells: {
-            name: "#ORD-1047",
-            customer: "Sarah Kim",
-            items: "4 items",
-            total: 132.4,
+            name: "#TRX-1029-0915",
+            customer: "Warung Bu Siti (Toko 1)",
+            items: "8 item (Sembako Lengkap)",
+            total: 340000,
           },
         },
       ],
     },
     Customer: {
       key: "Customer",
-      title: "Customer",
-      addLabel: "Add Customer",
+      title: "Pelanggan & Mitra Toko",
+      addLabel: "Tambah Pelanggan",
       columns: [
-        { key: "name", label: "Customer" },
-        { key: "email", label: "Email" },
-        { key: "orders", label: "Orders", numeric: true },
-        { key: "spent", label: "Total Spent", numeric: true },
+        { key: "name", label: "Nama Pelanggan / Mitra" },
+        { key: "email", label: "Kontak / Klasifikasi" },
+        { key: "orders", label: "Total Transaksi", numeric: true },
+        { key: "spent", label: "Total Belanja", numeric: true },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Total Customers", value: "5,830", delta: "+ 2%" },
-        { label: "New Customers", value: "142", delta: "+ 8%" },
-        { label: "Returning Rate", value: "64%", delta: "+ 3%" },
-        { label: "Avg. Lifetime Value", value: "$212", delta: "+ 5%" },
+        { label: "Total Mitra Terdaftar", value: "580 Mitra", delta: "+ 12%" },
+        { label: "Mitra Aktif Berbelanja", value: "342 Mitra", delta: "+ 8%" },
+        { label: "Tingkat Repeat Order", value: "74%", delta: "+ 5%" },
+        { label: "Rata-rata LTV Belanja", value: "Rp 2.450.000", delta: "+ 9%" },
       ],
       rows: [
         {
           id: "c1",
           status: "Active",
           cells: {
-            name: "Alice Mensah",
-            email: "alice@mail.com",
-            orders: 12,
-            spent: 640.5,
+            name: "Warung Bu Siti",
+            email: "Warung Kelontong (0812-3456-7890)",
+            orders: 34,
+            spent: 4250000,
           },
         },
         {
           id: "c2",
           status: "Active",
           cells: {
-            name: "Alex Chen",
-            email: "alex@mail.com",
-            orders: 4,
-            spent: 120.0,
+            name: "Pak Budi Santoso",
+            email: "Pembelian Grosir (0813-8888-9999)",
+            orders: 18,
+            spent: 3820000,
           },
         },
         {
           id: "c3",
-          status: "Pending",
+          status: "Active",
           cells: {
-            name: "Isabella Green",
-            email: "isabella@mail.com",
-            orders: 1,
-            spent: 42.0,
+            name: "Ibu Dewi Anggraeni",
+            email: "Pelanggan Tetap T2 (0815-4444-2222)",
+            orders: 12,
+            spent: 1150000,
           },
         },
         {
           id: "c4",
           status: "Active",
           cells: {
-            name: "Victoria Stone",
-            email: "victoria@mail.com",
-            orders: 21,
-            spent: 1290.75,
+            name: "Hendra Wijaya",
+            email: "Toko Online /shop (hendra@mail.com)",
+            orders: 5,
+            spent: 620000,
           },
         },
         {
           id: "c5",
-          status: "Cancelled",
+          status: "Active",
           cells: {
-            name: "Marc Dupont",
-            email: "marc@mail.com",
-            orders: 2,
-            spent: 58.4,
+            name: "Resto Sedap Rasa",
+            email: "Mitra B2B Kuliner (resto.sedap@mail.com)",
+            orders: 22,
+            spent: 5480000,
           },
         },
       ],
     },
-    Message: {
-      key: "Message",
-      title: "Message",
-      addLabel: "New Message",
+    "Mutasi Stok": {
+      key: "Mutasi Stok",
+      title: "Mutasi & Restock Antar Cabang",
+      addLabel: "Ajukan Permintaan Restock",
       columns: [
-        { key: "name", label: "From" },
-        { key: "subject", label: "Subject" },
-        { key: "preview", label: "Preview" },
-        { key: "time", label: "Time" },
+        { key: "name", label: "No. Mutasi" },
+        { key: "route", label: "Rute Pengiriman" },
+        { key: "items", label: "Rincian Barang" },
+        { key: "courier", label: "Armada / PIC" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Unread", value: "12", delta: "+ 3" },
-        { label: "Total Messages", value: "486", delta: "+ 21" },
-        { label: "Avg. Response Time", value: "2.4h", delta: "- 0.3h" },
-        { label: "Resolved Today", value: "18", delta: "+ 6" },
+        { label: "Mutasi Bulan Ini", value: "18 Transfer", delta: "+ 4" },
+        { label: "Total Unit Dipindahkan", value: "540 Unit", delta: "T1 -> T2" },
+        { label: "Restock Tertunda", value: "1 Transfer", delta: "Menunggu" },
+        { label: "Waktu Pengiriman", value: "1.8 Jam", delta: "- 0.4h" },
       ],
       rows: [
         {
           id: "m1",
-          status: "Unread",
+          status: "Pending",
           cells: {
-            name: "Alice Mensah",
-            subject: "Order delay",
-            preview: "Hi, my order #1042 is late...",
-            time: "2m",
+            name: "#MUT-20261029-001",
+            route: "Toko 1 (Gudang) ➔ Toko 2 (Cabang)",
+            items: "Beras 20, Minyak 30, Mie 10 (Total 60 unit)",
+            courier: "Armada Gudang Pusat",
           },
         },
         {
           id: "m2",
-          status: "Read",
+          status: "Completed",
           cells: {
-            name: "Alex Chen",
-            subject: "Refund request",
-            preview: "Can I get a refund for...",
-            time: "15m",
+            name: "#MUT-20261028-002",
+            route: "Toko 1 (Gudang) ➔ Toko 2 (Cabang)",
+            items: "Gula Pasir 25, Sabun Cuci 20 (Total 45 unit)",
+            courier: "Ahmad (Armada Gudang Pusat)",
           },
         },
         {
           id: "m3",
-          status: "Unread",
+          status: "Completed",
           cells: {
-            name: "Isabella Green",
-            subject: "Product question",
-            preview: "Does this come in blue?",
-            time: "1h",
+            name: "#MUT-20261027-003",
+            route: "Toko 1 (Gudang) ➔ Toko 2 (Cabang)",
+            items: "Tepung 15, Kopi Kapal Api 20 (Total 35 unit)",
+            courier: "Ahmad (Armada Gudang Pusat)",
           },
         },
         {
           id: "m4",
-          status: "Read",
+          status: "Resolved",
           cells: {
-            name: "Victoria Stone",
-            subject: "Thank you!",
-            preview: "Just wanted to say thanks...",
-            time: "3h",
+            name: "#RET-20261026-004",
+            route: "Toko 2 (Cabang) ➔ Toko 1 (Gudang)",
+            items: "Retur Kemasan Rusak (Biskuit Kaleng 2 unit)",
+            courier: "Kurir Toko 2",
           },
-        },
-      ],
-    },
-    Email: {
-      key: "Email",
-      title: "Email",
-      addLabel: "New Campaign",
-      columns: [
-        { key: "name", label: "Campaign" },
-        { key: "recipients", label: "Recipients", numeric: true },
-        { key: "openRate", label: "Open Rate" },
-        { key: "clickRate", label: "Click Rate" },
-        { key: "status", label: "Status" },
-      ],
-      stats: [
-        { label: "Campaigns Sent", value: "34", delta: "+ 4" },
-        { label: "Avg. Open Rate", value: "42%", delta: "+ 3%" },
-        { label: "Avg. Click Rate", value: "8.6%", delta: "+ 1.1%" },
-        { label: "Unsubscribes", value: "6", delta: "- 2" },
-      ],
-      rows: [
-        {
-          id: "e1",
-          status: "Completed",
-          cells: {
-            name: "Spring Launch",
-            recipients: 4200,
-            openRate: "44%",
-            clickRate: "9.1%",
-          },
-        },
-        {
-          id: "e2",
-          status: "Active",
-          cells: {
-            name: "Weekly Digest",
-            recipients: 3800,
-            openRate: "39%",
-            clickRate: "7.4%",
-          },
-        },
-        {
-          id: "e3",
-          status: "Pending",
-          cells: {
-            name: "Re-engagement",
-            recipients: 1500,
-            openRate: "-",
-            clickRate: "-",
-          },
-        },
-      ],
-    },
-    Automation: {
-      key: "Automation",
-      title: "Automation",
-      addLabel: "New Workflow",
-      columns: [
-        { key: "name", label: "Workflow" },
-        { key: "trigger", label: "Trigger" },
-        { key: "runs", label: "Runs", numeric: true },
-        { key: "status", label: "Status" },
-      ],
-      stats: [
-        { label: "Active Workflows", value: "18", delta: "+ 2" },
-        { label: "Runs Today", value: "1,204", delta: "+ 9%" },
-        { label: "Success Rate", value: "98.4%", delta: "+ 0.4%" },
-        { label: "Time Saved", value: "36h", delta: "+ 5h" },
-      ],
-      rows: [
-        {
-          id: "a1",
-          status: "Active",
-          cells: {
-            name: "Welcome Email Series",
-            trigger: "New signup",
-            runs: 312,
-          },
-        },
-        {
-          id: "a2",
-          status: "Active",
-          cells: { name: "Abandoned Cart", trigger: "Cart idle 1h", runs: 214 },
-        },
-        {
-          id: "a3",
-          status: "Pending",
-          cells: { name: "Win-back Flow", trigger: "No login 30d", runs: 0 },
         },
       ],
     },
     Analytics: {
       key: "Analytics",
-      title: "Analytics",
-      addLabel: "New Report",
+      title: "Analitik Kinerja Multi-Cabang",
+      addLabel: "Unduh Laporan Analitik",
       columns: [
-        { key: "name", label: "Report" },
-        { key: "metric", label: "Metric" },
-        { key: "value", label: "Value" },
+        { key: "name", label: "Indikator Kinerja" },
+        { key: "toko1", label: "Toko 1 (Pusat & Gudang)" },
+        { key: "toko2", label: "Toko 2 (Cabang Satelit)" },
+        { key: "total", label: "Total Konsolidasi" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Sessions", value: "24,890", delta: "+ 6%" },
-        { label: "Bounce Rate", value: "38%", delta: "- 2%" },
-        { label: "Avg. Session", value: "3m 42s", delta: "+ 12s" },
-        { label: "Page Views", value: "88,410", delta: "+ 9%" },
+        { label: "Total Omzet", value: "Rp 48.290.000", delta: "+ 14%" },
+        { label: "Rata-rata Margin", value: "19.4%", delta: "+ 1.2%" },
+        { label: "Ketersediaan Stok", value: "96.8%", delta: "+ 0.5%" },
+        { label: "Perputaran Persediaan", value: "8.2x", delta: "+ 0.6x" },
       ],
       rows: [
         {
           id: "an1",
           status: "Completed",
           cells: {
-            name: "Weekly Traffic",
-            metric: "Sessions",
-            value: "24,890",
+            name: "Omzet Penjualan Kasir",
+            toko1: "Rp 34.250.000",
+            toko2: "Rp 14.040.000",
+            total: "Rp 48.290.000",
           },
         },
         {
           id: "an2",
           status: "Completed",
-          cells: { name: "Funnel Report", metric: "Conversion", value: "3.8%" },
+          cells: {
+            name: "Volume Transaksi POS",
+            toko1: "840 Trx",
+            toko2: "364 Trx",
+            total: "1.204 Trx",
+          },
         },
         {
           id: "an3",
-          status: "Pending",
+          status: "Active",
           cells: {
-            name: "Cohort Retention",
-            metric: "D30 retention",
-            value: "22%",
+            name: "Fisik Persediaan Unit",
+            toko1: "797 Unit",
+            toko2: "126 Unit",
+            total: "923 Unit",
+          },
+        },
+        {
+          id: "an4",
+          status: "Restock",
+          cells: {
+            name: "Jumlah SKU Menipis",
+            toko1: "0 SKU",
+            toko2: "5 SKU",
+            total: "5 SKU Perlu Restock",
+          },
+        },
+        {
+          id: "an5",
+          status: "Active",
+          cells: {
+            name: "Nilai Aset Persediaan",
+            toko1: "Rp 36.140.000",
+            toko2: "Rp 5.710.000",
+            total: "Rp 41.850.000",
           },
         },
       ],
     },
     Integration: {
       key: "Integration",
-      title: "Integration",
-      addLabel: "Add Integration",
+      title: "Integrasi Sistem & Cloud",
+      addLabel: "Hubungkan Perangkat Baru",
       columns: [
-        { key: "name", label: "Integration" },
-        { key: "category", label: "Category" },
-        { key: "syncedAt", label: "Last Synced" },
+        { key: "name", label: "Layanan / Hardware" },
+        { key: "category", label: "Kategori" },
+        { key: "syncedAt", label: "Kondisi Sinkronisasi" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Connected Apps", value: "9", delta: "+ 1" },
-        { label: "Synced Records", value: "142,300", delta: "+ 4%" },
-        { label: "Sync Errors", value: "2", delta: "- 1" },
-        { label: "Avg. Sync Time", value: "48s", delta: "- 4s" },
+        { label: "Layanan Aktif", value: "4 Layanan", delta: "+ 1" },
+        { label: "Latency Vercel Edge", value: "< 20ms", delta: "Optimal" },
+        { label: "Status API", value: "100% Sehat", delta: "0 error" },
+        { label: "Database Multi-Cabang", value: "In-Memory Atomic", delta: "Real-time" },
       ],
       rows: [
         {
           id: "i1",
           status: "Active",
-          cells: { name: "Stripe", category: "Payments", syncedAt: "2m ago" },
+          cells: {
+            name: "Vercel Edge Engine API",
+            category: "Cloud Serverless",
+            syncedAt: "Aktif (<20ms latency)",
+          },
         },
         {
           id: "i2",
           status: "Active",
           cells: {
-            name: "Slack",
-            category: "Notifications",
-            syncedAt: "10m ago",
+            name: "Toko Online Publik (/shop)",
+            category: "Web Commerce",
+            syncedAt: "Terhubung Live",
           },
         },
         {
           id: "i3",
-          status: "Pending",
-          cells: { name: "HubSpot", category: "CRM", syncedAt: "Never" },
+          status: "Active",
+          cells: {
+            name: "Thermal Receipt Printer 58mm/80mm",
+            category: "Perangkat Kasir",
+            syncedAt: "Siap Cetak (ESC-POS)",
+          },
+        },
+        {
+          id: "i4",
+          status: "Active",
+          cells: {
+            name: "Barcode Scanner 1D / 2D",
+            category: "Perangkat Kasir",
+            syncedAt: "Siap Pindai Barcode",
+          },
+        },
+      ],
+    },
+    Automation: {
+      key: "Automation",
+      title: "Otomasi Restock & Notifikasi",
+      addLabel: "Buat Workflow Baru",
+      columns: [
+        { key: "name", label: "Nama Otomasi" },
+        { key: "trigger", label: "Pemicu (Trigger)" },
+        { key: "runs", label: "Eksekusi", numeric: true },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Aturan Aktif", value: "6 Alur", delta: "+ 1" },
+        { label: "Pemicu Hari Ini", value: "8 Kali", delta: "+ 2" },
+        { label: "Akurasi Deteksi", value: "100%", delta: "Real-time" },
+        { label: "Waktu Dihemat", value: "24 Jam", delta: "/ minggu" },
+      ],
+      rows: [
+        {
+          id: "a1",
+          status: "Active",
+          cells: {
+            name: "Deteksi Stok Menipis Toko 2",
+            trigger: "Stok Toko 2 < Min Alert",
+            runs: 14,
+          },
+        },
+        {
+          id: "a2",
+          status: "Active",
+          cells: {
+            name: "Notifikasi Pesanan Baru /shop",
+            trigger: "Customer Checkout Online",
+            runs: 9,
+          },
+        },
+        {
+          id: "a3",
+          status: "Active",
+          cells: {
+            name: "Pemotongan Stok Atomik POS",
+            trigger: "Kasir Klik Selesaikan Transaksi",
+            runs: 42,
+          },
         },
       ],
     },
     Settings: {
       key: "Settings",
-      title: "Settings",
-      addLabel: "Add Setting",
+      title: "Pengaturan Sistem Multi-Cabang",
+      addLabel: "Tambah Konfigurasi",
       columns: [
-        { key: "name", label: "Setting" },
-        { key: "value", label: "Value" },
-        { key: "category", label: "Category" },
+        { key: "name", label: "Konfigurasi" },
+        { key: "value", label: "Nilai Saat Ini" },
+        { key: "category", label: "Kategori" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Plan", value: "Free Plan", delta: "+ upgrade" },
-        { label: "Team Members", value: "4", delta: "+ 1" },
-        { label: "Storage Used", value: "2.1GB / 5GB", delta: "+ 0.3GB" },
-        { label: "API Calls (mo)", value: "1,204", delta: "+ 9%" },
+        { label: "Jumlah Outlet", value: "2 Outlet", delta: "+ 1 cabang" },
+        { label: "Akun Staf", value: "3 Pengguna", delta: "Owner, T1, T2" },
+        { label: "Format Mata Uang", value: "IDR (Rupiah)", delta: "Standar ID" },
+        { label: "Mode Kasir", value: "Multi-Terminal", delta: "Real-time" },
       ],
       rows: [
         {
           id: "s1",
           status: "Active",
           cells: {
-            name: "Two-Factor Authentication",
-            value: "Enabled",
-            category: "Security",
+            name: "Mode Multi-Outlet",
+            value: "Toko 1 (Gudang) & Toko 2 (Cabang)",
+            category: "Topologi",
           },
         },
         {
           id: "s2",
-          status: "Pending",
+          status: "Active",
           cells: {
-            name: "Email Notifications",
-            value: "Daily digest",
-            category: "Notifications",
+            name: "Ambang Batas Restock Otomatis",
+            value: "Aktif per SKU",
+            category: "Inventori",
           },
         },
         {
           id: "s3",
           status: "Active",
           cells: {
-            name: "Dark Mode",
-            value: "System default",
-            category: "Appearance",
-          },
-        },
-        {
-          id: "s4",
-          status: "Cancelled",
-          cells: {
-            name: "SSO (SAML)",
-            value: "Not configured",
-            category: "Security",
-          },
-        },
-        {
-          id: "s5",
-          status: "Active",
-          cells: {
-            name: "API Access",
-            value: "3 keys active",
-            category: "Developer",
-          },
-        },
-        {
-          id: "s6",
-          status: "Pending",
-          cells: {
-            name: "Billing Plan",
-            value: "Free Plan",
-            category: "Billing",
+            name: "Sinkronisasi Mode Tema",
+            value: "Light / Dark Terpadu",
+            category: "Tampilan",
           },
         },
       ],
     },
     "Help center": {
       key: "Help center",
-      title: "Help Center",
-      addLabel: "New Article",
+      title: "Pusat Panduan & SOP Kasir",
+      addLabel: "Tulis Panduan Baru",
       columns: [
-        { key: "name", label: "Article" },
-        { key: "category", label: "Category" },
-        { key: "views", label: "Views" },
+        { key: "name", label: "Judul Panduan" },
+        { key: "category", label: "Kategori" },
+        { key: "views", label: "Dibaca" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Open Tickets", value: "7", delta: "- 2" },
-        { label: "Avg. Resolution Time", value: "3.2h", delta: "- 0.4h" },
-        { label: "Articles Published", value: "86", delta: "+ 4" },
-        { label: "Satisfaction Score", value: "96%", delta: "+ 1%" },
+        { label: "Artikel Panduan", value: "12 SOP", delta: "+ 2 SOP" },
+        { label: "Topik Terpopuler", value: "Mutasi Stok", delta: "420x" },
+        { label: "Waktu Baca SOP", value: "2 Menit", delta: "Praktis" },
+        { label: "Kepuasan Panduan", value: "98%", delta: "+ 1%" },
       ],
       rows: [
         {
           id: "h1",
           status: "Published",
           cells: {
-            name: "Getting started with Orbit",
-            category: "Onboarding",
-            views: "4,210",
+            name: "SOP Pengajuan Mutasi Restock dari Toko 2 ke Toko 1",
+            category: "Logistik",
+            views: "420",
           },
         },
         {
           id: "h2",
           status: "Published",
           cells: {
-            name: "How to export your data",
-            category: "Data",
-            views: "1,880",
+            name: "Panduan Kasir: Input Barcode & Cetak Struk POS",
+            category: "Kasir",
+            views: "380",
           },
         },
         {
           id: "h3",
-          status: "Draft",
-          cells: { name: "Setting up SSO", category: "Security", views: "—" },
-        },
-        {
-          id: "h4",
           status: "Published",
           cells: {
-            name: "Managing team roles",
-            category: "Team",
-            views: "962",
-          },
-        },
-        {
-          id: "h5",
-          status: "Draft",
-          cells: {
-            name: "Webhook reference",
-            category: "Developer",
-            views: "—",
+            name: "Cara Memproses Order Online dari Toko /shop",
+            category: "Toko Online",
+            views: "290",
           },
         },
       ],
     },
     Feedback: {
       key: "Feedback",
-      title: "Feedback",
-      addLabel: "New Feedback",
+      title: "Kotak Saran & Masukan Staf",
+      addLabel: "Kirim Masukan",
       columns: [
-        { key: "name", label: "From" },
-        { key: "summary", label: "Summary" },
-        { key: "type", label: "Type" },
+        { key: "name", label: "Pengirim" },
+        { key: "summary", label: "Isi Masukan" },
+        { key: "type", label: "Kategori" },
         { key: "status", label: "Status" },
       ],
       stats: [
-        { label: "Total Feedback", value: "312", delta: "+ 18" },
-        { label: "New This Week", value: "24", delta: "+ 6" },
-        { label: "Avg. Rating", value: "4.6/5", delta: "+ 0.1" },
-        { label: "Resolved", value: "268", delta: "+ 12" },
+        { label: "Masukan Masuk", value: "5 Masukan", delta: "+ 1" },
+        { label: "Selesai Diterapkan", value: "4 Masukan", delta: "+ 2" },
+        { label: "Kepuasan Tim", value: "4.9 / 5", delta: "Sangat Baik" },
+        { label: "Respon Rata-rata", value: "1 Hari", delta: "Cepat" },
       ],
       rows: [
         {
           id: "f1",
-          status: "New",
+          status: "Resolved",
           cells: {
-            name: "Alice Mensah",
-            summary: "Would love a dark mode toggle",
-            type: "Feature",
+            name: "Kasir Toko 2",
+            summary: "Tambahkan auto-fill login supaya kasir cepat berganti shift",
+            type: "Fitur",
           },
         },
         {
           id: "f2",
-          status: "In Review",
+          status: "Resolved",
           cells: {
-            name: "Alex Chen",
-            summary: "Export button is slow on large tables",
-            type: "Bug",
+            name: "Kepala Gudang Toko 1",
+            summary: "Tampilkan indikator stok toko lain jika stok di cabang habis",
+            type: "Fitur",
           },
         },
         {
           id: "f3",
-          status: "Resolved",
+          status: "Active",
           cells: {
-            name: "Isabella Green",
-            summary: "Great support response time!",
-            type: "Praise",
-          },
-        },
-        {
-          id: "f4",
-          status: "New",
-          cells: {
-            name: "Marc Dupont",
-            summary: "Add bulk CSV import",
-            type: "Feature",
-          },
-        },
-        {
-          id: "f5",
-          status: "In Review",
-          cells: {
-            name: "Sarah Kim",
-            summary: "Pagination resets after edit",
-            type: "Bug",
+            name: "Direktur Operasional",
+            summary: "Utamakan BagUI Pro sebagai dashboard utama",
+            type: "UI/UX",
           },
         },
       ],
@@ -1271,6 +1255,7 @@ function Sidebar({
   setSearch,
   onUpgrade,
   onLearnMore,
+  onSelectWorkspace,
 }: {
   active: string;
   onActiveChange: (v: string) => void;
@@ -1278,6 +1263,7 @@ function Sidebar({
   setSearch: (v: string) => void;
   onUpgrade: () => void;
   onLearnMore: () => void;
+  onSelectWorkspace?: (label: string) => void;
 }) {
   return (
     <motion.aside
@@ -1287,24 +1273,25 @@ function Sidebar({
       className="flex h-full w-64 shrink-0 flex-col border-r border-gray-100 bg-white dark:border-neutral-800 dark:bg-black"
     >
       <div className="flex items-center justify-between p-4">
-        <button className="flex min-w-0 items-center gap-3 rounded-lg px-1.5 py-1 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800">
-          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg">
-            <img
-              src="/logoR.png"
-              alt="BagUI"
-              className="h-full w-full object-contain"
-            />
+        <div className="flex min-w-0 items-center gap-3 rounded-xl px-1.5 py-1">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-black text-xs shadow-xs">
+            POS
           </div>
 
           <div className="min-w-0 text-left">
-            <p className="truncate text-sm font-semibold text-gray-900 dark:text-neutral-50">
-              Bag\UI
-            </p>
-            <p className="truncate text-xs text-gray-500 dark:text-neutral-400">
-              Open Source UI Blocks
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-bold text-gray-900 dark:text-neutral-50">
+                POS Multi-Cabang
+              </p>
+              <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                BagUI
+              </span>
+            </div>
+            <p className="truncate text-[11px] text-gray-500 dark:text-neutral-400">
+              Pro Store Dashboard
             </p>
           </div>
-        </button>
+        </div>
       </div>
 
       <div className="px-4 pb-2">
@@ -1364,18 +1351,19 @@ function Sidebar({
           ))}
         </div>
 
-        <SectionLabel>Workspace</SectionLabel>
+        <SectionLabel>Workspace Multi-Cabang</SectionLabel>
         <div className="flex flex-col gap-0.5">
           {WORKSPACES.map((w) => (
             <motion.button
               key={w.label}
               variants={fadeUp}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+              onClick={() => onSelectWorkspace?.(w.label)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100/70 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50 cursor-pointer transition-colors"
             >
               <span className={`h-2 w-2 rounded-full ${w.color}`} />
-              <span className="flex-1 text-left">{w.label}</span>
-              <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
-                {w.count}
+              <span className="flex-1 text-left truncate">{w.label}</span>
+              <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300">
+                {w.count} unit
               </span>
             </motion.button>
           ))}
@@ -1392,34 +1380,20 @@ function Sidebar({
           />
         ))}
 
-        <div className="mt-2 rounded-2xl border border-gray-200 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
-          <p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-neutral-50">
-            Upgrade Pro
-            <Sparkles
-              size={13}
-              className="text-gray-400 dark:text-neutral-500"
-            />
-          </p>
-          <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-neutral-400">
-            Higher productivity with better organization
-          </p>
-          <div className="flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onUpgrade}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gray-900 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-200 cursor-pointer"
-            >
-              <Crown size={12} />
-              Upgrade
-            </motion.button>
-            <button
-              onClick={onLearnMore}
-              className="flex-1 rounded-full border border-gray-200 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 cursor-pointer"
-            >
-              Learn more
-            </button>
+        <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50/70 p-3 dark:border-neutral-800 dark:bg-neutral-900/60">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Vercel Edge Live
+            </span>
+            <span className="text-[10px] font-mono text-gray-400">&lt;20ms</span>
           </div>
+          <p className="text-xs font-semibold text-gray-800 dark:text-neutral-200">
+            Multi-Outlet Sync
+          </p>
+          <p className="text-[11px] text-gray-500 dark:text-neutral-400 mt-0.5">
+            Toko 1 &amp; Toko 2 terhubung real-time
+          </p>
         </div>
       </div>
     </motion.aside>
@@ -1918,10 +1892,18 @@ function ProductTable({
                     "spent",
                     "total",
                   ].includes(c.key);
+                  const isUnit = [
+                    "toko1",
+                    "toko2",
+                    "totalStock",
+                    "stock",
+                  ].includes(c.key);
                   const display =
                     typeof raw === "number" && isMoney
-                      ? `$${raw.toFixed(2)}`
-                      : (raw ?? "—");
+                      ? `Rp ${raw.toLocaleString('id-ID')}`
+                      : typeof raw === "number" && isUnit
+                        ? `${raw} unit`
+                        : (raw ?? "—");
                   if (i === 0 && isEditing) {
                     return (
                       <td key={c.key} className="py-2 pr-4">
@@ -2150,15 +2132,25 @@ export default function Dashboard2() {
   const [datasets, setDatasets] = useState<Record<string, Dataset>>(() =>
     buildDatasets(),
   );
-  const [active, setActive] = useState("Product");
-  const [darkMode, setDarkMode] = useState(false);
+  const [active, setActive] = useState("Dashboard");
+  const [darkMode, setDarkMode] = useState(() => themeStore.getTheme() === 'dark');
+
+  useEffect(() => {
+    return themeStore.subscribe((t) => setDarkMode(t === 'dark'));
+  }, []);
+
+  const handleToggleDark = (toDark: boolean) => {
+    setDarkMode(toDark);
+    themeStore.setTheme(toDark ? 'dark' : 'light');
+  };
+
   const [showStats, setShowStats] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOption, setSortOption] = useState("Default");
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [selected, setSelected] = useState<Set<string>>(new Set(["p2", "p4"]));
+  const [selected, setSelected] = useState<Set<string>>(new Set(["p1", "p2"]));
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>({});
@@ -2168,6 +2160,17 @@ export default function Dashboard2() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const { toasts, push } = useToasts();
+
+  const handleSelectWorkspace = (label: string) => {
+    push(`Beralih ke workspace: ${label}`);
+    if (label.includes("Toko 1")) {
+      setSearch("Toko 1");
+    } else if (label.includes("Toko 2")) {
+      setSearch("Toko 2");
+    } else {
+      setSearch("");
+    }
+  };
 
   // `active` is normally guaranteed to match a key in `datasets` (every nav
   // item's label has a matching entry from buildDatasets()). This fallback
@@ -2386,29 +2389,30 @@ export default function Dashboard2() {
     <div className={darkMode ? "dark" : ""}>
       <div
         style={font}
-        className="relative flex h-screen w-full overflow-hidden bg-white shadow-sm dark:border-neutral-800 dark:bg-black"
+        className="relative flex min-h-[820px] lg:h-[860px] w-full overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-xs dark:border-neutral-800 dark:bg-black"
       >
         <Sidebar
           active={active}
           onActiveChange={handleActiveChange}
           search={search}
           setSearch={setSearch}
-          onUpgrade={() => push("Redirecting to billing…")}
-          onLearnMore={() => push("Opening plan details…")}
+          onUpgrade={() => push("Fitur Multi-Cabang Enterprise Aktif")}
+          onLearnMore={() => push("Membuka Panduan Multi-Cabang...")}
+          onSelectWorkspace={handleSelectWorkspace}
         />
 
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <TopBar
             title={dataset.title}
-            onShare={() => push("Share link copied")}
+            onShare={() => push("Tautan dashboard disalin")}
             onCustomizeWidget={() => setCustomizeOpen((o) => !o)}
             notifCount={notifCount}
             onBell={() => {
               setNotifCount(0);
-              push("Notifications cleared");
+              push("Notifikasi telah dibaca");
             }}
             darkMode={darkMode}
-            setDarkMode={setDarkMode}
+            setDarkMode={handleToggleDark}
           />
           <div className="relative flex-1 overflow-y-auto pb-4">
             <Toolbar
