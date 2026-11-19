@@ -47,8 +47,12 @@ import {
   ShoppingBag,
   Receipt,
   ShieldCheck,
+  Building2,
+  LogOut,
+  UserCheck,
 } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
+import { authStore, UserProfile, DEMO_ACCOUNTS, DemoAccount } from "@/lib/authStore";
 
 const font = {
   fontFamily: "var(--font-geist-sans), Geist, Inter, system-ui, sans-serif",
@@ -144,6 +148,67 @@ const WORKSPACES = [
   { label: "Toko 2 (Cabang Satelit)", count: 126, color: "bg-emerald-600 dark:bg-emerald-400", outletId: "toko-2" },
   { label: "Konsolidasi Semua Cabang", count: 923, color: "bg-purple-600 dark:bg-purple-400", outletId: "all" },
 ];
+
+function getMenusForUser(user: UserProfile | null) {
+  if (user?.outletId === "toko-1") {
+    return {
+      roleTitle: "Kasir & Kepala Gudang Toko 1",
+      badgeColor: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+      mainMenu: [
+        { label: "Dashboard Kasir Toko 1", icon: Building2 },
+        { label: "Stok Fisik Gudang (Toko 1)", icon: Boxes },
+        { label: "Distribusi & Mutasi Stok", icon: ArrowLeftRight },
+        { label: "Pesanan Online Masuk (Toko 1)", icon: ShoppingBag },
+        { label: "Riwayat Transaksi (Toko 1)", icon: Receipt },
+      ],
+      toolsMenu: [
+        { label: "Log Penjualan Toko 1", icon: BarChart3 },
+      ],
+      bottomMenu: [
+        { label: "SOP & Shift Kasir Toko 1", icon: HelpCircle },
+      ],
+      workspaces: [
+        { label: "Toko 1 (Pusat & Gudang)", count: 797, color: "bg-blue-600 dark:bg-blue-400", outletId: "toko-1" },
+      ],
+      defaultActive: "Dashboard Kasir Toko 1",
+    };
+  }
+
+  if (user?.outletId === "toko-2") {
+    return {
+      roleTitle: "Kasir Frontline Toko 2",
+      badgeColor: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+      mainMenu: [
+        { label: "Dashboard Kasir Toko 2", icon: Store },
+        { label: "Stok Rak Display (Toko 2)", icon: Boxes },
+        { label: "Permintaan Pasokan (Request Stok)", icon: ArrowLeftRight },
+        { label: "Pesanan Online Masuk (Toko 2)", icon: ShoppingBag },
+        { label: "Riwayat Transaksi (Toko 2)", icon: Receipt },
+      ],
+      toolsMenu: [
+        { label: "Log Penjualan Toko 2", icon: BarChart3 },
+      ],
+      bottomMenu: [
+        { label: "SOP & Shift Kasir Toko 2", icon: HelpCircle },
+      ],
+      workspaces: [
+        { label: "Toko 2 (Cabang Satelit)", count: 126, color: "bg-emerald-600 dark:bg-emerald-400", outletId: "toko-2" },
+      ],
+      defaultActive: "Dashboard Kasir Toko 2",
+    };
+  }
+
+  // Super Admin / Owner (Default)
+  return {
+    roleTitle: "Super Admin (Semua Cabang)",
+    badgeColor: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30",
+    mainMenu: MAIN_MENU,
+    toolsMenu: TOOLS_MENU,
+    bottomMenu: BOTTOM_MENU,
+    workspaces: WORKSPACES,
+    defaultActive: "Dashboard Eksekutif",
+  };
+}
 
 type Tone = "solid" | "subtle" | "outline";
 const STATUS_META: Record<string, { tone: Tone }> = {
@@ -1154,7 +1219,345 @@ function buildDatasets(): Record<string, Dataset> {
         },
       ],
     },
+
+    // Datasets khusus Kasir Toko 1
+    "Dashboard Kasir Toko 1": {
+      key: "Dashboard Kasir Toko 1",
+      title: "Dashboard Operasional — Toko 1 (Pusat & Gudang)",
+      addLabel: "Tambah Catatan Shift",
+      columns: [
+        { key: "item", label: "Aktivitas / Modul Kasir Toko 1" },
+        { key: "statusSummary", label: "Status Real-time" },
+        { key: "metric", label: "Volume / Nilai" },
+        { key: "action", label: "Tindakan" },
+      ],
+      stats: [
+        { label: "Omset Penjualan T1", value: "Rp 30.400.000", delta: "+ 16% minggu ini" },
+        { label: "Stok Fisik Gudang", value: "797 Unit", delta: "12 SKU Lengkap" },
+        { label: "Permintaan Kirim ke T2", value: "1 Mutasi", delta: "60 unit siap kirim" },
+        { label: "Kas Modal Awal Kasir", value: "Rp 500.000", delta: "Shift Pagi Aktif" },
+      ],
+      rows: [
+        {
+          id: "t1-1",
+          status: "ACTIVE",
+          cells: {
+            item: "Terminal Kasir POS Toko 1",
+            statusSummary: "Kasir Aktif (Rian Kurniawan)",
+            metric: "42 Transaksi Offline",
+            action: "Buka Terminal Kasir (/pos)",
+          },
+        },
+        {
+          id: "t1-2",
+          status: "DISPATCHED",
+          cells: {
+            item: "Surat Jalan Mutasi ke Toko 2",
+            statusSummary: "TRF-202611-001 (60 unit)",
+            metric: "Kurir: Bpk. Ahmad",
+            action: "Pantau Status Pengiriman",
+          },
+        },
+        {
+          id: "t1-3",
+          status: "PENDING",
+          cells: {
+            item: "Pesanan Belanja Online Masuk",
+            statusSummary: "3 Pesanan Pick-up",
+            metric: "Rp 1.450.000",
+            action: "Siapkan Barang (Packing)",
+          },
+        },
+        {
+          id: "t1-4",
+          status: "ACTIVE",
+          cells: {
+            item: "Stok Gudang Distribusi",
+            statusSummary: "Kondisi Aman",
+            metric: "797 Unit Fisik",
+            action: "Siap Pasok ke Cabang Satelit",
+          },
+        },
+      ],
+    },
+
+    "Stok Fisik Gudang (Toko 1)": {
+      key: "Stok Fisik Gudang (Toko 1)",
+      title: "Inventaris Fisik Gudang Distribusi Toko 1",
+      addLabel: "Tambah Stok Masuk (Inbound)",
+      columns: [
+        { key: "sku", label: "SKU" },
+        { key: "name", label: "Nama Produk" },
+        { key: "category", label: "Kategori" },
+        { key: "warehouseStock", label: "Stok Gudang T1", numeric: true },
+        { key: "safetyStock", label: "Safety Stock", numeric: true },
+        { key: "status", label: "Status Gudang" },
+      ],
+      stats: [
+        { label: "Total Unit Gudang", value: "797 Unit", delta: "Siap Distribusi" },
+        { label: "Total Nilai Stok HPP", value: "Rp 27.840.000", delta: "Aset Gudang" },
+        { label: "Jumlah SKU", value: "12 SKU", delta: "100% In Stock" },
+        { label: "Kapasitas Gudang Terpakai", value: "48%", delta: "Cukup 3 Bulan" },
+      ],
+      rows: [
+        { id: "g1", status: "In Stock", cells: { sku: "BRG-001", name: "Beras Pandan Wangi 5kg", category: "Sembako", warehouseStock: 85, safetyStock: 20 } },
+        { id: "g2", status: "In Stock", cells: { sku: "BRG-002", name: "Minyak Goreng Sawit 2L", category: "Sembako", warehouseStock: 120, safetyStock: 25 } },
+        { id: "g3", status: "In Stock", cells: { sku: "BRG-003", name: "Gula Pasir Kristal 1kg", category: "Sembako", warehouseStock: 95, safetyStock: 20 } },
+        { id: "g4", status: "In Stock", cells: { sku: "BRG-004", name: "Tepung Terigu Segitiga 1kg", category: "Bahan Kue", warehouseStock: 60, safetyStock: 15 } },
+        { id: "g5", status: "In Stock", cells: { sku: "BRG-005", name: "Kopi Arabika Robusta Blend 250g", category: "Minuman", warehouseStock: 40, safetyStock: 10 } },
+        { id: "g6", status: "In Stock", cells: { sku: "BRG-006", name: "Teh Celup Melati Kotak 25s", category: "Minuman", warehouseStock: 75, safetyStock: 15 } },
+        { id: "g7", status: "In Stock", cells: { sku: "BRG-007", name: "Kecap Manis Botol 600ml", category: "Bumbu Dapur", warehouseStock: 50, safetyStock: 10 } },
+        { id: "g8", status: "In Stock", cells: { sku: "BRG-008", name: "Saus Sambal Botol 335ml", category: "Bumbu Dapur", warehouseStock: 55, safetyStock: 10 } },
+        { id: "g9", status: "In Stock", cells: { sku: "BRG-009", name: "Sabun Cuci Piring Jeruk Nipis 780ml", category: "Kebersihan", warehouseStock: 65, safetyStock: 15 } },
+        { id: "g10", status: "In Stock", cells: { sku: "BRG-010", name: "Deterjen Bubuk Konsentrat 800g", category: "Kebersihan", warehouseStock: 45, safetyStock: 10 } },
+        { id: "g11", status: "In Stock", cells: { sku: "BRG-011", name: "Telur Ayam Ras 1 Tray (30 butir)", category: "Sembako", warehouseStock: 35, safetyStock: 8 } },
+        { id: "g12", status: "In Stock", cells: { sku: "BRG-012", name: "Mie Instan Goreng Spesial (Dus)", category: "Makanan Cepat", warehouseStock: 72, safetyStock: 15 } },
+      ],
+    },
+
+    "Distribusi & Mutasi Stok": {
+      key: "Distribusi & Mutasi Stok",
+      title: "Surat Jalan & Distribusi Pasokan ke Toko 2",
+      addLabel: "Buat Surat Jalan Pengiriman",
+      columns: [
+        { key: "trfId", label: "No. Mutasi" },
+        { key: "destination", label: "Tujuan" },
+        { key: "itemsSummary", label: "Rincian Barang" },
+        { key: "courier", label: "Kurir / Armada" },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Siap Dikirim ke T2", value: "60 Unit", delta: "TRF-202611-001" },
+        { label: "Retur Diterima dari T2", value: "20 Unit", delta: "RET-202611-002" },
+        { label: "Waktu Tempuh Rute", value: "15 Menit", delta: "Antar Cabang" },
+        { label: "Validasi Fisik", value: "100% Cocok", delta: "Barcode Scanned" },
+      ],
+      rows: [
+        { id: "mt1", status: "DISPATCHED", cells: { trfId: "TRF-202611-001", destination: "Toko 2 (Cabang Satelit)", itemsSummary: "Beras (20), Minyak (20), Gula (20)", courier: "Bpk. Ahmad (Pick-up T1)" } },
+        { id: "mt2", status: "COMPLETED", cells: { trfId: "RET-202611-002", destination: "Gudang Toko 1 (Retur)", itemsSummary: "Mie Instan (20 Dus)", courier: "Internal Courier" } },
+      ],
+    },
+
+    "Pesanan Online Masuk (Toko 1)": {
+      key: "Pesanan Online Masuk (Toko 1)",
+      title: "Antrean Pesanan Online — Fulfillment Toko 1",
+      addLabel: "Update Status Pesanan",
+      columns: [
+        { key: "orderId", label: "No. Pesanan" },
+        { key: "customer", label: "Pelanggan" },
+        { key: "phone", label: "WhatsApp" },
+        { key: "total", label: "Total Pembayaran" },
+        { key: "type", label: "Metode Ambil" },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Pesanan Baru Masuk", value: "3 Pesanan", delta: "Perlu Diproses" },
+        { label: "Nilai Order Hari Ini", value: "Rp 1.450.000", delta: "Pembayaran QRIS" },
+        { label: "SLA Packing", value: "9 Menit", delta: "Cepat & Tepat" },
+        { label: "Kepuasan Pelanggan", value: "4.9 / 5.0", delta: "Review Toko" },
+      ],
+      rows: [
+        { id: "ot1", status: "PENDING", cells: { orderId: "ORD-ONL-101", customer: "Siti Rahmawati", phone: "0812-9876-5431", total: "Rp 420.000", type: "Ambil di Toko 1" } },
+        { id: "ot2", status: "PROCESSING", cells: { orderId: "ORD-ONL-102", customer: "Agus Pratama", phone: "0813-1122-3344", total: "Rp 680.000", type: "Kirim Kurir Instan" } },
+        { id: "ot3", status: "READY", cells: { orderId: "ORD-ONL-103", customer: "Ibu Linda", phone: "0857-4433-2211", total: "Rp 350.000", type: "Ambil di Toko 1" } },
+      ],
+    },
+
+    "Riwayat Transaksi (Toko 1)": {
+      key: "Riwayat Transaksi (Toko 1)",
+      title: "Riwayat Struk & Penjualan Kasir Toko 1",
+      addLabel: "Cetak Ulang Struk",
+      columns: [
+        { key: "receiptNo", label: "No. Struk" },
+        { key: "cashier", label: "Kasir" },
+        { key: "items", label: "Ringkasan Belanja" },
+        { key: "payment", label: "Metode" },
+        { key: "total", label: "Total Bayar" },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Total Transaksi Offline", value: "42 Struk", delta: "Hari Ini" },
+        { label: "Rata-rata Basket Size", value: "Rp 723.000", delta: "+ 5%" },
+        { label: "Proporsi QRIS vs Tunai", value: "65% : 35%", delta: "Non-Tunai Dominan" },
+        { label: "Selisih Kas Fisik", value: "Rp 0 (Pas)", delta: "Balance Sempurna" },
+      ],
+      rows: [
+        { id: "rt1", status: "COMPLETED", cells: { receiptNo: "TRX-T1-0891", cashier: "Rian Kurniawan", items: "Beras 5kg, Minyak 2L, Gula 1kg", payment: "QRIS", total: "Rp 130.000" } },
+        { id: "rt2", status: "COMPLETED", cells: { receiptNo: "TRX-T1-0892", cashier: "Rian Kurniawan", items: "Telur Ayam 1 Tray, Terigu 1kg", payment: "Tunai", total: "Rp 68.500" } },
+        { id: "rt3", status: "COMPLETED", cells: { receiptNo: "TRX-T1-0893", cashier: "Rian Kurniawan", items: "Sabun Cuci Piring, Deterjen 800g", payment: "QRIS", total: "Rp 37.000" } },
+      ],
+    },
+
+    // Datasets khusus Kasir Toko 2
+    "Dashboard Kasir Toko 2": {
+      key: "Dashboard Kasir Toko 2",
+      title: "Dashboard Operasional — Toko 2 (Cabang Satelit)",
+      addLabel: "Tambah Catatan Shift",
+      columns: [
+        { key: "item", label: "Aktivitas / Modul Kasir Toko 2" },
+        { key: "statusSummary", label: "Status Real-time" },
+        { key: "metric", label: "Volume / Nilai" },
+        { key: "action", label: "Tindakan" },
+      ],
+      stats: [
+        { label: "Omset Penjualan T2", value: "Rp 14.040.000", delta: "+ 9% minggu ini" },
+        { label: "Stok Display di Rak", value: "126 Unit", delta: "5 SKU Kritis" },
+        { label: "Pasokan Dalam Perjalanan", value: "60 Unit OTW", delta: "Armada Kurir Ahmad" },
+        { label: "Kas Modal Awal Kasir", value: "Rp 300.000", delta: "Shift Pagi Aktif" },
+      ],
+      rows: [
+        {
+          id: "t2-1",
+          status: "ACTIVE",
+          cells: {
+            item: "Terminal Kasir POS Toko 2",
+            statusSummary: "Kasir Aktif (Dewi Lestari)",
+            metric: "28 Transaksi Offline",
+            action: "Buka Terminal Kasir (/pos)",
+          },
+        },
+        {
+          id: "t2-2",
+          status: "RESTOCK",
+          cells: {
+            item: "Peringatan Stok Menipis",
+            statusSummary: "5 SKU di bawah batas aman",
+            metric: "Beras (4), Minyak (3), Terigu (5)",
+            action: "Permintaan Pasokan Terkirim",
+          },
+        },
+        {
+          id: "t2-3",
+          status: "DISPATCHED",
+          cells: {
+            item: "Pasokan dari Gudang T1",
+            statusSummary: "Surat Jalan TRF-202611-001",
+            metric: "60 Unit Dalam Perjalanan",
+            action: "Siap Terima & Masukkan ke Rak",
+          },
+        },
+        {
+          id: "t2-4",
+          status: "ACTIVE",
+          cells: {
+            item: "Pesanan Online Toko 2",
+            statusSummary: "Lancar",
+            metric: "1 Pesanan Selesai Diambil",
+            action: "Siaga Pesanan Baru",
+          },
+        },
+      ],
+    },
+
+    "Stok Rak Display (Toko 2)": {
+      key: "Stok Rak Display (Toko 2)",
+      title: "Monitoring Stok Rak Display — Toko 2 (Cabang Satelit)",
+      addLabel: "Ajukan Permintaan Pasokan",
+      columns: [
+        { key: "sku", label: "SKU" },
+        { key: "name", label: "Nama Produk" },
+        { key: "category", label: "Kategori" },
+        { key: "shelfStock", label: "Sisa di Rak", numeric: true },
+        { key: "minAlert", label: "Ambang Alert", numeric: true },
+        { key: "status", label: "Status Kesiapan" },
+      ],
+      stats: [
+        { label: "Total Unit di Rak", value: "126 Unit", delta: "Retail Satelit" },
+        { label: "SKU Ambang Kritis", value: "5 SKU Menipis", delta: "Perlu Pasokan" },
+        { label: "SKU Stok Aman", value: "7 SKU Aman", delta: "Display Cukup" },
+        { label: "Pasokan Masuk", value: "60 Unit OTW", delta: "Dari Gudang T1" },
+      ],
+      rows: [
+        { id: "r1", status: "RESTOCK", cells: { sku: "BRG-001", name: "Beras Pandan Wangi 5kg", category: "Sembako", shelfStock: 4, minAlert: 6 } },
+        { id: "r2", status: "RESTOCK", cells: { sku: "BRG-002", name: "Minyak Goreng Sawit 2L", category: "Sembako", shelfStock: 3, minAlert: 10 } },
+        { id: "r3", status: "In Stock", cells: { sku: "BRG-003", name: "Gula Pasir Kristal 1kg", category: "Sembako", shelfStock: 18, minAlert: 10 } },
+        { id: "r4", status: "RESTOCK", cells: { sku: "BRG-004", name: "Tepung Terigu Segitiga 1kg", category: "Bahan Kue", shelfStock: 5, minAlert: 8 } },
+        { id: "r5", status: "RESTOCK", cells: { sku: "BRG-005", name: "Kopi Arabika Robusta Blend 250g", category: "Minuman", shelfStock: 2, minAlert: 5 } },
+        { id: "r6", status: "In Stock", cells: { sku: "BRG-006", name: "Teh Celup Melati Kotak 25s", category: "Minuman", shelfStock: 15, minAlert: 10 } },
+        { id: "r7", status: "RESTOCK", cells: { sku: "BRG-007", name: "Kecap Manis Botol 600ml", category: "Bumbu Dapur", shelfStock: 4, minAlert: 8 } },
+        { id: "r8", status: "In Stock", cells: { sku: "BRG-008", name: "Saus Sambal Botol 335ml", category: "Bumbu Dapur", shelfStock: 12, minAlert: 8 } },
+        { id: "r9", status: "In Stock", cells: { sku: "BRG-009", name: "Sabun Cuci Piring Jeruk Nipis 780ml", category: "Kebersihan", shelfStock: 16, minAlert: 10 } },
+        { id: "r10", status: "In Stock", cells: { sku: "BRG-010", name: "Deterjen Bubuk Konsentrat 800g", category: "Kebersihan", shelfStock: 14, minAlert: 8 } },
+        { id: "r11", status: "In Stock", cells: { sku: "BRG-011", name: "Telur Ayam Ras 1 Tray (30 butir)", category: "Sembako", shelfStock: 9, minAlert: 5 } },
+        { id: "r12", status: "In Stock", cells: { sku: "BRG-012", name: "Mie Instan Goreng Spesial (Dus)", category: "Makanan Cepat", shelfStock: 24, minAlert: 10 } },
+      ],
+    },
+
+    "Permintaan Pasokan (Request Stok)": {
+      key: "Permintaan Pasokan (Request Stok)",
+      title: "Pengajuan Pasokan Barang ke Gudang Toko 1",
+      addLabel: "Ajukan Permintaan Baru",
+      columns: [
+        { key: "reqId", label: "No. Permintaan" },
+        { key: "targetWarehouse", label: "Gudang Pemasok" },
+        { key: "itemsRequested", label: "Daftar SKU Diminta" },
+        { key: "courierStatus", label: "Kurir Armada" },
+        { key: "status", label: "Status Pengiriman" },
+      ],
+      stats: [
+        { label: "Pasokan In-Transit", value: "60 Unit", delta: "Dalam Pengiriman" },
+        { label: "Waktu Estimasi Tiba", value: "10 Menit", delta: "Kurir Ahmad" },
+        { label: "Frekuensi Pasokan", value: "2x / Minggu", delta: "Rutin" },
+        { label: "Akurasi Penerimaan", value: "100%", delta: "Barcode Match" },
+      ],
+      rows: [
+        { id: "rq1", status: "DISPATCHED", cells: { reqId: "REQ-T2-001", targetWarehouse: "Gudang Toko 1", itemsRequested: "Beras (20), Minyak (20), Gula (20)", courierStatus: "Bpk. Ahmad (Mobil Toko 1)" } },
+      ],
+    },
+
+    "Pesanan Online Masuk (Toko 2)": {
+      key: "Pesanan Online Masuk (Toko 2)",
+      title: "Antrean Pesanan Online — Cabang Toko 2",
+      addLabel: "Update Status Pesanan",
+      columns: [
+        { key: "orderId", label: "No. Pesanan" },
+        { key: "customer", label: "Pelanggan" },
+        { key: "phone", label: "WhatsApp" },
+        { key: "total", label: "Total Pembayaran" },
+        { key: "type", label: "Metode Ambil" },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Pesanan Online Selesai", value: "1 Pesanan", delta: "Sudah Diambil" },
+        { label: "Nilai Order Toko 2", value: "Rp 320.000", delta: "Pembayaran QRIS" },
+        { label: "Rating Toko 2", value: "5.0 / 5.0", delta: "Sangat Puas" },
+        { label: "Stok Terpotong", value: "Otomatis", delta: "Real-time" },
+      ],
+      rows: [
+        { id: "ot2-1", status: "COMPLETED", cells: { orderId: "ORD-ONL-098", customer: "Budi Hermawan", phone: "0812-3344-5566", total: "Rp 320.000", type: "Ambil di Toko 2" } },
+      ],
+    },
+
+    "Riwayat Transaksi (Toko 2)": {
+      key: "Riwayat Transaksi (Toko 2)",
+      title: "Riwayat Struk & Penjualan Kasir Toko 2",
+      addLabel: "Cetak Ulang Struk",
+      columns: [
+        { key: "receiptNo", label: "No. Struk" },
+        { key: "cashier", label: "Kasir" },
+        { key: "items", label: "Ringkasan Belanja" },
+        { key: "payment", label: "Metode" },
+        { key: "total", label: "Total Bayar" },
+        { key: "status", label: "Status" },
+      ],
+      stats: [
+        { label: "Total Transaksi Offline", value: "28 Struk", delta: "Hari Ini" },
+        { label: "Rata-rata Basket Size", value: "Rp 501.000", delta: "+ 3%" },
+        { label: "Proporsi QRIS vs Tunai", value: "50% : 50%", delta: "Seimbang" },
+        { label: "Selisih Kas Fisik", value: "Rp 0 (Pas)", delta: "Balance Sempurna" },
+      ],
+      rows: [
+        { id: "rt2-1", status: "COMPLETED", cells: { receiptNo: "TRX-T2-0412", cashier: "Dewi Lestari", items: "Minyak Goreng 2L, Gula Pasir 1kg", payment: "QRIS", total: "Rp 54.000" } },
+        { id: "rt2-2", status: "COMPLETED", cells: { receiptNo: "TRX-T2-0413", cashier: "Dewi Lestari", items: "Kopi Arabika 250g, Teh Celup", payment: "Tunai", total: "Rp 45.000" } },
+      ],
+    },
   };
+
+  // Aliases for sub-menus
+  ds["SOP & Shift Kasir Toko 1"] = ds["SOP & Panduan Kasir"];
+  ds["Log Penjualan Toko 1"] = ds["Analitik & Laporan"];
+  ds["SOP & Shift Kasir Toko 2"] = ds["SOP & Panduan Kasir"];
+  ds["Log Penjualan Toko 2"] = ds["Analitik & Laporan"];
 
   // Backwards-compatible aliases
   ds["Dashboard"] = ds["Dashboard Eksekutif"];
@@ -1415,6 +1818,13 @@ function Sidebar({
   onUpgrade,
   onLearnMore,
   onSelectWorkspace,
+  currentUser,
+  onSwitchUser,
+  mainMenu,
+  toolsMenu,
+  bottomMenu,
+  workspaces,
+  roleTitle,
 }: {
   active: string;
   onActiveChange: (v: string) => void;
@@ -1423,7 +1833,16 @@ function Sidebar({
   onUpgrade: () => void;
   onLearnMore: () => void;
   onSelectWorkspace?: (label: string) => void;
+  currentUser: UserProfile | null;
+  onSwitchUser: (acc: DemoAccount) => void;
+  mainMenu: NavItem[];
+  toolsMenu: NavItem[];
+  bottomMenu: NavItem[];
+  workspaces: typeof WORKSPACES;
+  roleTitle: string;
 }) {
+  const [isRoleSwitchOpen, setIsRoleSwitchOpen] = useState(false);
+
   return (
     <motion.aside
       initial={{ opacity: 0, x: -12 }}
@@ -1447,7 +1866,7 @@ function Sidebar({
               </span>
             </div>
             <p className="truncate text-[11px] text-gray-500 dark:text-neutral-400">
-              Pro Store Dashboard
+              {roleTitle}
             </p>
           </div>
         </div>
@@ -1486,9 +1905,9 @@ function Sidebar({
         animate="visible"
         className="flex-1 overflow-y-auto px-3 pb-4"
       >
-        <SectionLabel>Main Menu</SectionLabel>
+        <SectionLabel>Menu Operasional</SectionLabel>
         <div className="flex flex-col gap-0.5">
-          {MAIN_MENU.map((item) => (
+          {mainMenu.map((item) => (
             <NavLink
               key={item.label}
               item={item}
@@ -1498,17 +1917,21 @@ function Sidebar({
           ))}
         </div>
 
-        <SectionLabel>Tools</SectionLabel>
-        <div className="flex flex-col gap-0.5">
-          {TOOLS_MENU.map((item) => (
-            <NavLink
-              key={item.label}
-              item={item}
-              active={active === item.label}
-              onClick={() => onActiveChange(item.label)}
-            />
-          ))}
-        </div>
+        {toolsMenu.length > 0 && (
+          <>
+            <SectionLabel>Analitik &amp; Laporan</SectionLabel>
+            <div className="flex flex-col gap-0.5">
+              {toolsMenu.map((item) => (
+                <NavLink
+                  key={item.label}
+                  item={item}
+                  active={active === item.label}
+                  onClick={() => onActiveChange(item.label)}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <SectionLabel>Akses Cepat Kasir</SectionLabel>
         <div className="flex flex-col gap-0.5">
@@ -1523,22 +1946,20 @@ function Sidebar({
             </span>
           </a>
           <a
-            href="/shop"
-            target="_blank"
-            rel="noreferrer"
+            href="/"
             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Store size={16} className="text-gray-400 dark:text-neutral-500" />
-              <span>Toko Online /shop</span>
+              <span>Toko Online /</span>
             </div>
             <ArrowUpRight size={13} className="text-gray-400" />
           </a>
         </div>
 
-        <SectionLabel>Workspace Multi-Cabang</SectionLabel>
+        <SectionLabel>Workspace Cabang</SectionLabel>
         <div className="flex flex-col gap-0.5">
-          {WORKSPACES.map((w) => (
+          {workspaces.map((w) => (
             <motion.button
               key={w.label}
               variants={fadeUp}
@@ -1555,8 +1976,9 @@ function Sidebar({
         </div>
       </motion.nav>
 
-      <div className="flex flex-col gap-0.5 border-t border-gray-100 px-3 py-4 dark:border-neutral-800">
-        {BOTTOM_MENU.map((item) => (
+      {/* Bottom Nav */}
+      <div className="flex flex-col gap-0.5 border-t border-gray-100 px-3 py-2 dark:border-neutral-800">
+        {bottomMenu.map((item) => (
           <NavLink
             key={item.label}
             item={item}
@@ -1564,22 +1986,85 @@ function Sidebar({
             onClick={() => onActiveChange(item.label)}
           />
         ))}
+      </div>
 
-        <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50/70 p-3 dark:border-neutral-800 dark:bg-neutral-900/60">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Vercel Edge Live
-            </span>
-            <span className="text-[10px] font-mono text-gray-400">&lt;20ms</span>
+      {/* User Account & Role Switcher Widget */}
+      <div className="border-t border-gray-100 p-3 dark:border-neutral-800 relative bg-gray-50/50 dark:bg-neutral-900/40">
+        <button
+          type="button"
+          onClick={() => setIsRoleSwitchOpen((v) => !v)}
+          className="flex w-full items-center justify-between rounded-xl p-2 hover:bg-white dark:hover:bg-neutral-800 transition-all text-left cursor-pointer border border-gray-200/60 dark:border-neutral-800 shadow-2xs"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src={currentUser?.avatar || DEMO_ACCOUNTS[2].user.avatar}
+              alt={currentUser?.name || "User"}
+              className="size-8 rounded-full object-cover shrink-0 border border-gray-200 dark:border-neutral-700"
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-gray-900 dark:text-neutral-100 truncate">
+                {currentUser?.name || "Super Admin"}
+              </p>
+              <p className="text-[10px] text-gray-500 dark:text-neutral-400 truncate">
+                {currentUser?.roleLabel || "Owner Multi-Cabang"}
+              </p>
+            </div>
           </div>
-          <p className="text-xs font-semibold text-gray-800 dark:text-neutral-200">
-            Multi-Outlet Sync
-          </p>
-          <p className="text-[11px] text-gray-500 dark:text-neutral-400 mt-0.5">
-            Toko 1 &amp; Toko 2 terhubung real-time
-          </p>
-        </div>
+          <ChevronsUpDown size={14} className="text-gray-400 shrink-0" />
+        </button>
+
+        {/* Role Switcher Popover */}
+        <AnimatePresence>
+          {isRoleSwitchOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.95 }}
+              className="absolute bottom-full left-3 right-3 mb-2 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-xl p-2 z-50 space-y-1"
+            >
+              <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Ganti Hak Akses / Role:
+              </div>
+              {DEMO_ACCOUNTS.map((acc) => {
+                const isCurrent = currentUser?.email === acc.email;
+                return (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => {
+                      onSwitchUser(acc);
+                      setIsRoleSwitchOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between p-2 rounded-xl text-left text-xs transition-colors cursor-pointer ${
+                      isCurrent
+                        ? "bg-gray-100 dark:bg-neutral-800 font-bold text-gray-900 dark:text-neutral-50"
+                        : "hover:bg-gray-50 dark:hover:bg-neutral-800/60 text-gray-600 dark:text-neutral-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <img src={acc.user.avatar} className="size-6 rounded-full object-cover shrink-0" />
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold">{acc.label}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{acc.user.roleLabel}</p>
+                      </div>
+                    </div>
+                    {isCurrent && <Check size={14} className="text-emerald-500 shrink-0" />}
+                  </button>
+                );
+              })}
+
+              <div className="pt-1 border-t border-gray-100 dark:border-neutral-800">
+                <a
+                  href="/login"
+                  className="flex w-full items-center gap-2 p-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                >
+                  <LogOut size={13} />
+                  <span>Keluar ke Halaman Login</span>
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.aside>
   );
@@ -1672,6 +2157,7 @@ function ThemeToggle({
 
 function TopBar({
   title,
+  outletBadge,
   onShare,
   onCustomizeWidget,
   notifCount,
@@ -1680,6 +2166,7 @@ function TopBar({
   setDarkMode,
 }: {
   title: string;
+  outletBadge?: { label: string; color: string };
   onShare: () => void;
   onCustomizeWidget: () => void;
   notifCount: number;
@@ -1689,9 +2176,16 @@ function TopBar({
 }) {
   return (
     <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-neutral-800">
-      <h1 className="text-xl font-semibold text-gray-900 dark:text-neutral-50">
-        {title}
-      </h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-neutral-50">
+          {title}
+        </h1>
+        {outletBadge && (
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${outletBadge.color}`}>
+            {outletBadge.label}
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-3">
         <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
         <button
@@ -2327,15 +2821,33 @@ function Pagination({
 }
 
 export default function Dashboard2() {
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authStore.getUser());
   const [datasets, setDatasets] = useState<Record<string, Dataset>>(() =>
     buildDatasets(),
   );
-  const [active, setActive] = useState("Dashboard Eksekutif");
+
+  const userMenus = useMemo(() => getMenusForUser(currentUser), [currentUser]);
+
+  const [active, setActive] = useState(() => userMenus.defaultActive);
   const [darkMode, setDarkMode] = useState(() => themeStore.getTheme() === 'dark');
 
   useEffect(() => {
-    return themeStore.subscribe((t) => setDarkMode(t === 'dark'));
+    const unsubTheme = themeStore.subscribe((t) => setDarkMode(t === 'dark'));
+    const unsubAuth = authStore.subscribe((u) => {
+      setCurrentUser(u);
+      const menus = getMenusForUser(u);
+      setActive(menus.defaultActive);
+    });
+    return () => {
+      unsubTheme();
+      unsubAuth();
+    };
   }, []);
+
+  const handleSwitchUser = (acc: DemoAccount) => {
+    authStore.loginWithDemo(acc);
+    push(`Beralih akun: ${acc.label} (${acc.user.roleLabel})`);
+  };
 
   const handleToggleDark = (toDark: boolean) => {
     setDarkMode(toDark);
@@ -2597,11 +3109,22 @@ export default function Dashboard2() {
           onUpgrade={() => push("Fitur Multi-Cabang Enterprise Aktif")}
           onLearnMore={() => push("Membuka Panduan Multi-Cabang...")}
           onSelectWorkspace={handleSelectWorkspace}
+          currentUser={currentUser}
+          onSwitchUser={handleSwitchUser}
+          mainMenu={userMenus.mainMenu}
+          toolsMenu={userMenus.toolsMenu}
+          bottomMenu={userMenus.bottomMenu}
+          workspaces={userMenus.workspaces}
+          roleTitle={userMenus.roleTitle}
         />
 
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <TopBar
             title={dataset.title}
+            outletBadge={{
+              label: currentUser?.outletName || "Semua Cabang",
+              color: userMenus.badgeColor,
+            }}
             onShare={() => push("Tautan dashboard disalin")}
             onCustomizeWidget={() => setCustomizeOpen((o) => !o)}
             notifCount={notifCount}

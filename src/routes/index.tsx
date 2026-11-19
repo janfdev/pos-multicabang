@@ -1,10 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import DashboardStore from '@/components/dashboard/dashboard-store';
+import { PublicShopPage } from './shop';
 
 export const Route = createFileRoute('/')({
-  component: IndexPage,
+  component: PublicShopPage,
 });
-
-function IndexPage() {
-  return <DashboardStore />;
-}

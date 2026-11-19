@@ -39,7 +39,7 @@ function LoginPage() {
     setLoading(true);
     authStore.loginWithDemo(acc);
     setTimeout(() => {
-      navigate({ to: '/' });
+      navigate({ to: '/dashboard' });
     }, 250);
   };
 
@@ -50,7 +50,7 @@ function LoginPage() {
 
     const res = authStore.login(email, password);
     if (res.success) {
-      navigate({ to: '/' });
+      navigate({ to: '/dashboard' });
     } else {
       setError(res.error || 'Login gagal, periksa email dan password.');
       setLoading(false);

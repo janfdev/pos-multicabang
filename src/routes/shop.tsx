@@ -27,8 +27,18 @@ import {
   Check,
   ChevronRight,
   Sparkles,
+  Wheat,
+  Coffee,
+  Cake,
+  Flame,
+  UtensilsCrossed,
+  Cookie,
+  Package,
+  Lock,
+  LayoutDashboard,
 } from 'lucide-react';
 import { themeStore, Theme } from '@/lib/themeStore';
+import { authStore, UserProfile } from '@/lib/authStore';
 import { playBeep } from '@/lib/audio';
 
 export const Route = createFileRoute('/shop')({
@@ -56,15 +66,15 @@ interface CartItem {
   qty: number;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  ALL: '🛍️',
-  Sembako: '🌾',
-  Minuman: '☕',
-  'Bahan Kue': '🍰',
-  'Bumbu Dapur': '🧂',
-  Kebersihan: '🧼',
-  'Makanan Cepat': '🍜',
-  Snack: '🍪',
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  ALL: ShoppingBag,
+  Sembako: Wheat,
+  Minuman: Coffee,
+  'Bahan Kue': Cake,
+  'Bumbu Dapur': Flame,
+  Kebersihan: Sparkles,
+  'Makanan Cepat': UtensilsCrossed,
+  Snack: Cookie,
 };
 
 export function PublicShopPage() {
@@ -74,6 +84,7 @@ export function PublicShopPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [currentTheme, setCurrentTheme] = useState<Theme>(themeStore.getTheme());
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(authStore.getUser());
 
   // Cart & Checkout State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -90,7 +101,11 @@ export function PublicShopPage() {
 
   useEffect(() => {
     const unsub = themeStore.subscribe((t) => setCurrentTheme(t));
-    return unsub;
+    const unsubAuth = authStore.subscribe((u) => setCurrentUser(u));
+    return () => {
+      unsub();
+      unsubAuth();
+    };
   }, []);
 
   const fetchCatalog = () => {
@@ -293,20 +308,34 @@ export function PublicShopPage() {
               {currentTheme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
             </button>
 
-            {/* Back to POS Kasir */}
-            <Link
-              to="/pos"
-              className="px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <Store className="size-3.5" />
-              <span className="hidden sm:inline">Kasir POS</span>
-            </Link>
-            <Link
-              to="/dashboard"
-              className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-neutral-50 text-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 transition-opacity shadow-2xs"
-            >
-              Dashboard
-            </Link>
+            {/* Portal Staf & Kasir */}
+            {currentUser ? (
+              <div className="flex items-center gap-1.5">
+                <Link
+                  to="/pos"
+                  className="px-3 py-1.5 rounded-xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                >
+                  <Store className="size-3.5" />
+                  <span className="hidden sm:inline">Kasir POS</span>
+                </Link>
+                <Link
+                  to="/dashboard"
+                  className="px-3.5 py-1.5 rounded-xl bg-gray-900 dark:bg-neutral-50 text-white dark:text-neutral-900 text-xs font-bold hover:opacity-90 transition-opacity shadow-2xs flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="size-3.5" />
+                  <span className="hidden sm:inline">{currentUser.name}</span>
+                  <span className="sm:hidden">Dashboard</span>
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-3.5 py-1.5 rounded-xl bg-gray-900 dark:bg-neutral-50 text-white dark:text-neutral-900 text-xs font-bold hover:opacity-90 transition-opacity shadow-2xs flex items-center gap-1.5"
+              >
+                <Lock className="size-3.5" />
+                <span>Portal Kasir &amp; Staf</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -392,7 +421,7 @@ export function PublicShopPage() {
             <div className="flex items-center gap-1.5 w-fit">
               {categories.map((cat) => {
                 const count = categoryCounts[cat] || 0;
-                const icon = CATEGORY_ICONS[cat] || '📦';
+                const IconComponent = CATEGORY_ICONS[cat] || Package;
                 const isActive = selectedCategory === cat;
 
                 return (
@@ -406,7 +435,7 @@ export function PublicShopPage() {
                         : 'bg-white dark:bg-neutral-900 text-gray-600 dark:text-neutral-400 border border-gray-200/80 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800'
                     }`}
                   >
-                    <span>{icon}</span>
+                    <IconComponent className="size-3.5 shrink-0" />
                     <span>{cat === 'ALL' ? 'Semua Produk' : cat}</span>
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
