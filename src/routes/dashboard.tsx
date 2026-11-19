@@ -31,7 +31,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function DashboardPage() {
   const [data, setData] = useState<any>(null);
-  const [activeView, setActiveView] = useState<'OPERATIONAL' | 'BAGUI'>('OPERATIONAL');
+  const [activeView, setActiveView] = useState<'OPERATIONAL' | 'BAGUI'>('BAGUI');
 
   useEffect(() => {
     fetch('/api/analytics/dashboard')
