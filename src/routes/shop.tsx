@@ -210,7 +210,6 @@ function PublicShopPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-24 transition-colors">
-      {/* ─── PUBLIC TOP HEADER ──────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -291,7 +290,6 @@ function PublicShopPage() {
         </div>
       </header>
 
-      {/* ─── MAIN CONTENT CONTAINER ─────────────────────────────────────────── */}
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-5">
         {/* Branch Details Banner */}
         <div className="p-4 sm:p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -437,7 +435,6 @@ function PublicShopPage() {
         )}
       </main>
 
-      {/* ─── FLOATING BOTTOM BAR (MOBILE / DESKTOP) ─────────────────────────── */}
       {totalCartCount > 0 && !isCartOpen && (
         <div className="fixed bottom-4 inset-x-4 max-w-lg mx-auto z-40">
           <button
@@ -465,7 +462,6 @@ function PublicShopPage() {
         </div>
       )}
 
-      {/* ─── CART & CHECKOUT MODAL DRAWER ───────────────────────────────────── */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -659,7 +655,6 @@ function PublicShopPage() {
         </div>
       )}
 
-      {/* ─── ORDER COMPLETED SUCCESS MODAL ──────────────────────────────────── */}
       {completedOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 text-center space-y-4">

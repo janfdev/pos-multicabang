@@ -1,43 +1,5 @@
 "use client";
 
-/**
- * Dashboard2 — fully interactive version
- * ────────────────────────────────────────────────────────────────────────
- * Every control actually does something:
- *   - Sidebar nav ("Dashboard", "Product", "Order", "Customer", "Message",
- *     "Email", "Automation", "Analytics", "Integration") swaps the dataset,
- *     the stats row, and the table columns shown in the main panel.
- *   - Search box filters the current table's rows live.
- *   - Filter dropdown restricts rows by status; Sort dropdown re-orders rows;
- *     column headers are clickable to sort (asc/desc toggle).
- *   - "Show Statistics" toggle shows/hides the stats row.
- *   - Checkboxes drive a real selection state -> bulk action bar appears,
- *     "Apply Code" / "Edit Info" / "Delete" mutate the in-memory dataset.
- *   - "+ Add New Product" opens an inline quick-add row.
- *   - "Export" downloads the current (filtered) table as a CSV file.
- *   - "Customize" / "Customize Widget" toggle which stat cards / columns
- *     are visible.
- *   - Pagination buttons/page-size/go-to-page all actually page the data.
- *   - A small toast system confirms every action.
- *   - A light/dark toggle switches the whole dashboard's theme (Tailwind
- *     `dark:` class strategy, scoped to the dashboard root — no need for
- *     the `<html>` tag to carry the class).
- *
- * Font: Geist (next/font/google), set once on the root wrapper.
- * Colors: BagUI's neutral/gray system (bagui.vercel.app) — gray-50→900,
- * black primary actions, soft-pill status colors. Primary black surfaces
- * invert to white in dark mode to keep the strict black/white/gray language.
- *
- * Dependencies: npm install motion/react lucide-react
- *
- * Fix note: the crash ("Cannot read properties of undefined (reading 'rows')")
- * happened because `active` could hold a nav label with no matching key in
- * the `datasets` map (e.g. a sidebar item added without a matching entry in
- * buildDatasets()), so `datasets[active]` was `undefined`. `dataset` now
- * falls back to the first available dataset instead of crashing, and logs a
- * dev-only warning so the mismatch is easy to spot and fix at the source.
- */
-
 import { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
@@ -88,12 +50,10 @@ import {
 } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
 
-// ─── Font (applied once, inherited everywhere) ─────────────────────────────
 const font = {
   fontFamily: "var(--font-geist-sans), Geist, Inter, system-ui, sans-serif",
 } as const;
 
-// ─── Motion variants ────────────────────────────────────────────────────────
 const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.04, delayChildren: 0.04 } },
@@ -103,7 +63,6 @@ const fadeUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
-// ─── Shared types ───────────────────────────────────────────────────────────
 type Status =
   | "In Stock"
   | "Out of Stock"
@@ -143,7 +102,6 @@ type Dataset = {
   rows: Row[];
 };
 
-// ─── Icons per nav item ─────────────────────────────────────────────────────
 type NavItem = {
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -173,10 +131,6 @@ const WORKSPACES = [
   { label: "Konsolidasi Semua Cabang", count: 923, color: "bg-purple-600 dark:bg-purple-400", outletId: "all" },
 ];
 
-// Strictly black / white / gray. Status is communicated through the pill's
-// shade (tone) plus an optional check mark — never through hue. In dark
-// mode, "solid" pills invert (white chip / dark text) to keep the same
-// strict black-white-gray language instead of turning muddy.
 type Tone = "solid" | "subtle" | "outline";
 const STATUS_META: Record<string, { tone: Tone }> = {
   "In Stock": { tone: "solid" },
@@ -225,7 +179,6 @@ const TONE_CLASSES: Record<Tone, string> = {
     "bg-white text-gray-400 border border-gray-300 dark:bg-neutral-900 dark:text-neutral-500 dark:border-neutral-700",
 };
 
-// Team avatars — Dicebear "notionists" set.
 const AVATARS = [
   {
     id: 1,
@@ -249,7 +202,6 @@ const AVATARS = [
   },
 ];
 
-// ─── Datasets (one per nav item strictly matching PRD Section 4) ─
 function buildDatasets(): Record<string, Dataset> {
   const ds: Record<string, Dataset> = {
     "Dashboard Eksekutif": {
@@ -1202,7 +1154,6 @@ function buildDatasets(): Record<string, Dataset> {
   return ds;
 }
 
-// ─── Toasts ─────────────────────────────────────────────────────────────────
 type Toast = { id: number; message: string };
 
 function useToasts() {
@@ -1238,7 +1189,6 @@ function ToastStack({ toasts }: { toasts: Toast[] }) {
   );
 }
 
-// ─── Small building blocks ──────────────────────────────────────────────────
 function Toggle({
   checked,
   onChange,
@@ -1396,7 +1346,6 @@ function Dropdown({
   );
 }
 
-// ─── Sidebar ────────────────────────────────────────────────────────────────
 function NavLink({
   item,
   active,
@@ -1622,7 +1571,6 @@ function Sidebar({
   );
 }
 
-// ─── Top bar ────────────────────────────────────────────────────────────────
 function AvatarStack() {
   /* eslint-disable @next/next/no-img-element -- These avatars are generated SVGs. */
   return (
@@ -1765,7 +1713,6 @@ function TopBar({
   );
 }
 
-// ─── Toolbar ────────────────────────────────────────────────────────────────
 function Toolbar({
   statusFilter,
   setStatusFilter,
@@ -1861,7 +1808,6 @@ function Toolbar({
   );
 }
 
-// ─── Stats ──────────────────────────────────────────────────────────────────
 function StatsRow({
   stats,
   visible,
@@ -1991,7 +1937,6 @@ function CustomizePopover({
   );
 }
 
-// ─── Table ──────────────────────────────────────────────────────────────────
 function ProductTable({
   columns,
   rows,
@@ -2183,7 +2128,6 @@ function ProductTable({
   );
 }
 
-// ─── Bulk action bar ────────────────────────────────────────────────────────
 function BulkActionBar({
   count,
   onClear,
@@ -2245,7 +2189,6 @@ function BulkActionBar({
   );
 }
 
-// ─── Pagination ─────────────────────────────────────────────────────────────
 function Pagination({
   page,
   setPage,
@@ -2369,7 +2312,6 @@ function Pagination({
   );
 }
 
-// ─── Main export ────────────────────────────────────────────────────────────
 export default function Dashboard2() {
   const [datasets, setDatasets] = useState<Record<string, Dataset>>(() =>
     buildDatasets(),

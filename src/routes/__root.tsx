@@ -96,7 +96,6 @@ function RootComponent() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col md:flex-row font-sans transition-colors duration-200">
-      {/* ─── DESKTOP PERSISTENT SIDEBAR (>= MD) ──────────────────────────────── */}
       <aside className="hidden md:flex w-64 bg-white dark:bg-zinc-900/90 border-r border-zinc-200/80 dark:border-zinc-800/80 shrink-0 p-4 flex-col justify-between h-screen sticky top-0 overflow-y-auto z-20">
         <div className="space-y-6">
           {/* Brand Header */}
@@ -276,7 +275,6 @@ function RootComponent() {
         </div>
       </aside>
 
-      {/* ─── MOBILE TOPBAR (< MD) ─────────────────────────────────────────── */}
       <header className="md:hidden sticky top-0 z-30 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-3.5 py-2.5 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="size-8 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold shrink-0">
@@ -387,7 +385,6 @@ function RootComponent() {
         </div>
       )}
 
-      {/* ─── MAIN CONTENT AREA ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Desktop Top Header Bar with Clean Breadcrumb & Active Outlet Badge */}
         <header className="hidden md:flex h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 px-6 items-center justify-between sticky top-0 z-10 shadow-2xs transition-colors">

@@ -74,7 +74,6 @@ function InventoryPage() {
 
   return (
     <div className="space-y-4">
-      {/* ─── HEADER & SUMMARY ──────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
@@ -113,7 +112,6 @@ function InventoryPage() {
         </div>
       </div>
 
-      {/* ─── SCOPE SELECTION TABS (PER USER / PER STORE SEGMENTATION) ─────────── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Scope Selector */}
         <div className="overflow-x-auto scrollbar-none py-0.5">
@@ -200,7 +198,6 @@ function InventoryPage() {
         </div>
       </div>
 
-      {/* ─── DEDICATED TABLE ACCORDING TO SCOPE ──────────────────────────────── */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
