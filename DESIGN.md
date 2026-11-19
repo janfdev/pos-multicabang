@@ -1,139 +1,92 @@
----
-version: alpha
-name: POS-MultiCabang
-description: Industrial Clarity meets Retail Utility — Design system spec for Multi-Outlet POS & Inventory.
-colors:
-  primary: "#047857"
-  primary-hover: "#065f46"
-  secondary: "#f5f5f4"
-  accent-amber: "#92400e"
-  accent-amber-bg: "#fef3c7"
-  neutral-bg: "#f5f5f4"
-  neutral-card: "#ffffff"
-  neutral-border: "#e7e5e4"
-  text-primary: "#1c1917"
-  text-muted: "#78716c"
-  status-success: "#047857"
-  status-warning: "#d97706"
-typography:
-  brand-title:
-    fontFamily: Inter, system-ui, sans-serif
-    fontSize: 1.125rem
-    fontWeight: 800
-    lineHeight: 1.2
-  body-default:
-    fontFamily: Inter, system-ui, sans-serif
-    fontSize: 0.75rem
-    lineHeight: 1.4
-  data-mono:
-    fontFamily: JetBrains Mono, monospace
-    fontSize: 0.6875rem
-    letterSpacing: "-0.01em"
-rounded:
-  sm: 6px
-  md: 10px
-  lg: 16px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 14px
-  lg: 20px
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "#ffffff"
-    rounded: "{rounded.md}"
-    padding: 10px
-  button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
-  card-default:
-    backgroundColor: "{colors.neutral-card}"
-    rounded: "{rounded.lg}"
-    padding: 16px
-  badge-warning:
-    backgroundColor: "{colors.accent-amber-bg}"
-    textColor: "{colors.accent-amber}"
-    rounded: "{rounded.sm}"
-  badge-success:
-    backgroundColor: "{colors.secondary}"
-    textColor: "{colors.status-success}"
-    rounded: "{rounded.sm}"
-  container-viewport:
-    backgroundColor: "{colors.neutral-bg}"
-    textColor: "{colors.text-primary}"
----
+# DESIGN.md: Linear & BagUI Minimalist Design System
 
-# DESIGN.md: POS & Multi-Outlet Inventory
-
-> Panduan arsitektur visual, token desain, dan aturan anti-slop untuk POS dan sistem inventaris multi-outlet.
+> Sistem Desain Resmi untuk POS Multi-Cabang, Manajemen Logistik & Etalase Omnichannel.
+> Mengadopsi filosofi desain **Linear / BagUI / Vercel**: Presisi tinggi, monokromatik netral elegan, tipografi Geist tajam, kontras tinggi, dan dukungan Dark Mode/Light Mode.
 
 ---
 
-## 1. Identitas & Karakter Desain (Overview)
+## 1. Visi & Prinsip Desain
 
-Sistem dirancang dengan filosofi **Utilitas Ritel Praktis (Retail Utility)**. Pengguna utama adalah kasir toko dan staf gudang yang membutuhkan kecepatan aksi, keterbacaan tinggi di layar smartphone/laptop, dan kontras visual yang jelas.
-
-### Bukan AI Slop:
-* Bebas dari karakter em dash di seluruh teks antarmuka maupun instruksi tombol.
-* Bebas dari badge kapsul dekoratif tanpa fungsi.
-* Bebas dari animasi melayang lambat yang memperlambat alur transaksi kasir.
-* Setiap tombol aksi memiliki fungsi yang nyata dan langsung memproses data.
-
----
-
-## 2. Dial Pengaturan Antarmuka (Three Dials)
-
-* **ENERGY: 2 (Fungsional & Fokus)**. Tata letak bersih dengan kartu berbatas tegas, teks tajam, dan elemen aksi langsung.
-* **RHYTHM: 2 (Terstruktur & Padat)**. Penataan grid kasir 2-3 kolom pada katalog produk dan tabel matriks monitoring stok yang mudah dipindai mata.
-* **MOTION: 1 (Mikro & Efisien)**. Transisi hover halus pada kartu barang dan tombol aksi tanpa animasi berlebihan.
+1. **Precision Over Decoration:**
+   * Tidak ada gradien warna-warni yang berlebihan atau elemen 3D dekoratif tanpa makna.
+   * Informasi angka (stok, rupiah, ID invoice) disajikan dengan *tabular numbers* (`font-mono font-bold tabular-nums`) agar mudah dipindai kasir.
+2. **Subtle Depth & Micro-Surfaces:**
+   * Di Light Mode: Latar belakang abu-abu netral sangat lembut (`bg-zinc-50` / `bg-zinc-100`), kartu putih bersih (`bg-white`) dengan garis batas tipis (`border-zinc-200/80`), dan bayangan halus (`shadow-[0_1px_2px_rgba(0,0,0,0.04)]`).
+   * Di Dark Mode: Latar belakang hitam pekat (`bg-zinc-950`), kartu abu-abu gelap pekat (`bg-zinc-900/90`) dengan garis batas halus (`border-zinc-800`), dan teks putih cemerlang (`text-zinc-100`).
+3. **Focused Accentuation:**
+   * Aksen utama: **Emerald-500/Emerald-600** untuk transaksi sukses, uang tunai, dan stok aman.
+   * Aksen sekunder: **Amber-500** untuk peringatan stok menipis dan **Indigo-500** untuk analitik dan mutasi in-transit.
+   * Status badge menggunakan gaya *soft-pill* dengan border halus.
+4. **Zero AI Slop:**
+   * Bebas dari teks klise, bebas dari elemen kosong yang membuang ruang layar.
+   * Navigasi ergonomis satu tangan untuk perangkat kasir mobile/tablet.
 
 ---
 
-## 3. Palet Warna (Colors)
+## 2. Tipografi (Typography)
 
-* **Primary Emerald (`#047857` / `Emerald-700`):**
-  * Digunakan untuk tombol utama transaksi, navigasi aktif, dan status stok aman.
-* **Accent Amber (`#d97706` / `Amber-600`):**
-  * Digunakan untuk peringatan stok menipis (*Alert Minta Tambah*) dan status mutasi menunggu pengiriman.
-* **Permukaan & Netral:**
-  * Background Viewport: `#f5f5f4` (`Stone-100`).
-  * Kartu & Permukaan Data: `#ffffff` dengan border `#e7e5e4` (`Stone-200`).
-* **Kontras Aksesibilitas:** Seluruh teks memenuhi standar WCAG AA (>4.5:1 untuk teks normal).
-
----
-
-## 4. Tipografi (Typography)
-
-* **Font Utama:** `Inter`, `system-ui`, `sans-serif`.
-* **Karakter Tipografi:** Bersih, proporsional, dan ringkas untuk layar kasir ponsel.
-* **Monospace Fungsional:** Menggunakan font mono untuk data operasional:
-  * Kode SKU Barang (e.g. `BRG-001`)
-  * Nomor Transaksi Kasir (e.g. `TRX-1029-0831`)
-  * Nomor Dokumen Mutasi (e.g. `MUT-20261029-001`)
+* **Font Utama (Interface & Headings):** `Geist`, `Inter`, `-apple-system`, `sans-serif`
+  * H1 (Page Title): `text-xl sm:text-2xl font-black tracking-tight`
+  * H2 (Section Title): `text-base sm:text-lg font-bold tracking-tight`
+  * H3 (Card Header): `text-xs sm:text-sm font-semibold`
+  * Body Text: `text-xs leading-relaxed text-zinc-600 dark:text-zinc-400`
+  * Meta & Labels: `text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500`
+* **Font Monospace (Angka, SKU, Transaksi):** `Geist Mono`, `JetBrains Mono`, `monospace`
+  * Angka Rupiah: `font-mono font-bold tabular-nums tracking-tight`
+  * ID Transaksi / SKU: `font-mono text-[11px] font-semibold text-zinc-500 dark:text-zinc-400`
 
 ---
 
-## 5. Tata Letak & Spasi (Layout & Spacing)
+## 3. Palet Warna (Color Tokens)
 
-1. **Top Header & Switcher:**
-   * Bilah tetap di bagian atas memuat nama sistem dan tombol switcher cepat (*Toko 1 (Gudang)* vs *Toko 2 (Cabang)*).
-2. **Navigasi Tab Horizontal:**
-   * 4 Menu utama: Ringkasan Dashboard, Kasir POS, Monitoring Stok, Mutasi Barang.
-3. **Layar Kasir POS (`/`):**
-   * Panel Kiri (7 Kolom Desktop / Full Mobile): Input pencarian instan dan grid kartu produk dengan harga jelas.
-   * Panel Kanan (5 Kolom Desktop / Bawah Mobile): Keranjang belanja aktif, kalkulasi total harga, input uang tunai, dan tombol penyelesaian transaksi.
-4. **Layar Monitoring Stok (`/inventory`):**
-   * Tabel matriks perbandingan stok Toko 1 (Pusat) vs Toko 2 (Cabang) dengan lencana status stok.
-5. **Layar Mutasi Barang (`/transfers`):**
-   * Kartu alur 3-tahap lengkap dengan tombol aksi kirim (*dispatch*) dan terima (*receive*).
+| Peran | Light Mode | Dark Mode | Penggunaan |
+| :--- | :--- | :--- | :--- |
+| **Canvas Background** | `#fafafa` (`zinc-50`) | `#09090b` (`zinc-950`) | Latar belakang seluruh halaman |
+| **Surface (Card/Modal)** | `#ffffff` (`white`) | `#18181b` (`zinc-900`) | Permukaan kartu, tabel, drawer |
+| **Elevated Surface** | `#f4f4f5` (`zinc-100`) | `#27272a` (`zinc-800`) | Header tabel, input form, pill |
+| **Border Subtilis** | `#e4e4e7` (`zinc-200`) | `#27272a` (`zinc-800`) | Garis pemisah antar kartu dan tabel |
+| **Border Active/Hover** | `#d4d4d8` (`zinc-300`) | `#3f3f46` (`zinc-700`) | Garis fokus input dan tombol hover |
+| **Text Primary** | `#09090b` (`zinc-950`) | `#fafafa` (`zinc-50`) | Judul, angka utama, teks penting |
+| **Text Muted** | `#71717a` (`zinc-500`) | `#a1a1aa` (`zinc-400`) | Deskripsi, label sekunder |
+| **Success / Emerald** | `#059669` / `#ecfdf5` | `#10b981` / `#064e3b` | Tombol checkout, uang tunai, stok aman |
+| **Warning / Amber** | `#d97706` / `#fffbeb` | `#f59e0b` / `#78350f` | Peringatan stok kritis, pending transfer |
+| **Action / Indigo** | `#4f46e5` / `#eef2ff` | `#6366f1` / `#312e81` | Tombol mutasi kurir, tracking status |
 
 ---
 
-## 6. Komponen & Interaktivitas (Components)
+## 4. Komponen Antarmuka Kunci (UI Patterns)
 
-* **Kartu Produk POS:** Menampilkan SKU mono, nama produk, harga jual tebal hijau, dan klik instan untuk menambahkan ke keranjang.
-* **Item Keranjang:** Menampilkan kuantitas, harga satuan, subtotal, dan tombol hapus cepat.
-* **Lencana Status Mutasi:**
-  * `REQUESTED`: Amber (Menunggu tindakan kirim Toko 1).
-  * `DISPATCHED`: Biru (Barang sedang dalam perjalanan).
-  * `RECEIVED`: Emerald (Barang telah sampai dan stok Toko 2 bertambah).
+### A. Navigation Shell (Sidebar & Header)
+* Desktop: Sidebar tetap di sisi kiri dengan lebar 64 (`w-64`), logo kompak, avatar cabang aktif, link navigasi dengan *indicator pill*, tombol cepat *"Buka Toko Online"*, dan toggle **Theme Switcher (Dark/Light)**.
+* Mobile: Topbar ringkas setinggi 56px dengan tombol drawer menu dan status cabang aktif.
+
+### B. Metric KPI Cards (Executive & Cashier)
+* Kartu dengan border tipis `rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900`.
+* Menampilkan nilai numerik besar tebal (`text-2xl font-black font-mono`), ikon latar bergradasi lembut, dan rasio pertumbuhan atau status sub-metrik.
+
+### C. Modern Area Charts (Recharts Spec)
+* Garis kurva `type="monotone"`, ketebalan `strokeWidth={2.5}`.
+* Gradien area tembus pandang (opacity 25% di atas hingga 0% di bawah).
+* Tooltip bertema kaca (`backdrop-blur-md bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg`).
+* Grid garis putus-putus sangat samar (`stroke="#e4e4e7"` light, `stroke="#27272a"` dark).
+
+### D. Data Tables & Inventory Matrix
+* Header tabel: Latar `bg-zinc-50 dark:bg-zinc-900/60`, teks kapital mini `text-[10px] font-bold text-zinc-400`.
+* Baris tabel: Hover efek lembut `hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40`, border bawah tipis.
+* Visual Stock Level: Baris dengan progress bar ketersediaan stok cabang vs gudang pusat.
+
+### E. Action Buttons & Inputs
+* Tombol Primer: `bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 font-bold rounded-xl shadow-xs transition-all active:scale-[0.98]`.
+* Tombol Brand (Emerald POS): `bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-xs`.
+* Input Form: `bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600`.
+
+---
+
+## 5. Implementasi & Roadmap
+
+1. **Fondasi Tema & Font:** Pasang font Geist / Inter via CDN di `index.html`, konfigurasi CSS custom variable untuk dark mode di `src/index.css`, dan state manager tema (`themeStore.ts`).
+2. **Navigasi Shell & Root Layout:** Update `src/routes/__root.tsx` dengan estetika Linear, dark mode support, dan selector outlet elegan.
+3. **Dashboard Modern:** Rombak `src/routes/dashboard.tsx` dengan KPI cards bergaya Linear, chart bergradien halus, dan feed transaksi modern.
+4. **Kasir POS Modern:** Rombak `src/routes/index.tsx` dengan antarmuka kasir tablet-grade, katalog produk bergrid halus, dan keranjang belanja mengambang.
+5. **Logistik & Mutasi:** Rombak `src/routes/inventory.tsx` dan `src/routes/transfers.tsx` dengan timeline tracking kurir berestetika modern.
+6. **Order Online & Public Store:** Rombak `src/routes/online-orders.tsx` dan `src/routes/shop.tsx` dengan visual customer-facing kelas dunia.
