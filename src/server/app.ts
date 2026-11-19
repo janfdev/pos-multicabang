@@ -6,6 +6,14 @@ export const app = new Hono().basePath('/api');
 app.use('*', cors());
 
 // Health Check
+app.get('/', (c) => {
+  return c.json({
+    status: 'healthy',
+    system: 'POS & Multi-Outlet Inventory API',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/health', (c) => {
   return c.json({
     status: 'healthy',
