@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
+import { authStore, UserProfile } from '@/lib/authStore';
 
 export const Route = createFileRoute('/')({
   component: PosPage,
@@ -29,7 +30,14 @@ interface CartItem {
 }
 
 function PosPage() {
-  const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(authStore.getUser());
+  const [activeOutlet, setActiveOutlet] = useState<OutletId>(() => {
+    const user = authStore.getUser();
+    if (user?.outletId === 'toko-1' || user?.outletId === 'toko-2') {
+      return user.outletId;
+    }
+    return outletStore.getOutlet();
+  });
   const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -39,13 +47,22 @@ function PosPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const unsub = outletStore.subscribe((id) => {
+    const unsubOutlet = outletStore.subscribe((id) => {
       setActiveOutlet(id);
-      setCart([]); // Clear cart when outlet changes to prevent cross-outlet stock corruption
+      setCart([]);
       setLastOrder(null);
       setErrorMessage(null);
     });
-    return unsub;
+    const unsubAuth = authStore.subscribe((u) => {
+      setCurrentUser(u);
+      if (u?.outletId === 'toko-1' || u?.outletId === 'toko-2') {
+        outletStore.setOutlet(u.outletId);
+      }
+    });
+    return () => {
+      unsubOutlet();
+      unsubAuth();
+    };
   }, []);
 
   const loadProducts = () => {
@@ -150,26 +167,56 @@ function PosPage() {
 
   return (
     <div className="space-y-4">
-      {/* Active Outlet Banner */}
-      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      {/* Active Outlet & Cashier Banner */}
+      <div
+        className={`border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs transition-colors ${
+          activeOutlet === 'toko-1'
+            ? 'bg-blue-500/10 border-blue-500/20'
+            : 'bg-emerald-500/10 border-emerald-500/20'
+        }`}
+      >
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center font-bold shrink-0">
-            <Building2 className="size-4.5 text-emerald-600 dark:text-emerald-400" />
+          <div
+            className={`size-10 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow-xs ${
+              activeOutlet === 'toko-1' ? 'bg-blue-600' : 'bg-emerald-600'
+            }`}
+          >
+            {activeOutlet === 'toko-1' ? <Building2 className="size-5" /> : <Store className="size-5" />}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-zinc-900 dark:text-zinc-100">{currentOutletInfo.name}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
-                {currentOutletInfo.type === 'STORE_WAREHOUSE' ? 'Pusat & Gudang' : 'Cabang Satelit'}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                {currentOutletInfo.name}
+              </span>
+              <span
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                  activeOutlet === 'toko-1'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-emerald-600 text-white'
+                }`}
+              >
+                {activeOutlet === 'toko-1' ? 'Stok Fisik Gudang Pusat' : 'Stok Fisik Rak Cabang'}
               </span>
             </div>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{currentOutletInfo.address}</span>
+            <div className="flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
+              <span>{currentOutletInfo.address}</span>
+              {currentUser && (
+                <>
+                  <span>&bull;</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    Kasir: {currentUser.name}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
-          Stok terisolasi otomatis pada buku kasir {currentOutletInfo.shortName}
-        </span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+            Stok otomatis terisolasi per cabang
+          </span>
+        </div>
       </div>
 
       {errorMessage && (
@@ -186,7 +233,7 @@ function PosPage() {
             <Search className="size-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Cari barang via nama, SKU, atau kategori (beras, minyak, kopi)..."
+              placeholder={`Cari stok barang di ${currentOutletInfo.shortName} (beras, minyak, kecap)...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium shadow-2xs"
@@ -196,6 +243,9 @@ function PosPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {products.map((p) => {
               const isOutOfStock = p.stock <= 0;
+              const otherBranchStock = activeOutlet === 'toko-2' ? p.t1Stock : p.t2Stock;
+              const otherBranchName = activeOutlet === 'toko-2' ? 'Toko 1 (Gudang)' : 'Toko 2 (Cabang)';
+
               return (
                 <button
                   key={p.id}
@@ -204,7 +254,7 @@ function PosPage() {
                   onClick={() => addToCart(p)}
                   className={`p-3 bg-white dark:bg-zinc-900 border rounded-xl text-left transition-all shadow-2xs space-y-1.5 cursor-pointer relative ${
                     isOutOfStock
-                      ? 'opacity-40 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 cursor-not-allowed'
+                      ? 'opacity-50 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 cursor-not-allowed'
                       : 'border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-xs active:scale-[0.99]'
                   }`}
                 >
@@ -219,11 +269,22 @@ function PosPage() {
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                       }`}
                     >
-                      {isOutOfStock ? 'Habis' : `Sisa ${p.stock}`}
+                      {isOutOfStock ? 'Habis' : `Sisa ${p.stock} ${p.unit}`}
                     </span>
                   </div>
 
                   <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 line-clamp-1">{p.name}</h4>
+
+                  {/* Cross-branch inventory awareness note */}
+                  <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
+                    {isOutOfStock ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">
+                        Ready {otherBranchStock} di {otherBranchName}
+                      </span>
+                    ) : (
+                      <span>Stok {currentOutletInfo.shortName}</span>
+                    )}
+                  </div>
 
                   <div className="flex items-baseline justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
                     <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs font-mono tabular-nums">

@@ -24,7 +24,7 @@ import {
 import { useState, useEffect } from 'react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { themeStore, Theme } from '@/lib/themeStore';
-import { authStore, UserProfile } from '@/lib/authStore';
+import { authStore, UserProfile, DEMO_ACCOUNTS } from '@/lib/authStore';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -62,6 +62,13 @@ function RootComponent() {
 
   const handleSwitchOutlet = (id: OutletId) => {
     outletStore.setOutlet(id);
+    // Automatically immerse user session into matching branch account if not Owner
+    if (currentUser && currentUser.role !== 'OWNER') {
+      const match = DEMO_ACCOUNTS.find((acc) => acc.user.outletId === id);
+      if (match) {
+        authStore.setUser(match.user);
+      }
+    }
   };
 
   const handleToggleTheme = () => {
