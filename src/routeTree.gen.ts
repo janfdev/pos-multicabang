@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnlineOrdersRouteImport } from './routes/online-orders'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TransfersRouteImport } from './routes/transfers'
@@ -29,6 +30,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnlineOrdersRoute = OnlineOrdersRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/shop': typeof ShopRoute
   '/transfers': typeof TransfersRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/shop': typeof ShopRoute
   '/transfers': typeof TransfersRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/shop': typeof ShopRoute
   '/transfers': typeof TransfersRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/inventory'
+    | '/login'
     | '/online-orders'
     | '/shop'
     | '/transfers'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/inventory'
+    | '/login'
     | '/online-orders'
     | '/shop'
     | '/transfers'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/inventory'
+    | '/login'
     | '/online-orders'
     | '/shop'
     | '/transfers'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   InventoryRoute: typeof InventoryRoute
+  LoginRoute: typeof LoginRoute
   OnlineOrdersRoute: typeof OnlineOrdersRoute
   ShopRoute: typeof ShopRoute
   TransfersRoute: typeof TransfersRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/online-orders': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   InventoryRoute: InventoryRoute,
+  LoginRoute: LoginRoute,
   OnlineOrdersRoute: OnlineOrdersRoute,
   ShopRoute: ShopRoute,
   TransfersRoute: TransfersRoute,

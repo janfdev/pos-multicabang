@@ -1,4 +1,4 @@
-import { createRootRoute, Link, Outlet, useRouterState } from '@tanstack/react-router';
+import { createRootRoute, Link, Outlet, useRouterState, useNavigate } from '@tanstack/react-router';
 import {
   Store,
   ShoppingCart,
@@ -17,10 +17,14 @@ import {
   Sun,
   Moon,
   Sparkles,
+  LogOut,
+  User,
+  UserCheck,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
-import { themeStore, ThemeMode } from '@/lib/themeStore';
+import { themeStore, Theme } from '@/lib/themeStore';
+import { authStore, UserProfile } from '@/lib/authStore';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -28,17 +32,21 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(authStore.getUser());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<ThemeMode>(themeStore.getTheme());
+  const [theme, setTheme] = useState<Theme>(themeStore.getTheme());
   const routerState = useRouterState();
+  const navigate = useNavigate();
   const currentPath = routerState.location.pathname;
 
   useEffect(() => {
     const unsubOutlet = outletStore.subscribe((id) => setActiveOutlet(id));
     const unsubTheme = themeStore.subscribe((t) => setTheme(t));
+    const unsubAuth = authStore.subscribe((u) => setCurrentUser(u));
     return () => {
       unsubOutlet();
       unsubTheme();
+      unsubAuth();
     };
   }, []);
 
@@ -47,8 +55,8 @@ function RootComponent() {
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
-  // If customer visits /shop, bypass admin shell completely
-  if (currentPath === '/shop' || currentPath.startsWith('/shop/')) {
+  // If customer visits /shop or staff visits /login, bypass staff shell completely
+  if (currentPath === '/shop' || currentPath.startsWith('/shop/') || currentPath === '/login') {
     return <Outlet />;
   }
 
@@ -58,6 +66,11 @@ function RootComponent() {
 
   const handleToggleTheme = () => {
     themeStore.toggleTheme();
+  };
+
+  const handleLogout = () => {
+    authStore.logout();
+    navigate({ to: '/login' });
   };
 
   const currentOutletInfo = OUTLET_CONFIG[activeOutlet];
@@ -92,7 +105,7 @@ function RootComponent() {
                   </h1>
                 </div>
                 <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate">
-                  Retail &amp; Omnichannel
+                  Enterprise Retail &amp; Warehouse
                 </p>
               </div>
             </div>
@@ -112,7 +125,7 @@ function RootComponent() {
           <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200/80 dark:border-zinc-800 space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
-                Cabang Operasional
+                Cabang Aktif
               </span>
               <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
                 <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -206,24 +219,52 @@ function RootComponent() {
           </nav>
         </div>
 
-        {/* Sidebar Footer / System Telemetry */}
-        <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-2 text-xs">
+        {/* Sidebar Footer / User Profile & Logout */}
+        <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-2.5 text-xs">
+          {currentUser ? (
+            <div className="p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="size-8 rounded-xl object-cover shrink-0 border border-zinc-200 dark:border-zinc-700"
+                />
+                <div className="min-w-0 truncate">
+                  <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100 block truncate">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block truncate font-medium">
+                    {currentUser.roleLabel.split(' ')[0]} &bull; {currentUser.outletName.split(' ')[0]}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="size-7 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-zinc-400 hover:text-rose-600 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                title="Keluar / Ganti Akun"
+              >
+                <LogOut className="size-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="w-full py-2 px-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs text-center block shadow-xs"
+            >
+              Masuk Akun Staf
+            </Link>
+          )}
+
           <div className="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 px-1">
             <span className="flex items-center gap-1.5 font-medium">
               <Activity className="size-3 text-emerald-500 animate-pulse" />
               <span>Hono Serverless</span>
             </span>
             <span className="font-mono text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-              v2.0
+              v2.1
             </span>
-          </div>
-
-          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/60 text-[10px] text-zinc-500 dark:text-zinc-400 space-y-0.5">
-            <p className="font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-              <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
-              <span>Multi-Outlet Concurrency</span>
-            </p>
-            <p>Stok terisolasi otomatis per cabang</p>
           </div>
         </div>
       </aside>
@@ -249,54 +290,57 @@ function RootComponent() {
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
 
+          <Link
+            to="/login"
+            className="size-8 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300"
+            title="Ganti Akun"
+          >
+            <User className="size-4" />
+          </Link>
+
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="size-8 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-200 cursor-pointer"
-            aria-label="Toggle Menu"
+            className="size-8 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 cursor-pointer"
           >
             {isMobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </header>
 
-      {/* ─── MOBILE MENU SLIDEDOWN (< MD) ─────────────────────────────────── */}
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 p-4 space-y-3 z-20 shadow-md">
-          {/* Switch Outlet Selector on Mobile */}
+        <div className="md:hidden bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-lg z-20">
+          {/* Outlet Selector */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
-              Pilih Outlet Operasional:
-            </span>
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Pilih Cabang Aktif:</span>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => handleSwitchOutlet('toko-1')}
-                className={`p-2 rounded-xl border text-left font-bold cursor-pointer transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold ${
                   activeOutlet === 'toko-1'
-                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200'
-                    : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+                    : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
                 }`}
               >
-                <span className="block text-xs">Toko 1</span>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">Pusat &amp; Gudang</span>
+                Toko 1 (Gudang)
               </button>
               <button
                 type="button"
                 onClick={() => handleSwitchOutlet('toko-2')}
-                className={`p-2 rounded-xl border text-left font-bold cursor-pointer transition-all ${
+                className={`p-2 rounded-xl border text-center font-bold ${
                   activeOutlet === 'toko-2'
-                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200'
-                    : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+                    : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
                 }`}
               >
-                <span className="block text-xs">Toko 2</span>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">Cabang Satelit</span>
+                Toko 2 (Cabang)
               </button>
             </div>
           </div>
 
-          {/* Links */}
+          {/* Navigation Links */}
           <div className="space-y-1 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs font-semibold">
             <Link
               to="/dashboard"
@@ -345,13 +389,20 @@ function RootComponent() {
               </div>
               <ExternalLink className="size-3 text-emerald-600 dark:text-emerald-400" />
             </Link>
+            <Link
+              to="/login"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+            >
+              <User className="size-4" />
+              <span>Ganti Akun / Login Staf</span>
+            </Link>
           </div>
         </div>
       )}
 
       {/* ─── MAIN CONTENT AREA ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-        {/* Desktop Top Header Bar with Breadcrumb, Outlet Switcher & Theme */}
+        {/* Desktop Top Header Bar with Breadcrumb, Outlet Switcher, User & Theme */}
         <header className="hidden md:flex h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 px-6 items-center justify-between sticky top-0 z-10 shadow-2xs transition-colors">
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -362,8 +413,16 @@ function RootComponent() {
             <span className="font-bold text-zinc-900 dark:text-zinc-100">{breadcrumb.page}</span>
           </div>
 
-          {/* Outlet Switcher Buttons */}
+          {/* Right Header: User Info & Outlet Switcher Buttons */}
           <div className="flex items-center gap-3">
+            {currentUser && (
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
+                <span className="size-2 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{currentUser.name}</span>
+                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">({currentUser.roleLabel.split(' ')[0]})</span>
+              </div>
+            )}
+
             <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/70 rounded-xl border border-zinc-200 dark:border-zinc-700/60 text-xs">
               <button
                 type="button"
@@ -386,10 +445,18 @@ function RootComponent() {
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                 }`}
               >
-                <Building2 className="size-3.5" />
+                <Store className="size-3.5" />
                 <span>Toko 2 (Cabang)</span>
               </button>
             </div>
+
+            <Link
+              to="/login"
+              className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              title="Ganti Akun / Login"
+            >
+              <User className="size-4" />
+            </Link>
           </div>
         </header>
 

@@ -546,14 +546,50 @@ app.patch('/online-orders/:id/status', async (c) => {
 
 // 7. Analytics & Performance Dashboard
 app.get('/analytics/dashboard', (c) => {
+  const requestedOutlet = c.req.query('outletId') || 'ALL';
+
+  // Base Inventory Calculations
   const totalToko1Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t1Stock, 0);
   const totalToko2Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t2Stock, 0);
   const lowStockToko2Count = Object.values(INVENTORY).filter((curr) => curr.t2Stock <= curr.minAlert).length;
+  const lowStockToko1Count = Object.values(INVENTORY).filter((curr) => curr.t1Stock <= curr.minAlert).length;
+
+  // Stock Valuation Calculation (Based on Cost & Selling Price)
+  const toko1Valuation = PRODUCTS.reduce((acc, p) => {
+    const inv = INVENTORY[p.id]?.t1Stock || 0;
+    return acc + inv * p.costPrice;
+  }, 0);
+
+  const toko2Valuation = PRODUCTS.reduce((acc, p) => {
+    const inv = INVENTORY[p.id]?.t2Stock || 0;
+    return acc + inv * p.costPrice;
+  }, 0);
+
+  // Transfer Metrics
   const pendingTransfersCount = TRANSFERS.filter((t) => t.status === 'REQUESTED').length;
+  const inTransitTransfersCount = TRANSFERS.filter((t) => t.status === 'DISPATCHED').length;
   const pendingOnlineOrdersCount = ONLINE_ORDERS.filter((o) => o.status === 'PENDING').length;
+
+  // Segmented Orders & Revenues
+  const toko1PosOrders = ORDERS.filter((o) => o.outletId === 'toko-1');
+  const toko2PosOrders = ORDERS.filter((o) => o.outletId === 'toko-2');
+  const toko1OnlineOrders = ONLINE_ORDERS.filter((o) => o.outletId === 'toko-1' && o.status !== 'CANCELLED');
+  const toko2OnlineOrders = ONLINE_ORDERS.filter((o) => o.outletId === 'toko-2' && o.status !== 'CANCELLED');
+
+  const toko1PosRevenue = toko1PosOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const toko2PosRevenue = toko2PosOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const toko1OnlineRevenue = toko1OnlineOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const toko2OnlineRevenue = toko2OnlineOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+
+  const toko1TotalRevenue = toko1PosRevenue + toko1OnlineRevenue;
+  const toko2TotalRevenue = toko2PosRevenue + toko2OnlineRevenue;
+
   const posRevenue = ORDERS.reduce((acc, o) => acc + o.totalAmount, 0);
   const onlineRevenue = ONLINE_ORDERS.filter((o) => o.status !== 'CANCELLED').reduce((acc, o) => acc + o.totalAmount, 0);
   const todayRevenue = posRevenue + onlineRevenue;
+
+  // Cache-Control for High Speed & Cold Start Mitigation
+  c.header('Cache-Control', 's-maxage=5, stale-while-revalidate=30');
 
   return c.json({
     kpis: {
@@ -561,7 +597,9 @@ app.get('/analytics/dashboard', (c) => {
       totalToko1Stock,
       totalToko2Stock,
       lowStockToko2Count,
+      lowStockToko1Count,
       pendingTransfersCount,
+      inTransitTransfersCount,
       pendingOnlineOrdersCount,
       totalOrdersToday: ORDERS.length + ONLINE_ORDERS.length,
       posOrdersToday: ORDERS.length,
@@ -569,10 +607,36 @@ app.get('/analytics/dashboard', (c) => {
       posRevenue,
       onlineRevenue,
       todayRevenue,
+      // Store Specific Breakdown
+      toko1: {
+        name: 'Toko 1 (Pusat & Gudang)',
+        totalStock: totalToko1Stock,
+        stockValuation: toko1Valuation,
+        posRevenue: toko1PosRevenue,
+        onlineRevenue: toko1OnlineRevenue,
+        totalRevenue: toko1TotalRevenue,
+        ordersCount: toko1PosOrders.length + toko1OnlineOrders.length,
+        pendingDispatchToToko2: TRANSFERS.filter((t) => t.fromOutletId === 'toko-1' && t.status === 'REQUESTED').length,
+        inboundReturns: TRANSFERS.filter((t) => t.toOutletId === 'toko-1' && t.status === 'DISPATCHED').length,
+      },
+      toko2: {
+        name: 'Toko 2 (Cabang Satelit)',
+        totalStock: totalToko2Stock,
+        stockValuation: toko2Valuation,
+        posRevenue: toko2PosRevenue,
+        onlineRevenue: toko2OnlineRevenue,
+        totalRevenue: toko2TotalRevenue,
+        ordersCount: toko2PosOrders.length + toko2OnlineOrders.length,
+        criticalStockCount: lowStockToko2Count,
+        inTransitFromPusat: TRANSFERS.filter((t) => t.toOutletId === 'toko-2' && t.status === 'DISPATCHED').length,
+        pendingRestockRequests: TRANSFERS.filter((t) => t.toOutletId === 'toko-2' && t.status === 'REQUESTED').length,
+      },
     },
     salesTrend: SALES_TREND,
     recentOrders: ORDERS.slice(0, 5),
     recentOnlineOrders: ONLINE_ORDERS.slice(0, 5),
+    toko1RecentOrders: toko1PosOrders.slice(0, 5),
+    toko2RecentOrders: toko2PosOrders.slice(0, 5),
   });
 });
 
