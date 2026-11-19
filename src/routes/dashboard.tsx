@@ -139,49 +139,6 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* ─── USER SESSION & STORE ROLE CARD ──────────────────────────────────── */}
-      {currentUser && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-xs text-xs">
-          <div className="flex items-center gap-3">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="size-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700 shadow-xs shrink-0"
-            />
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{currentUser.name}</span>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                    currentUser.role === 'OWNER'
-                      ? 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20'
-                      : currentUser.outletId === 'toko-1'
-                      ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
-                      : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                  }`}
-                >
-                  {currentUser.roleLabel}
-                </span>
-              </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {currentUser.role === 'OWNER'
-                  ? 'Hak Akses Owner / Direktur: Memantau dan menganalisis performa seluruh cabang secara konsolidasi.'
-                  : `Hak Akses Operasional: Menampilkan data stok fisik dan transaksi khusus untuk ${currentUser.outletName}.`}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <Link
-              to="/login"
-              className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-xs"
-            >
-              Ganti Akun / Toko
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* ─── TOP CONTROLS & SEGMENTED STORE VIEW SWITCHER ─────────────────────── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Branch / Scope Switcher Tabs */}

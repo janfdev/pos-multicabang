@@ -318,33 +318,13 @@ function RootComponent() {
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-lg z-20">
-          {/* Outlet Selector */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Pilih Cabang Aktif:</span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleSwitchOutlet('toko-1')}
-                className={`p-2 rounded-xl border text-center font-bold ${
-                  activeOutlet === 'toko-1'
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                    : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
-                }`}
-              >
-                Toko 1 (Gudang)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchOutlet('toko-2')}
-                className={`p-2 rounded-xl border text-center font-bold ${
-                  activeOutlet === 'toko-2'
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                    : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
-                }`}
-              >
-                Toko 2 (Cabang)
-              </button>
-            </div>
+          {/* Active Store Info in Mobile Drawer */}
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/80 dark:border-zinc-700/60 flex items-center justify-between text-xs">
+            <span className="text-zinc-500 dark:text-zinc-400">Cabang Aktif:</span>
+            <span className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              {currentOutletInfo.name}
+            </span>
           </div>
 
           {/* Navigation Links */}
@@ -409,7 +389,7 @@ function RootComponent() {
 
       {/* ─── MAIN CONTENT AREA ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-        {/* Desktop Top Header Bar with Breadcrumb, Outlet Switcher, User & Theme */}
+        {/* Desktop Top Header Bar with Clean Breadcrumb & Active Outlet Badge */}
         <header className="hidden md:flex h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 px-6 items-center justify-between sticky top-0 z-10 shadow-2xs transition-colors">
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -420,49 +400,19 @@ function RootComponent() {
             <span className="font-bold text-zinc-900 dark:text-zinc-100">{breadcrumb.page}</span>
           </div>
 
-          {/* Right Header: User Info & Outlet Switcher Buttons */}
-          <div className="flex items-center gap-3">
-            {currentUser && (
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
-                <span className="size-2 rounded-full bg-emerald-500" />
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{currentUser.name}</span>
-                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">({currentUser.roleLabel.split(' ')[0]})</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/70 rounded-xl border border-zinc-200 dark:border-zinc-700/60 text-xs">
-              <button
-                type="button"
-                onClick={() => handleSwitchOutlet('toko-1')}
-                className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
-                  activeOutlet === 'toko-1'
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                }`}
-              >
-                <Building2 className="size-3.5" />
-                <span>Toko 1 (Gudang)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchOutlet('toko-2')}
-                className={`px-3 py-1 rounded-lg font-bold transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
-                  activeOutlet === 'toko-2'
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                }`}
-              >
-                <Store className="size-3.5" />
-                <span>Toko 2 (Cabang)</span>
-              </button>
+          {/* Right Header: Active Store Badge & Profile Link */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-zinc-800 dark:text-zinc-200">{currentOutletInfo.name}</span>
             </div>
 
             <Link
               to="/login"
-              className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              title="Ganti Akun / Login"
+              className="p-2 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              title="Profil Pengguna / Akun"
             >
-              <User className="size-4" />
+              <User className="size-3.5" />
             </Link>
           </div>
         </header>
