@@ -152,6 +152,71 @@ describe('POS & Multi-Outlet Inventory Engineering Test Suite', () => {
       // Branch stock is now officially replenished (+15)!
       expect(_testing.getInventory()['p-2'].t2Stock).toBe(t2StockBefore + 15);
     });
+
+    it('should support bidirectional reverse transfer: Toko 2 -> Toko 1 (Return) with courier tracking', async () => {
+      // Baseline setup
+      _testing.setStock('p-4', 60, 20); // Toko 1: 60, Toko 2: 20
+      const t1Before = _testing.getInventory()['p-4'].t1Stock; // 60
+      const t2Before = _testing.getInventory()['p-4'].t2Stock; // 20
+
+      // Stage 1: Request return from Toko 2 to Toko 1
+      const reqRes = await app.request('/api/transfers/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromOutletId: 'toko-2',
+          toOutletId: 'toko-1',
+          type: 'RETURN',
+          notes: 'Retur kelebihan stok Tepung Terigu dari Cabang ke Pusat',
+          items: [{ productId: 'p-4', qtyRequested: 5 }],
+        }),
+      });
+
+      expect(reqRes.status).toBe(200);
+      const reqData = await reqRes.json();
+      expect(reqData.success).toBe(true);
+      expect(reqData.transfer.fromOutletId).toBe('toko-2');
+      expect(reqData.transfer.toOutletId).toBe('toko-1');
+      expect(reqData.transfer.type).toBe('RETURN');
+      expect(reqData.transfer.status).toBe('REQUESTED');
+
+      // Stage 2: Dispatch from Toko 2 with courier
+      const transferId = reqData.transfer.id;
+      const dispatchRes = await app.request(`/api/transfers/${transferId}/dispatch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courierName: 'Budi (Kurir Internal)',
+          dispatchedBy: 'Staf Kasir Toko 2',
+        }),
+      });
+
+      expect(dispatchRes.status).toBe(200);
+      const dispatchData = await dispatchRes.json();
+      expect(dispatchData.transfer.status).toBe('DISPATCHED');
+      expect(dispatchData.transfer.courierName).toBe('Budi (Kurir Internal)');
+
+      // In reverse transfer, Toko 2 stock MUST decrease! Toko 1 has not received yet!
+      expect(_testing.getInventory()['p-4'].t2Stock).toBe(t2Before - 5);
+      expect(_testing.getInventory()['p-4'].t1Stock).toBe(t1Before);
+
+      // Stage 3: Receive at Toko 1
+      const receiveRes = await app.request(`/api/transfers/${transferId}/receive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receivedBy: 'Kepala Gudang Toko 1',
+        }),
+      });
+
+      expect(receiveRes.status).toBe(200);
+      const receiveData = await receiveRes.json();
+      expect(receiveData.transfer.status).toBe('RECEIVED');
+      expect(receiveData.transfer.receivedBy).toBe('Kepala Gudang Toko 1');
+
+      // Toko 1 warehouse stock is now increased (+5)
+      expect(_testing.getInventory()['p-4'].t1Stock).toBe(t1Before + 5);
+    });
   });
 
   describe('Group 4: Monitoring Alerts & Executive KPIs', () => {

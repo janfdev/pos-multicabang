@@ -11,6 +11,9 @@ import {
   ChevronRight,
   ShieldCheck,
   Activity,
+  ShoppingBag,
+  ExternalLink,
+  Globe,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
@@ -35,6 +38,11 @@ function RootComponent() {
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
+  // If customer visits /shop, bypass admin shell completely
+  if (currentPath === '/shop' || currentPath.startsWith('/shop/')) {
+    return <Outlet />;
+  }
+
   const handleSwitchOutlet = (id: OutletId) => {
     outletStore.setOutlet(id);
   };
@@ -45,6 +53,7 @@ function RootComponent() {
   const getBreadcrumbLabel = () => {
     if (currentPath === '/dashboard') return { pillar: 'Operasional & Bisnis', page: 'Ringkasan Dashboard' };
     if (currentPath === '/') return { pillar: 'Operasional & Kasir', page: 'Terminal Kasir POS' };
+    if (currentPath === '/online-orders') return { pillar: 'Operasional & Kasir', page: 'Antrean Pesanan Online' };
     if (currentPath === '/inventory') return { pillar: 'Logistik & Inventaris', page: 'Monitoring Stok Cabang' };
     if (currentPath === '/transfers') return { pillar: 'Logistik & Inventaris', page: 'Mutasi Transfer Stok' };
     return { pillar: 'Operasional', page: 'Halaman Utama' };
@@ -110,6 +119,14 @@ function RootComponent() {
                 <ShoppingCart className="size-4 shrink-0 text-emerald-700" />
                 <span>Kasir Penjualan POS</span>
               </Link>
+
+              <Link
+                to="/online-orders"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-bold transition-colors text-stone-600 hover:bg-stone-50 hover:text-stone-900 [&.active]:bg-emerald-50 [&.active]:text-emerald-900 [&.active]:shadow-2xs"
+              >
+                <ShoppingBag className="size-4 shrink-0 text-emerald-700" />
+                <span>Pesanan Online</span>
+              </Link>
             </div>
 
             {/* Pillar 2: Logistik & Inventaris */}
@@ -132,6 +149,25 @@ function RootComponent() {
               >
                 <ArrowLeftRight className="size-4 shrink-0 text-blue-600" />
                 <span>Mutasi Transfer Stok</span>
+              </Link>
+            </div>
+
+            {/* Pillar 3: Kanal Publik */}
+            <div className="space-y-1">
+              <span className="px-3 text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                Etalase Publik
+              </span>
+
+              <Link
+                to="/shop"
+                target="_blank"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold transition-colors text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/60"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Globe className="size-4 shrink-0 text-emerald-700" />
+                  <span>Buka Toko Online</span>
+                </div>
+                <ExternalLink className="size-3 text-emerald-600" />
               </Link>
             </div>
           </nav>
@@ -235,6 +271,13 @@ function RootComponent() {
               <span>Kasir Penjualan POS</span>
             </Link>
             <Link
+              to="/online-orders"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-stone-50 text-stone-700"
+            >
+              <ShoppingBag className="size-4 text-emerald-700" />
+              <span>Pesanan Online</span>
+            </Link>
+            <Link
               to="/inventory"
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-stone-50 text-stone-700"
             >
@@ -247,6 +290,17 @@ function RootComponent() {
             >
               <ArrowLeftRight className="size-4 text-blue-600" />
               <span>Mutasi Transfer Stok</span>
+            </Link>
+            <Link
+              to="/shop"
+              target="_blank"
+              className="flex items-center justify-between p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200"
+            >
+              <div className="flex items-center gap-2">
+                <Globe className="size-4 text-emerald-700" />
+                <span>Buka Toko Online (/shop)</span>
+              </div>
+              <ExternalLink className="size-3 text-emerald-600" />
             </Link>
           </div>
         </div>

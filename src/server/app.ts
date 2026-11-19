@@ -58,7 +58,9 @@ let TRANSFERS: any[] = [
     id: 'MUT-20261029-001',
     fromOutletId: 'toko-1',
     toOutletId: 'toko-2',
+    type: 'RESTOCK',
     status: 'REQUESTED',
+    courierName: null,
     notes: 'Restock harian Toko 2 (Minyak Goreng & Beras menipis)',
     items: [
       { productId: 'p-1', productName: 'Beras Pandan Wangi 5kg', qtyRequested: 20, qtyDispatched: 0, qtyReceived: 0 },
@@ -71,7 +73,10 @@ let TRANSFERS: any[] = [
     id: 'MUT-20261028-002',
     fromOutletId: 'toko-1',
     toOutletId: 'toko-2',
+    type: 'RESTOCK',
     status: 'DISPATCHED',
+    courierName: 'Ahmad (Armada Gudang Pusat)',
+    dispatchedBy: 'Kepala Gudang Toko 1',
     notes: 'Pengiriman batch sore bahan sembako & sabun',
     items: [
       { productId: 'p-3', productName: 'Gula Pasir Kristal 1kg', qtyRequested: 25, qtyDispatched: 25, qtyReceived: 0 },
@@ -84,7 +89,11 @@ let TRANSFERS: any[] = [
     id: 'MUT-20261027-003',
     fromOutletId: 'toko-1',
     toOutletId: 'toko-2',
+    type: 'RESTOCK',
     status: 'RECEIVED',
+    courierName: 'Ahmad (Armada Gudang Pusat)',
+    dispatchedBy: 'Kepala Gudang Toko 1',
+    receivedBy: 'Kasir Toko 2',
     notes: 'Pengiriman rutin awal pekan',
     items: [
       { productId: 'p-5', productName: 'Kopi Kapal Api Spesial 165g', qtyRequested: 15, qtyDispatched: 15, qtyReceived: 15 },
@@ -291,12 +300,20 @@ app.post('/transfers/request', async (c) => {
     };
   });
 
+  const fromOutletId = body.fromOutletId || 'toko-1';
+  const toOutletId = body.toOutletId || (fromOutletId === 'toko-1' ? 'toko-2' : 'toko-1');
+  const type = body.type || (fromOutletId === 'toko-1' ? 'RESTOCK' : 'RETURN');
+
   const newTransfer = {
     id: `MUT-${Date.now().toString().slice(-6)}`,
-    fromOutletId: 'toko-1',
-    toOutletId: 'toko-2',
+    fromOutletId,
+    toOutletId,
+    type,
     status: 'REQUESTED',
-    notes: body.notes || 'Permintaan stok tambahan Toko 2',
+    courierName: body.courierName || null,
+    dispatchedBy: null,
+    receivedBy: null,
+    notes: body.notes || (type === 'RESTOCK' ? 'Permintaan stok tambahan' : 'Retur / Relokasi stok cabang'),
     items,
     requestedAt: new Date().toISOString(),
   };
@@ -307,20 +324,29 @@ app.post('/transfers/request', async (c) => {
 
 app.post('/transfers/:id/dispatch', async (c) => {
   const id = c.req.param('id');
+  const body = await c.req.json().catch(() => ({}));
   const transfer = TRANSFERS.find((t) => t.id === id);
   if (!transfer) return c.json({ error: 'Transfer not found' }, 404);
 
-  // Deduct from Toko 1 Gudang
+  // Deduct from source outlet (fromOutletId)
   transfer.items.forEach((item: any) => {
     const inv = INVENTORY[item.productId];
     if (inv) {
-      const dispatchQty = Math.min(inv.t1Stock, item.qtyRequested);
-      inv.t1Stock = Math.max(0, inv.t1Stock - dispatchQty);
-      item.qtyDispatched = dispatchQty;
+      if (transfer.fromOutletId === 'toko-1') {
+        const dispatchQty = Math.min(inv.t1Stock, item.qtyRequested);
+        inv.t1Stock = Math.max(0, inv.t1Stock - dispatchQty);
+        item.qtyDispatched = dispatchQty;
+      } else {
+        const dispatchQty = Math.min(inv.t2Stock, item.qtyRequested);
+        inv.t2Stock = Math.max(0, inv.t2Stock - dispatchQty);
+        item.qtyDispatched = dispatchQty;
+      }
     }
   });
 
   transfer.status = 'DISPATCHED';
+  if (body.courierName) transfer.courierName = body.courierName;
+  transfer.dispatchedBy = body.dispatchedBy || (transfer.fromOutletId === 'toko-1' ? 'Gudang Pusat Toko 1' : 'Staf Toko 2');
   transfer.dispatchedAt = new Date().toISOString();
 
   return c.json({ success: true, transfer });
@@ -328,31 +354,206 @@ app.post('/transfers/:id/dispatch', async (c) => {
 
 app.post('/transfers/:id/receive', async (c) => {
   const id = c.req.param('id');
+  const body = await c.req.json().catch(() => ({}));
   const transfer = TRANSFERS.find((t) => t.id === id);
   if (!transfer) return c.json({ error: 'Transfer not found' }, 404);
 
-  // Add to Toko 2 Cabang
+  // Add to destination outlet (toOutletId)
   transfer.items.forEach((item: any) => {
     const inv = INVENTORY[item.productId];
     if (inv) {
       const receiveQty = item.qtyDispatched ?? item.qtyRequested;
-      inv.t2Stock += receiveQty;
+      if (transfer.toOutletId === 'toko-1') {
+        inv.t1Stock += receiveQty;
+      } else {
+        inv.t2Stock += receiveQty;
+      }
       item.qtyReceived = receiveQty;
     }
   });
 
   transfer.status = 'RECEIVED';
+  transfer.receivedBy = body.receivedBy || (transfer.toOutletId === 'toko-1' ? 'Kepala Gudang Toko 1' : 'Staf Toko 2');
   transfer.receivedAt = new Date().toISOString();
 
   return c.json({ success: true, transfer });
 });
 
-// 6. Analytics & Performance Dashboard
+// 6. Online Customer Orders (Model B - Public Web Store)
+let ONLINE_ORDERS: any[] = [
+  {
+    id: 'ONL-20261119-001',
+    outletId: 'toko-1',
+    customerName: 'Aisyah Putri',
+    customerPhone: '081234567890',
+    fulfillmentType: 'DELIVERY',
+    deliveryAddress: 'Jl. Pemuda No. 88, Cirebon',
+    status: 'PENDING',
+    totalAmount: 112500,
+    notes: 'Mohon diantar sebelum sore',
+    items: [
+      { productId: 'p-1', productName: 'Beras Pandan Wangi 5kg', qty: 1, unitPrice: 76000, subtotal: 76000 },
+      { productId: 'p-2', productName: 'Minyak Goreng Sawit 2L', qty: 1, unitPrice: 36500, subtotal: 36500 },
+    ],
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000).toISOString(),
+  },
+  {
+    id: 'ONL-20261119-002',
+    outletId: 'toko-2',
+    customerName: 'Hendra Gunawan',
+    customerPhone: '081988776655',
+    fulfillmentType: 'PICKUP',
+    deliveryAddress: null,
+    status: 'PROCESSING',
+    totalAmount: 34000,
+    notes: 'Akan diambil setelah jam kantor',
+    items: [
+      { productId: 'p-3', productName: 'Gula Pasir Kristal 1kg', qty: 1, unitPrice: 17500, subtotal: 17500 },
+      { productId: 'p-5', productName: 'Kopi Kapal Api Spesial 165g', qty: 1, unitPrice: 16500, subtotal: 16500 },
+    ],
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000).toISOString(),
+  },
+];
+
+app.get('/online-orders', (c) => {
+  const outletId = c.req.query('outletId');
+  const status = c.req.query('status');
+
+  let results = [...ONLINE_ORDERS];
+  if (outletId && outletId !== 'ALL') {
+    results = results.filter((o) => o.outletId === outletId);
+  }
+  if (status && status !== 'ALL') {
+    results = results.filter((o) => o.status === status);
+  }
+  return c.json(results);
+});
+
+app.post('/online-orders', async (c) => {
+  const body = await c.req.json();
+  const outletId = body.outletId || 'toko-1';
+  const targetOutlet = OUTLETS.find((o) => o.id === outletId);
+  if (!targetOutlet) {
+    return c.json({ success: false, error: 'Outlet tidak valid' }, 400);
+  }
+
+  const rawItems = Array.isArray(body.items) ? body.items : [];
+  if (rawItems.length === 0) {
+    return c.json({ success: false, error: 'Keranjang belanja tidak boleh kosong' }, 400);
+  }
+
+  // Pre-validate stock availability at selected outlet
+  for (const item of rawItems) {
+    const inv = INVENTORY[item.productId];
+    const available = outletId === 'toko-1' ? (inv?.t1Stock ?? 0) : (inv?.t2Stock ?? 0);
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    const prodName = prod?.name || item.name || item.productId;
+
+    if (available < item.qty) {
+      return c.json(
+        {
+          success: false,
+          error: `Stok "${prodName}" tidak mencukupi di ${targetOutlet.name}. Tersedia: ${available}, Diminta: ${item.qty}`,
+        },
+        400
+      );
+    }
+  }
+
+  let totalAmount = 0;
+  const processedItems = rawItems.map((item: any) => {
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    const unitPrice = prod?.sellingPrice || item.unitPrice || 0;
+    const subtotal = unitPrice * item.qty;
+    totalAmount += subtotal;
+
+    return {
+      productId: item.productId,
+      productName: prod?.name || item.productName || item.productId,
+      qty: item.qty,
+      unitPrice,
+      subtotal,
+    };
+  });
+
+  const newOrder = {
+    id: `ONL-${Date.now().toString().slice(-6)}`,
+    outletId,
+    customerName: body.customerName || 'Pelanggan Online',
+    customerPhone: body.customerPhone || '-',
+    fulfillmentType: body.fulfillmentType || 'PICKUP',
+    deliveryAddress: body.deliveryAddress || null,
+    status: 'PENDING',
+    totalAmount,
+    notes: body.notes || '',
+    items: processedItems,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  ONLINE_ORDERS.unshift(newOrder);
+  return c.json({ success: true, order: newOrder });
+});
+
+app.patch('/online-orders/:id/status', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const newStatus = body.status;
+
+  const order = ONLINE_ORDERS.find((o) => o.id === id);
+  if (!order) {
+    return c.json({ success: false, error: 'Pesanan online tidak ditemukan' }, 404);
+  }
+
+  const previousStatus = order.status;
+
+  // If moving from PENDING to PROCESSING -> deduct stock
+  if (previousStatus === 'PENDING' && (newStatus === 'PROCESSING' || newStatus === 'READY' || newStatus === 'COMPLETED')) {
+    // Check and deduct stock
+    for (const item of order.items) {
+      const inv = INVENTORY[item.productId];
+      if (inv) {
+        if (order.outletId === 'toko-1') {
+          inv.t1Stock = Math.max(0, inv.t1Stock - item.qty);
+        } else {
+          inv.t2Stock = Math.max(0, inv.t2Stock - item.qty);
+        }
+      }
+    }
+  }
+
+  // If order was already PROCESSING or READY and is now CANCELLED -> rollback stock
+  if ((previousStatus === 'PROCESSING' || previousStatus === 'READY') && newStatus === 'CANCELLED') {
+    for (const item of order.items) {
+      const inv = INVENTORY[item.productId];
+      if (inv) {
+        if (order.outletId === 'toko-1') {
+          inv.t1Stock += item.qty;
+        } else {
+          inv.t2Stock += item.qty;
+        }
+      }
+    }
+  }
+
+  order.status = newStatus;
+  order.updatedAt = new Date().toISOString();
+
+  return c.json({ success: true, order });
+});
+
+// 7. Analytics & Performance Dashboard
 app.get('/analytics/dashboard', (c) => {
   const totalToko1Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t1Stock, 0);
   const totalToko2Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t2Stock, 0);
   const lowStockToko2Count = Object.values(INVENTORY).filter((curr) => curr.t2Stock <= curr.minAlert).length;
   const pendingTransfersCount = TRANSFERS.filter((t) => t.status === 'REQUESTED').length;
+  const pendingOnlineOrdersCount = ONLINE_ORDERS.filter((o) => o.status === 'PENDING').length;
+  const posRevenue = ORDERS.reduce((acc, o) => acc + o.totalAmount, 0);
+  const onlineRevenue = ONLINE_ORDERS.filter((o) => o.status !== 'CANCELLED').reduce((acc, o) => acc + o.totalAmount, 0);
+  const todayRevenue = posRevenue + onlineRevenue;
 
   return c.json({
     kpis: {
@@ -361,11 +562,17 @@ app.get('/analytics/dashboard', (c) => {
       totalToko2Stock,
       lowStockToko2Count,
       pendingTransfersCount,
-      totalOrdersToday: ORDERS.length,
-      todayRevenue: ORDERS.reduce((acc, o) => acc + o.totalAmount, 0),
+      pendingOnlineOrdersCount,
+      totalOrdersToday: ORDERS.length + ONLINE_ORDERS.length,
+      posOrdersToday: ORDERS.length,
+      onlineOrdersToday: ONLINE_ORDERS.length,
+      posRevenue,
+      onlineRevenue,
+      todayRevenue,
     },
     salesTrend: SALES_TREND,
     recentOrders: ORDERS.slice(0, 5),
+    recentOnlineOrders: ONLINE_ORDERS.slice(0, 5),
   });
 });
 
@@ -374,6 +581,7 @@ export const _testing = {
   getInventory: () => INVENTORY,
   getProducts: () => PRODUCTS,
   getOrders: () => ORDERS,
+  getOnlineOrders: () => ONLINE_ORDERS,
   getTransfers: () => TRANSFERS,
   setStock: (productId: string, t1: number, t2: number) => {
     if (INVENTORY[productId]) {

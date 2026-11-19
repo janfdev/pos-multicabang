@@ -10,6 +10,9 @@ import {
   TrendingUp,
   PackageSearch,
   ArrowLeftRight,
+  ShoppingBag,
+  ExternalLink,
+  Globe,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -43,7 +46,7 @@ function DashboardPage() {
     );
   }
 
-  const { kpis, salesTrend, recentOrders } = data;
+  const { kpis, salesTrend, recentOrders, recentOnlineOrders } = data;
 
   return (
     <div className="space-y-6">
@@ -55,21 +58,35 @@ function DashboardPage() {
               Ringkasan Eksekutif &amp; Operasional Cabang
             </h2>
             <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-bold">
-              Multi-Outlet
+              Omnichannel Multi-Outlet
             </span>
           </div>
           <p className="text-xs text-stone-500">
-            Monitoring performa omzet kasir real-time dan status distribusi logistik Toko 1 (Gudang) &amp; Toko 2 (Cabang)
+            Monitoring performa omzet offline &amp; online serta pergerakan stok Toko 1 (Gudang) &amp; Toko 2 (Cabang)
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
           <Link
-            to="/inventory"
+            to="/shop"
+            target="_blank"
+            className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Globe className="size-3.5" />
+            <span>Katalog Online (/shop)</span>
+            <ExternalLink className="size-3" />
+          </Link>
+          <Link
+            to="/online-orders"
             className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <PackageSearch className="size-3.5" />
-            <span>Stok Cabang</span>
+            <ShoppingBag className="size-3.5" />
+            <span>Order Online</span>
+            {kpis.pendingOnlineOrdersCount > 0 && (
+              <span className="bg-amber-600 text-white text-[9px] px-1.5 py-0.2 rounded-full font-mono">
+                {kpis.pendingOnlineOrdersCount}
+              </span>
+            )}
           </Link>
           <Link
             to="/"
@@ -81,12 +98,12 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* 4 KPI Metric Cards (Adapted from extracted template tokens) */}
+      {/* 4 KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* KPI 1: Omzet Hari Ini */}
         <div className="p-4 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-2">
           <div className="flex items-center justify-between text-stone-400">
-            <span className="text-xs font-bold text-stone-600">Omzet Penjualan Hari Ini</span>
+            <span className="text-xs font-bold text-stone-600">Total Omzet Hari Ini</span>
             <div className="size-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
@@ -95,10 +112,15 @@ function DashboardPage() {
             <span className="text-xl sm:text-2xl font-black text-stone-900 tabular-nums block">
               Rp {kpis.todayRevenue.toLocaleString('id-ID')}
             </span>
-            <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="size-3" />
-              <span>{kpis.totalOrdersToday} transaksi kasir tercatat</span>
-            </span>
+            <div className="text-[10px] text-stone-500 font-medium flex items-center gap-2 mt-1">
+              <span className="text-emerald-700 font-bold">
+                Kasir: Rp {kpis.posRevenue.toLocaleString('id-ID')}
+              </span>
+              <span>&bull;</span>
+              <span className="text-blue-700 font-bold">
+                Online: Rp {kpis.onlineRevenue.toLocaleString('id-ID')}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -115,7 +137,7 @@ function DashboardPage() {
               {kpis.totalToko1Stock.toLocaleString('id-ID')} Unit
             </span>
             <span className="text-[10px] text-stone-500 font-medium block mt-0.5">
-              Siap alokasi suplai cabang satelit
+              Siap suplai cabang &amp; pesanan online
             </span>
           </div>
         </div>
@@ -133,25 +155,31 @@ function DashboardPage() {
               {kpis.totalToko2Stock.toLocaleString('id-ID')} Unit
             </span>
             <span className="text-[10px] text-stone-500 font-medium block mt-0.5">
-              Stok siap jual di etalase kasir
+              Stok siap jual di kasir cabang
             </span>
           </div>
         </div>
 
-        {/* KPI 4: Alert Stok Menipis */}
+        {/* KPI 4: Alert Stok & Online Orders */}
         <div className="p-4 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-2">
           <div className="flex items-center justify-between text-stone-400">
-            <span className="text-xs font-bold text-stone-600">Alert Stok Kritis</span>
+            <span className="text-xs font-bold text-stone-600">Pesanan &amp; Logistik Kritis</span>
             <div className="size-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
               <AlertTriangle className="size-4" />
             </div>
           </div>
           <div>
-            <span className="text-xl sm:text-2xl font-black text-amber-800 tabular-nums block">
-              {kpis.lowStockToko2Count} SKU
-            </span>
-            <span className="text-[10px] text-amber-700 font-bold block mt-0.5">
-              Perlu restock transfer segera
+            <div className="flex items-center gap-2">
+              <span className="text-xl sm:text-2xl font-black text-amber-800 tabular-nums">
+                {kpis.lowStockToko2Count} SKU
+              </span>
+              <span className="text-stone-300">|</span>
+              <span className="text-xs font-black text-blue-800">
+                {kpis.pendingOnlineOrdersCount} Order Web
+              </span>
+            </div>
+            <span className="text-[10px] text-stone-500 block mt-0.5">
+              {kpis.pendingTransfersCount} transfer stok menunggu kirim
             </span>
           </div>
         </div>
@@ -211,26 +239,26 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Transaksi Feed */}
+        {/* Live Feeds: Kasir & Online */}
         <div className="lg:col-span-5 bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-extrabold text-xs text-stone-900">Transaksi Kasir Terakhir</h3>
-              <p className="text-[11px] text-stone-500">Live order feed lintas cabang</p>
+              <h3 className="font-extrabold text-xs text-stone-900">Feed Transaksi Terakhir</h3>
+              <p className="text-[11px] text-stone-500">Live feed kasir fisik &amp; pesanan online</p>
             </div>
-            <Link to="/" className="text-[10px] font-bold text-emerald-700 hover:underline">
-              Buka POS &rarr;
+            <Link to="/online-orders" className="text-[10px] font-bold text-emerald-700 hover:underline">
+              Semua Order &rarr;
             </Link>
           </div>
 
           <div className="space-y-2 max-h-60 overflow-y-auto text-xs">
             {recentOrders.map((ord: any) => (
-              <div key={ord.id} className="p-3 rounded-xl border border-stone-100 bg-stone-50/70 flex items-center justify-between gap-2">
+              <div key={ord.id} className="p-2.5 rounded-xl border border-stone-100 bg-stone-50/70 flex items-center justify-between gap-2">
                 <div className="min-w-0 pr-2">
                   <div className="flex items-center gap-1.5">
                     <span className="font-mono text-[10px] text-stone-400 font-bold">{ord.id}</span>
                     <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-stone-200 text-stone-700">
-                      {ord.outletId === 'toko-1' ? 'Toko 1' : 'Toko 2'}
+                      POS: {ord.outletId === 'toko-1' ? 'Toko 1' : 'Toko 2'}
                     </span>
                   </div>
                   <span className="font-bold text-stone-800 text-[11px] block truncate mt-0.5">
@@ -243,6 +271,29 @@ function DashboardPage() {
                     Rp {ord.totalAmount.toLocaleString('id-ID')}
                   </span>
                   <span className="text-[9px] text-stone-400 font-medium">{ord.paymentMethod}</span>
+                </div>
+              </div>
+            ))}
+
+            {recentOnlineOrders?.map((ord: any) => (
+              <div key={ord.id} className="p-2.5 rounded-xl border border-blue-100 bg-blue-50/50 flex items-center justify-between gap-2">
+                <div className="min-w-0 pr-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] text-blue-600 font-bold">{ord.id}</span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-800">
+                      ONLINE: {ord.customerName}
+                    </span>
+                  </div>
+                  <span className="font-bold text-stone-800 text-[11px] block truncate mt-0.5">
+                    {ord.items.map((i: any) => `${i.productName} (${i.qty})`).join(', ')}
+                  </span>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span className="font-black text-blue-700 text-xs tabular-nums block">
+                    Rp {ord.totalAmount.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-[9px] text-blue-600 font-medium">{ord.status}</span>
                 </div>
               </div>
             ))}

@@ -13,10 +13,29 @@ export const outletTypeEnum = pgEnum('outlet_type', [
 ]);
 
 export const transferStatusEnum = pgEnum('transfer_status', [
-  'REQUESTED',       // Diajukan oleh Cabang
-  'DISPATCHED',      // Dikirim oleh Pusat/Gudang
-  'RECEIVED',        // Diterima & Diverifikasi oleh Cabang
+  'REQUESTED',       // Diajukan oleh Cabang/Pusat
+  'DISPATCHED',      // Dikirim oleh Asal (In-Transit)
+  'RECEIVED',        // Diterima & Diverifikasi oleh Tujuan
   'CANCELLED',       // Dibatalkan
+]);
+
+export const transferTypeEnum = pgEnum('transfer_type', [
+  'RESTOCK',         // Toko 1 -> Toko 2 (Pasokan)
+  'RETURN',          // Toko 2 -> Toko 1 (Retur Barang Rusak/Kadaluarsa)
+  'REBALANCE',       // Toko 2 -> Toko 1 (Relokasi Kelebihan Stok)
+]);
+
+export const onlineOrderStatusEnum = pgEnum('online_order_status', [
+  'PENDING',         // Menunggu konfirmasi pembayaran / verifikasi
+  'PROCESSING',      // Sedang diproses / packing (stok cabang terpotong atomik)
+  'READY',           // Siap diambil pelanggan / kurir
+  'COMPLETED',       // Transaksi selesai
+  'CANCELLED',       // Dibatalkan (stok di-rollback jika sudah processing)
+]);
+
+export const fulfillmentTypeEnum = pgEnum('fulfillment_type', [
+  'PICKUP',          // Ambil di toko sendiri
+  'DELIVERY',        // Dikirim kurir ke alamat
 ]);
 
 // 1. OUTLETS
@@ -91,7 +110,7 @@ export const orderItems = pgTable('order_items', {
   subtotal: integer('subtotal').notNull(),
 });
 
-// 5. STOCK TRANSFERS (MUTASI BARANG)
+// 5. STOCK TRANSFERS (MUTASI BARANG DUA ARAH)
 export const stockTransfers = pgTable('stock_transfers', {
   id: text('id').primaryKey(), // e.g. "MUT-20261029-001"
   fromOutletId: text('from_outlet_id')
@@ -100,7 +119,11 @@ export const stockTransfers = pgTable('stock_transfers', {
   toOutletId: text('to_outlet_id')
     .notNull()
     .references(() => outlets.id),
+  type: transferTypeEnum('type').notNull().default('RESTOCK'),
   status: transferStatusEnum('status').notNull().default('REQUESTED'),
+  courierName: text('courier_name'),
+  dispatchedBy: text('dispatched_by'),
+  receivedBy: text('received_by'),
   notes: text('notes'),
   requestedAt: timestamp('requested_at').defaultNow().notNull(),
   dispatchedAt: timestamp('dispatched_at'),
@@ -118,4 +141,35 @@ export const transferItems = pgTable('transfer_items', {
   qtyRequested: integer('qty_requested').notNull(),
   qtyDispatched: integer('qty_dispatched').default(0),
   qtyReceived: integer('qty_received').default(0),
+});
+
+// 6. ONLINE ORDERS & ITEMS (MODEL B - PUBLIC STORE)
+export const onlineOrders = pgTable('online_orders', {
+  id: text('id').primaryKey(), // e.g. "ONL-20261119-001"
+  outletId: text('outlet_id')
+    .notNull()
+    .references(() => outlets.id),
+  customerName: text('customer_name').notNull(),
+  customerPhone: text('customer_phone').notNull(),
+  fulfillmentType: fulfillmentTypeEnum('fulfillment_type').notNull().default('PICKUP'),
+  deliveryAddress: text('delivery_address'),
+  status: onlineOrderStatusEnum('status').notNull().default('PENDING'),
+  totalAmount: integer('total_amount').notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const onlineOrderItems = pgTable('online_order_items', {
+  id: text('id').primaryKey(),
+  orderId: text('order_id')
+    .notNull()
+    .references(() => onlineOrders.id),
+  productId: text('product_id')
+    .notNull()
+    .references(() => products.id),
+  productName: text('product_name').notNull(),
+  qty: integer('qty').notNull(),
+  unitPrice: integer('unit_price').notNull(),
+  subtotal: integer('subtotal').notNull(),
 });
