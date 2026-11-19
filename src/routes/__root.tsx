@@ -55,8 +55,8 @@ function RootComponent() {
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
-  // If customer visits /shop or staff visits /login, bypass staff shell completely
-  if (currentPath === '/shop' || currentPath.startsWith('/shop/') || currentPath === '/login') {
+  // If user visits /dashboard, /shop, or /login, bypass staff shell completely to provide 100% full BagUI dashboard
+  if (currentPath === '/dashboard' || currentPath === '/shop' || currentPath.startsWith('/shop/') || currentPath === '/login') {
     return <Outlet />;
   }
 

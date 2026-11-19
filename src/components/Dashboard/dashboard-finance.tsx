@@ -80,6 +80,7 @@ import {
   Moon,
   Crown,
   ArrowLeftRight,
+  Store,
 } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
 
@@ -1351,6 +1352,32 @@ function Sidebar({
           ))}
         </div>
 
+        <SectionLabel>Akses Cepat Kasir</SectionLabel>
+        <div className="flex flex-col gap-0.5">
+          <a
+            href="/"
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <ShoppingCart size={16} className="text-gray-400 dark:text-neutral-500" />
+            <span className="flex-1 text-left">Terminal Kasir POS</span>
+            <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+              Live
+            </span>
+          </a>
+          <a
+            href="/shop"
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Store size={16} className="text-gray-400 dark:text-neutral-500" />
+              <span>Toko Online /shop</span>
+            </div>
+            <ArrowUpRight size={13} className="text-gray-400" />
+          </a>
+        </div>
+
         <SectionLabel>Workspace Multi-Cabang</SectionLabel>
         <div className="flex flex-col gap-0.5">
           {WORKSPACES.map((w) => (
@@ -2389,7 +2416,7 @@ export default function Dashboard2() {
     <div className={darkMode ? "dark" : ""}>
       <div
         style={font}
-        className="relative flex min-h-[820px] lg:h-[860px] w-full overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-xs dark:border-neutral-800 dark:bg-black"
+        className="relative flex h-screen w-full overflow-hidden bg-white dark:bg-black"
       >
         <Sidebar
           active={active}
