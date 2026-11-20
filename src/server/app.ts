@@ -595,8 +595,6 @@ app.patch('/online-orders/:id/status', async (c) => {
 
 // 7. Analytics & Performance Dashboard
 app.get('/analytics/dashboard', (c) => {
-  const requestedOutlet = c.req.query('outletId') || 'ALL';
-
   // Base Inventory Calculations
   const totalToko1Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t1Stock, 0);
   const totalToko2Stock = Object.values(INVENTORY).reduce((acc, curr) => acc + curr.t2Stock, 0);

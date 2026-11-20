@@ -1,6 +1,5 @@
-import { db, queryClient } from './client';
-import { outlets, products, inventory, stockTransfers, transferItems, onlineOrders, onlineOrderItems } from './schema';
-import { eq } from 'drizzle-orm';
+import { db } from './client';
+import { outlets, products, inventory } from './schema';
 
 export async function seedDatabase() {
   console.log('--- Starting Neon PostgreSQL Database Seed ---');

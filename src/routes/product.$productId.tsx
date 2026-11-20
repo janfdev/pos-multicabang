@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -47,7 +47,6 @@ const font = {
 
 export function ProductDetailPage() {
   const { productId } = Route.useParams();
-  const navigate = useNavigate();
 
   const [product, setProduct] = useState<ProductItem | null>(() => {
     return INITIAL_SEMBAKO_PRODUCTS.find((p) => p.id === productId) || null;

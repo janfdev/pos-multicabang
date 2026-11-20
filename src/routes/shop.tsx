@@ -10,7 +10,6 @@ import {
   Minus,
   Trash2,
   CheckCircle2,
-  MapPin,
   Phone,
   User,
   Truck,

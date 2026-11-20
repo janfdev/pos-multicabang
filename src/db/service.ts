@@ -10,19 +10,15 @@ import {
   onlineOrders,
   onlineOrderItems,
 } from './schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export class DbService {
-  private static isConnected = false;
-
   static async testConnection(): Promise<boolean> {
     try {
       if (!process.env.DATABASE_URL) return false;
-      const res = await db.select({ count: sql`1` }).from(outlets).limit(1);
-      this.isConnected = true;
+      await db.select({ count: sql`1` }).from(outlets).limit(1);
       return true;
     } catch {
-      this.isConnected = false;
       return false;
     }
   }
