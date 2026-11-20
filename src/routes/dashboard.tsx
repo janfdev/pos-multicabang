@@ -186,7 +186,7 @@ function DashboardPage() {
         id: "hq-4",
         status: "DISPATCHED",
         cells: {
-          item: "Mutasi In-Transit (T1 ➔ T2)",
+          item: "Mutasi In-Transit (Toko 1 ke Toko 2)",
           statusSummary: "TRF-202611-001",
           metric: "60 Unit (Bpk. Ahmad)",
           tindakan: "Pantau Status Pengiriman",

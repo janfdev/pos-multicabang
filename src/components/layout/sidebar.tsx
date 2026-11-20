@@ -25,6 +25,7 @@ import {
   ChevronsUpDown,
   Check,
   LogOut,
+  Crown,
 } from "lucide-react";
 import { authStore, UserProfile, DEMO_ACCOUNTS, DemoAccount } from "@/lib/authStore";
 
@@ -49,7 +50,8 @@ export function getSidebarConfig(user: UserProfile | null) {
     return {
       outletId: "toko-1" as const,
       storeName: "Toko 1 (Pusat & Gudang)",
-      storeTag: "🏢 PUSAT & GUDANG UTAMA",
+      storeTag: "PUSAT & GUDANG UTAMA",
+      storeIcon: Building2,
       storeAddress: "Jl. Pemuda No. 12 • Hub Pasokan",
       roleTitle: "Kasir & Kepala Gudang Toko 1",
       accent: "blue" as const,
@@ -77,7 +79,8 @@ export function getSidebarConfig(user: UserProfile | null) {
     return {
       outletId: "toko-2" as const,
       storeName: "Toko 2 (Cabang Satelit)",
-      storeTag: "🏪 CABANG RETAIL SATELIT",
+      storeTag: "CABANG RETAIL SATELIT",
+      storeIcon: Store,
       storeAddress: "Jl. Kesambi No. 45 • Kasir Frontline",
       roleTitle: "Kasir Frontline Toko 2",
       accent: "emerald" as const,
@@ -105,7 +108,8 @@ export function getSidebarConfig(user: UserProfile | null) {
   return {
     outletId: "all" as const,
     storeName: "Konsolidasi Semua Cabang",
-    storeTag: "👑 KONSOLIDASI MULTI-CABANG (HQ)",
+    storeTag: "KONSOLIDASI MULTI-CABANG (HQ)",
+    storeIcon: Crown,
     storeAddress: "Master Headquarters • Neon Postgres",
     roleTitle: "Super Admin (Semua Cabang)",
     accent: "purple" as const,
@@ -235,7 +239,8 @@ export function Sidebar({
         {/* Dedicated Store Identity Box */}
         <div className="mt-2.5 rounded-xl border border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-neutral-800 dark:bg-neutral-900/60 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${config.storeBadgeColor}`}>
+            <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${config.storeBadgeColor}`}>
+              <config.storeIcon size={11} className="shrink-0" />
               {config.storeTag}
             </span>
           </div>

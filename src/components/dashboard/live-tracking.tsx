@@ -237,8 +237,10 @@ export default function LiveTrackingModule({
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-neutral-50">
             1.2 km (±10 Mnt)
           </div>
-          <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            Toko 1 (Pemuda) ➔ Toko 2 (Kesambi)
+          <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium inline-flex items-center gap-1.5">
+            <span>Toko 1 (Pemuda)</span>
+            <ArrowRight size={12} className="shrink-0" />
+            <span>Toko 2 (Kesambi)</span>
           </p>
         </div>
 

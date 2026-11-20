@@ -303,7 +303,12 @@ export function ShiftModal({
                       {discrepancy > 0 ? `+ Lebih Rp ${discrepancy.toLocaleString('id-ID')}` : `- Kurang Rp ${Math.abs(discrepancy).toLocaleString('id-ID')}`}
                     </span>
                   )}
-                  {discrepancy === 0 && <span className="text-emerald-600 font-bold">✓ Seimbang (Balance)</span>}
+                  {discrepancy === 0 && (
+                    <span className="text-emerald-600 font-bold inline-flex items-center gap-1">
+                      <CheckCircle2 size={13} className="shrink-0" />
+                      Seimbang (Balance)
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-xs font-bold text-zinc-400">Rp</span>

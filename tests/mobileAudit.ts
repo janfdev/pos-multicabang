@@ -73,11 +73,11 @@ async function runAudit() {
             };
           });
 
-          const status = overflow.hasLeak ? '❌ LEAK' : '✓ OK';
+          const status = overflow.hasLeak ? '[LEAK]' : '[OK]';
           console.log(`  [${r.name}] ${status} (scroll: ${overflow.scrollW}px, client: ${overflow.clientW}px)`);
           if (overflow.hasLeak) hasErrors = true;
         } catch (e: any) {
-          console.log(`  [${r.name}] ⚠️ Error: ${e.message}`);
+          console.log(`  [${r.name}] [ERROR]: ${e.message}`);
         }
       }
       await ctx.close();

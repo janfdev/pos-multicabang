@@ -131,15 +131,7 @@ export function TopBar({
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide uppercase shadow-2xs ${config.badgeColor}`}
             >
-              <span
-                className={`size-1.5 rounded-full ${
-                  config.outletId === "toko-1"
-                    ? "bg-blue-500"
-                    : config.outletId === "toko-2"
-                      ? "bg-emerald-500"
-                      : "bg-purple-500"
-                } animate-pulse`}
-              />
+              <config.storeIcon size={12} className="shrink-0" />
               {config.storeTag}
             </span>
           </div>
