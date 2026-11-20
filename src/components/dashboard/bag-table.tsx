@@ -15,6 +15,8 @@ import {
   Download,
   Check,
   X,
+  Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 
 export type ColumnDef = {
@@ -61,6 +63,38 @@ function StatusBadge({ status }: { status: string }) {
       />
       {status}
     </span>
+  );
+}
+
+function Checkbox({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange();
+      }}
+      aria-pressed={checked}
+      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors duration-150 cursor-pointer ${
+        checked
+          ? "border-gray-900 bg-gray-900 dark:border-neutral-100 dark:bg-neutral-100"
+          : "border-gray-300 bg-white hover:border-gray-400 dark:border-neutral-600 dark:bg-neutral-900 dark:hover:border-neutral-500"
+      }`}
+    >
+      {checked && (
+        <Check
+          size={11}
+          className="text-white dark:text-neutral-900"
+          strokeWidth={3}
+        />
+      )}
+    </button>
   );
 }
 
@@ -204,11 +238,9 @@ export function BagTable({
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/70 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-500">
                 <th className="w-10 py-3 pl-4">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={pagedRows.length > 0 && selected.size === pagedRows.length}
                     onChange={toggleAll}
-                    className="size-3.5 rounded border-gray-300 accent-gray-900 dark:accent-neutral-100 cursor-pointer"
                   />
                 </th>
                 {columns.map((c) => (
@@ -248,18 +280,17 @@ export function BagTable({
                     <motion.tr
                       key={r.id}
                       variants={fadeUp}
-                      className={`border-b border-gray-50 text-xs transition-colors duration-150 dark:border-neutral-800/60 ${
+                      onClick={() => toggleSelect(r.id)}
+                      className={`border-b border-gray-50 text-xs transition-colors duration-150 dark:border-neutral-800/60 cursor-pointer ${
                         isSelected
-                          ? "bg-gray-50/90 dark:bg-neutral-800/60 border-l-3 border-l-gray-900 dark:border-l-neutral-100"
+                          ? "bg-gray-50/90 dark:bg-neutral-800/60 border-l-4 border-l-gray-900 dark:border-l-neutral-100"
                           : "hover:bg-gray-50/50 dark:hover:bg-neutral-800/40"
                       }`}
                     >
                       <td className="py-3 pl-4">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isSelected}
                           onChange={() => toggleSelect(r.id)}
-                          className="size-3.5 rounded border-gray-300 accent-gray-900 dark:accent-neutral-100 cursor-pointer"
                         />
                       </td>
 
@@ -346,6 +377,57 @@ export function BagTable({
           </div>
         </div>
       </div>
+
+      {/* Floating Action Bar Pill */}
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-xl dark:border-neutral-700 dark:bg-neutral-900"
+          >
+            <span className="text-xs font-semibold text-gray-800 dark:text-neutral-200">
+              {selected.size} Selected
+            </span>
+            <span className="h-3.5 w-px bg-gray-200 dark:bg-neutral-700" />
+            <button
+              type="button"
+              className="text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100 cursor-pointer"
+            >
+              Apply Code
+            </button>
+            <button
+              type="button"
+              className="text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100 cursor-pointer"
+            >
+              Edit Info
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              className="flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 cursor-pointer"
+            >
+              <Trash2 size={12} />
+              Delete
+            </button>
+            <button
+              type="button"
+              className="flex h-5 w-5 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800"
+            >
+              <MoreHorizontal size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              className="flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
