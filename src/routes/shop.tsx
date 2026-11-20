@@ -36,6 +36,7 @@ import {
   Star,
   Eye,
   BadgeCheck,
+  Download,
 } from 'lucide-react';
 import { themeStore, Theme } from '@/lib/themeStore';
 import { authStore, UserProfile } from '@/lib/authStore';
@@ -91,6 +92,25 @@ export function PublicShopPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const triggerInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice?.outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
 
   useEffect(() => {
     const unsubTheme = themeStore.subscribe((t) => setCurrentTheme(t));
@@ -277,6 +297,19 @@ export function PublicShopPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {/* Install PWA Button (Native Prompt) */}
+            {installPrompt && (
+              <button
+                type="button"
+                onClick={triggerInstall}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer animate-pulse"
+                title="Pasang Aplikasi POS Sembako di Perangkat Anda"
+              >
+                <Download className="size-3.5" />
+                <span className="hidden sm:inline">Install App</span>
+              </button>
+            )}
+
             {/* Cart Trigger */}
             <button
               type="button"
