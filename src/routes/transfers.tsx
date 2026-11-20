@@ -14,6 +14,7 @@ import {
   UserCheck,
   Package,
 } from 'lucide-react';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
 
 export const Route = createFileRoute('/transfers')({
   component: TransfersPage,
@@ -217,8 +218,9 @@ function TransfersPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Page Header */}
+    <DashboardLayout title="Distribusi & Mutasi Stok Antar-Cabang">
+      <div className="p-6 space-y-4">
+        {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
@@ -751,6 +753,7 @@ function TransfersPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

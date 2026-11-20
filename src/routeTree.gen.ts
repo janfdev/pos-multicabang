@@ -15,7 +15,9 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnlineOrdersRouteImport } from './routes/online-orders'
 import { Route as PosRouteImport } from './routes/pos'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as TrackingRouteImport } from './routes/tracking'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 
@@ -49,9 +51,19 @@ const PosRoute = PosRouteImport.update({
   path: '/pos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackingRoute = TrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TransfersRoute = TransfersRouteImport.update({
@@ -72,7 +84,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/pos': typeof PosRoute
+  '/reports': typeof ReportsRoute
   '/shop': typeof ShopRoute
+  '/tracking': typeof TrackingRoute
   '/transfers': typeof TransfersRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
@@ -83,7 +97,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/pos': typeof PosRoute
+  '/reports': typeof ReportsRoute
   '/shop': typeof ShopRoute
+  '/tracking': typeof TrackingRoute
   '/transfers': typeof TransfersRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
@@ -95,7 +111,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/online-orders': typeof OnlineOrdersRoute
   '/pos': typeof PosRoute
+  '/reports': typeof ReportsRoute
   '/shop': typeof ShopRoute
+  '/tracking': typeof TrackingRoute
   '/transfers': typeof TransfersRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
@@ -108,7 +126,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/online-orders'
     | '/pos'
+    | '/reports'
     | '/shop'
+    | '/tracking'
     | '/transfers'
     | '/product/$productId'
   fileRoutesByTo: FileRoutesByTo
@@ -119,7 +139,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/online-orders'
     | '/pos'
+    | '/reports'
     | '/shop'
+    | '/tracking'
     | '/transfers'
     | '/product/$productId'
   id:
@@ -130,7 +152,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/online-orders'
     | '/pos'
+    | '/reports'
     | '/shop'
+    | '/tracking'
     | '/transfers'
     | '/product/$productId'
   fileRoutesById: FileRoutesById
@@ -142,7 +166,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnlineOrdersRoute: typeof OnlineOrdersRoute
   PosRoute: typeof PosRoute
+  ReportsRoute: typeof ReportsRoute
   ShopRoute: typeof ShopRoute
+  TrackingRoute: typeof TrackingRoute
   TransfersRoute: typeof TransfersRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
 }
@@ -191,11 +217,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracking': {
+      id: '/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof TrackingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/transfers': {
@@ -222,7 +262,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnlineOrdersRoute: OnlineOrdersRoute,
   PosRoute: PosRoute,
+  ReportsRoute: ReportsRoute,
   ShopRoute: ShopRoute,
+  TrackingRoute: TrackingRoute,
   TransfersRoute: TransfersRoute,
   ProductProductIdRoute: ProductProductIdRoute,
 }

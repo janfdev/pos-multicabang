@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore } from '@/lib/authStore';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
 
 export const Route = createFileRoute('/inventory')({
   component: InventoryPage,
@@ -73,8 +74,9 @@ function InventoryPage() {
   const totalSkuCount = data.length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+    <DashboardLayout title="Manajemen Stok & Inventaris">
+      <div className="p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <span
@@ -451,6 +453,7 @@ function InventoryPage() {
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
