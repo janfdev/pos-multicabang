@@ -25,7 +25,7 @@ import { shiftStore, ShiftSession } from '@/lib/shiftStore';
 import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/ThermalReceiptModal';
 import { ShiftModal } from '@/components/pos/ShiftModal';
 import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
-import { FALLBACK_PRODUCT_IMAGES } from '@/routes/shop';
+import { FALLBACK_PRODUCT_IMAGES, INITIAL_SEMBAKO_PRODUCTS } from '@/routes/shop';
 
 export const Route = createFileRoute('/pos')({
   component: PosPage,
@@ -53,7 +53,14 @@ function PosPage() {
     }
     return outletStore.getOutlet();
   });
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>(() =>
+    INITIAL_SEMBAKO_PRODUCTS.map((p) => ({
+      ...p,
+      t1Stock: p.stock,
+      t2Stock: p.id === 'p-1' ? 4 : Math.max(3, Math.floor(p.stock * 0.45)),
+      isLow: p.id === 'p-1',
+    }))
+  );
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cashReceived, setCashReceived] = useState<number>(0);
@@ -423,9 +430,11 @@ function PosPage() {
                           src={imgUrl}
                           alt={p.name}
                           loading="lazy"
+                          referrerPolicy="no-referrer"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).src =
+                              'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80';
                           }}
                         />
                       ) : (
@@ -526,6 +535,7 @@ function PosPage() {
                         <img
                           src={item.image}
                           alt={item.name}
+                          referrerPolicy="no-referrer"
                           className="size-9 rounded-lg object-cover shrink-0 border border-gray-200 dark:border-neutral-700"
                         />
                       ) : (
