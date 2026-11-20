@@ -18,12 +18,10 @@ function TrackingPage() {
 
   return (
     <DashboardLayout title="Live Tracking Pengiriman & Armada Logistik">
-      <div className="px-6 pt-5">
-        <LiveTrackingModule
-          currentUser={currentUser}
-          onNotify={(msg) => console.log(msg)}
-        />
-      </div>
+      <LiveTrackingModule
+        currentUser={currentUser}
+        onNotify={(msg) => console.log(msg)}
+      />
     </DashboardLayout>
   );
 }
