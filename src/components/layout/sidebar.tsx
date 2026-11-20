@@ -146,6 +146,43 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function getNavStyles(accent: "blue" | "emerald" | "purple") {
+  if (accent === "blue") {
+    return {
+      activeClass:
+        "bg-blue-50/90 text-blue-900 dark:bg-blue-950/50 dark:text-blue-100 border border-blue-200/60 dark:border-blue-800/40 font-bold shadow-2xs",
+      activeIcon: "text-blue-600 dark:text-blue-400",
+      activeBar: "bg-blue-600 dark:bg-blue-400",
+      hoverClass:
+        "text-gray-600 hover:bg-blue-50/60 hover:text-blue-800 dark:text-neutral-400 dark:hover:bg-blue-950/30 dark:hover:text-blue-200",
+      hoverIcon: "text-gray-400 group-hover:text-blue-600 dark:text-neutral-500 dark:group-hover:text-blue-400",
+      badgeColor: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+    };
+  }
+  if (accent === "emerald") {
+    return {
+      activeClass:
+        "bg-emerald-50/90 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100 border border-emerald-200/60 dark:border-emerald-800/40 font-bold shadow-2xs",
+      activeIcon: "text-emerald-600 dark:text-emerald-400",
+      activeBar: "bg-emerald-500 dark:bg-emerald-400",
+      hoverClass:
+        "text-gray-600 hover:bg-emerald-50/60 hover:text-emerald-800 dark:text-neutral-400 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-200",
+      hoverIcon: "text-gray-400 group-hover:text-emerald-600 dark:text-neutral-500 dark:group-hover:text-emerald-400",
+      badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+    };
+  }
+  return {
+    activeClass:
+      "bg-purple-50/90 text-purple-900 dark:bg-purple-950/50 dark:text-purple-100 border border-purple-200/60 dark:border-purple-800/40 font-bold shadow-2xs",
+    activeIcon: "text-purple-600 dark:text-purple-400",
+    activeBar: "bg-purple-600 dark:bg-purple-400",
+    hoverClass:
+      "text-gray-600 hover:bg-purple-50/60 hover:text-purple-800 dark:text-neutral-400 dark:hover:bg-purple-950/30 dark:hover:text-purple-200",
+    hoverIcon: "text-gray-400 group-hover:text-purple-600 dark:text-neutral-500 dark:group-hover:text-purple-400",
+    badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30",
+  };
+}
+
 export function Sidebar({
   currentUser,
   onNotify,
@@ -159,6 +196,7 @@ export function Sidebar({
   const [isRoleSwitchOpen, setIsRoleSwitchOpen] = useState(false);
 
   const config = getSidebarConfig(currentUser);
+  const navStyles = getNavStyles(config.accent);
 
   const handleSwitchUser = (acc: DemoAccount) => {
     authStore.loginWithDemo(acc);
@@ -256,29 +294,31 @@ export function Sidebar({
               <Link
                 key={item.label + item.path}
                 to={item.path}
-                className={`relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-150 cursor-pointer ${
+                className={`group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? "bg-gray-100 text-gray-900 dark:bg-neutral-800 dark:text-neutral-50"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200"
+                    ? navStyles.activeClass
+                    : navStyles.hoverClass
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="nav-active-bar"
-                    className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-gray-900 dark:bg-neutral-50"
+                    className={`absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full ${navStyles.activeBar}`}
                   />
                 )}
                 <Icon
                   size={15}
-                  className={
+                  className={`transition-colors duration-150 shrink-0 ${
                     isActive
-                      ? "text-gray-900 dark:text-neutral-50"
-                      : "text-gray-400 dark:text-neutral-500"
-                  }
+                      ? navStyles.activeIcon
+                      : navStyles.hoverIcon
+                  }`}
                 />
-                <span className="flex-1 text-left">{item.label}</span>
+                <span className="flex-1 text-left tracking-tight group-hover:translate-x-0.5 transition-transform duration-150 truncate">
+                  {item.label}
+                </span>
                 {item.badge && (
-                  <span className="rounded bg-blue-500/10 px-1.5 py-0.2 text-[9px] font-bold text-blue-600 dark:text-blue-400 animate-pulse">
+                  <span className={`rounded-full px-2 py-0.2 text-[9px] font-bold ${navStyles.badgeColor} animate-pulse shrink-0`}>
                     {item.badge}
                   </span>
                 )}
@@ -299,21 +339,29 @@ export function Sidebar({
                   <Link
                     key={item.label}
                     to={item.path}
-                    className={`relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-150 cursor-pointer ${
+                    className={`group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? "bg-gray-100 text-gray-900 dark:bg-neutral-800 dark:text-neutral-50"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200"
+                        ? navStyles.activeClass
+                        : navStyles.hoverClass
                     }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-active-bar-tools"
+                        className={`absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full ${navStyles.activeBar}`}
+                      />
+                    )}
                     <Icon
                       size={15}
-                      className={
+                      className={`transition-colors duration-150 shrink-0 ${
                         isActive
-                          ? "text-gray-900 dark:text-neutral-50"
-                          : "text-gray-400 dark:text-neutral-500"
-                      }
+                          ? navStyles.activeIcon
+                          : navStyles.hoverIcon
+                      }`}
                     />
-                    <span className="flex-1 text-left">{item.label}</span>
+                    <span className="flex-1 text-left tracking-tight group-hover:translate-x-0.5 transition-transform duration-150 truncate">
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
@@ -325,53 +373,63 @@ export function Sidebar({
         <div className="flex flex-col gap-0.5">
           <Link
             to="/pos"
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className={`group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
           >
-            <ShoppingCart size={15} className="text-gray-400 dark:text-neutral-500" />
-            <span className="flex-1 text-left">Terminal Kasir POS</span>
-            <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+            <ShoppingCart size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+            <span className="flex-1 text-left tracking-tight group-hover:translate-x-0.5 transition-transform duration-150 truncate">
+              Terminal Kasir POS
+            </span>
+            <span className="rounded-full bg-emerald-500/15 px-2 py-0.2 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
               Live
             </span>
           </Link>
           <Link
             to="/shop"
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className={`group flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
           >
-            <div className="flex items-center gap-2.5">
-              <Store size={15} className="text-gray-400 dark:text-neutral-500" />
-              <span>Toko Online (/shop)</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Store size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+              <span className="truncate tracking-tight group-hover:translate-x-0.5 transition-transform duration-150">
+                Toko Online (/shop)
+              </span>
             </div>
-            <ArrowUpRight size={13} className="text-gray-400" />
+            <ArrowUpRight size={13} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-neutral-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-150 shrink-0" />
           </Link>
           <Link
             to="/transfers"
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className={`group flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
           >
-            <div className="flex items-center gap-2.5">
-              <ArrowLeftRight size={15} className="text-gray-400 dark:text-neutral-500" />
-              <span>Mutasi Stok Lengkap</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <ArrowLeftRight size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+              <span className="truncate tracking-tight group-hover:translate-x-0.5 transition-transform duration-150">
+                Mutasi Stok Lengkap
+              </span>
             </div>
-            <ArrowUpRight size={13} className="text-gray-400" />
+            <ArrowUpRight size={13} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-neutral-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-150 shrink-0" />
           </Link>
           <Link
             to="/inventory"
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className={`group flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
           >
-            <div className="flex items-center gap-2.5">
-              <Boxes size={15} className="text-gray-400 dark:text-neutral-500" />
-              <span>Inventaris Penuh</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Boxes size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+              <span className="truncate tracking-tight group-hover:translate-x-0.5 transition-transform duration-150">
+                Inventaris Penuh
+              </span>
             </div>
-            <ArrowUpRight size={13} className="text-gray-400" />
+            <ArrowUpRight size={13} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-neutral-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-150 shrink-0" />
           </Link>
           <Link
             to="/online-orders"
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className={`group flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
           >
-            <div className="flex items-center gap-2.5">
-              <ShoppingBag size={15} className="text-gray-400 dark:text-neutral-500" />
-              <span>Order Masuk Web</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <ShoppingBag size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+              <span className="truncate tracking-tight group-hover:translate-x-0.5 transition-transform duration-150">
+                Order Masuk Web
+              </span>
             </div>
-            <ArrowUpRight size={13} className="text-gray-400" />
+            <ArrowUpRight size={13} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-neutral-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-150 shrink-0" />
           </Link>
         </div>
 
@@ -381,11 +439,11 @@ export function Sidebar({
             <motion.div
               key={w.label}
               variants={fadeUp}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100/70 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50 cursor-pointer transition-colors"
+              className={`group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
             >
-              <span className={`h-2 w-2 rounded-full ${w.color}`} />
-              <span className="flex-1 text-left truncate">{w.label}</span>
-              <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300">
+              <span className={`h-2 w-2 rounded-full ${w.color} shrink-0 group-hover:scale-125 transition-transform`} />
+              <span className="flex-1 text-left truncate tracking-tight group-hover:translate-x-0.5 transition-transform duration-150">{w.label}</span>
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300 shrink-0">
                 {w.count} unit
               </span>
             </motion.div>
@@ -401,10 +459,10 @@ export function Sidebar({
             <Link
               key={item.label}
               to={item.path}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200 transition-colors"
+              className={`group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${navStyles.hoverClass}`}
             >
-              <Icon size={15} className="text-gray-400 dark:text-neutral-500" />
-              <span className="flex-1 text-left">{item.label}</span>
+              <Icon size={15} className={`transition-colors duration-150 shrink-0 ${navStyles.hoverIcon}`} />
+              <span className="flex-1 text-left tracking-tight group-hover:translate-x-0.5 transition-transform duration-150 truncate">{item.label}</span>
             </Link>
           );
         })}
