@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Truck,
@@ -14,7 +14,6 @@ import {
   Store,
   LayoutGrid,
   Filter,
-  ArrowUpDown,
   SlidersHorizontal,
   Download,
   Plus,
@@ -53,7 +52,7 @@ const INITIAL_SHIPMENTS: ShipmentRecord[] = [
     trackingNo: "SJ-TRF-202611-001",
     type: "TRANSFER",
     typeLabel: "Mutasi Pasokan (T1 ke T2)",
-    fromName: "Toko 1 (Pusat & Gudang Pasokan)",
+    fromName: "Toko 1 (Pusat & Gudang)",
     fromAddress: "Jl. Pemuda No. 12, Cirebon (Hub Pasokan)",
     toName: "Toko 2 (Cabang Satelit Kesambi)",
     toAddress: "Jl. Kesambi No. 45, Cirebon (Frontline Kasir)",
@@ -159,6 +158,63 @@ function Toggle({
   );
 }
 
+function CustomizePopover({
+  columns,
+  visibleCols,
+  toggleCol,
+  onClose,
+}: {
+  columns: string[];
+  visibleCols: Record<string, boolean>;
+  toggleCol: (c: string) => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+      className="absolute right-6 top-14 z-30 w-60 rounded-xl border border-gray-200 bg-white p-2.5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+    >
+      <p className="px-2 pb-2 pt-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+        Visibilitas Kolom Tabel
+      </p>
+      {columns.map((c) => {
+        const checked = visibleCols[c] !== false;
+        return (
+          <button
+            key={c}
+            type="button"
+            onClick={() => toggleCol(c)}
+            className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          >
+            <span>{c}</span>
+            <span
+              className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                checked
+                  ? "border-gray-900 bg-gray-900 dark:border-neutral-100 dark:bg-neutral-100"
+                  : "border-gray-300 bg-white dark:border-neutral-700 dark:bg-neutral-900"
+              }`}
+            >
+              {checked && <Check size={11} strokeWidth={3} className="text-white dark:text-neutral-900" />}
+            </span>
+          </button>
+        );
+      })}
+    </motion.div>
+  );
+}
+
 export default function LiveTrackingModule({
   currentUser,
   onNotify,
@@ -172,6 +228,21 @@ export default function LiveTrackingModule({
   const [activeShipmentDetail, setActiveShipmentDetail] = useState<ShipmentRecord | null>(null);
   const [selectedForPrint, setSelectedForPrint] = useState<ShipmentRecord | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+
+  // Column visibility
+  const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>({
+    "No. Surat Jalan & Resi": true,
+    "Jenis Pengiriman": true,
+    "Armada & Pengemudi": true,
+    "Volume Muatan": true,
+    "Status Real-time": true,
+    "Tindakan": true,
+  });
+
+  const toggleCol = (c: string) => {
+    setVisibleCols((prev) => ({ ...prev, [c]: !prev[c] }));
+  };
 
   // Form State
   const [newType, setNewType] = useState<"TRANSFER" | "DELIVERY">("TRANSFER");
@@ -353,7 +424,7 @@ export default function LiveTrackingModule({
   ];
 
   // BagUI Table Definitions
-  const columns: ColumnDef[] = [
+  const allColumns: ColumnDef[] = [
     { key: "trackingNo", label: "No. Surat Jalan & Resi" },
     { key: "typeLabel", label: "Jenis Pengiriman" },
     { key: "courier", label: "Armada & Pengemudi" },
@@ -361,6 +432,10 @@ export default function LiveTrackingModule({
     { key: "status", label: "Status Real-time" },
     { key: "action", label: "Tindakan" },
   ];
+
+  const columns = useMemo(() => {
+    return allColumns.filter((c) => visibleCols[c.label] !== false);
+  }, [visibleCols]);
 
   const tableRows: TableRow[] = useMemo(() => {
     const data = filterType === "ALL" ? shipments : shipments.filter((s) => s.type === filterType);
@@ -380,7 +455,7 @@ export default function LiveTrackingModule({
     });
   }, [shipments, filterType]);
 
-  const handleActionClick = (actionText: string, row: TableRow) => {
+  const handleActionClick = (_actionText: string, row: TableRow) => {
     const found = shipments.find((s) => s.id === row.id);
     if (found) {
       setActiveShipmentDetail(found);
@@ -388,7 +463,7 @@ export default function LiveTrackingModule({
   };
 
   return (
-    <div className="space-y-4 pb-12">
+    <div className="relative space-y-4 pb-12">
       {/* BagUI Top Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -430,7 +505,7 @@ export default function LiveTrackingModule({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => onNotify("Kustomisasi tampilan kolom aktif")}
+            onClick={() => setIsCustomizeOpen((o) => !o)}
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 cursor-pointer"
           >
             <SlidersHorizontal size={14} className="text-gray-400 dark:text-neutral-500" />
@@ -457,6 +532,18 @@ export default function LiveTrackingModule({
         </div>
       </div>
 
+      {/* Customize Visible Columns Popover */}
+      <AnimatePresence>
+        {isCustomizeOpen && (
+          <CustomizePopover
+            columns={allColumns.map((c) => c.label)}
+            visibleCols={visibleCols}
+            toggleCol={toggleCol}
+            onClose={() => setIsCustomizeOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* BagUI 4-Grid KPI Stat Cards */}
       {showStats && <StatsCards stats={stats} />}
 
@@ -470,32 +557,32 @@ export default function LiveTrackingModule({
         />
       </div>
 
-      {/* Detail & Tracking Modal (BagUI Dialog) */}
+      {/* BagUI Dialog: Detail & Tracking Cockpit */}
       <AnimatePresence>
         {activeShipmentDetail && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 max-h-[92vh] overflow-y-auto"
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-xl rounded-xl border border-gray-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900 max-h-[90vh] flex flex-col overflow-hidden"
             >
-              {/* Modal Header */}
-              <div className="flex items-start justify-between border-b border-gray-100 pb-4 dark:border-neutral-800">
-                <div className="space-y-1">
+              {/* Dialog Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-neutral-800 shrink-0">
+                <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-base font-bold text-gray-900 dark:text-neutral-100">
+                    <h3 className="font-mono text-sm font-bold text-gray-900 dark:text-neutral-100">
                       {activeShipmentDetail.trackingNo}
-                    </span>
-                    <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-500/20">
+                    </h3>
+                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
                       {activeShipmentDetail.typeLabel}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-neutral-400 flex items-center gap-1.5">
-                    <MapPin size={12} className="text-gray-400" />
-                    <span>{activeShipmentDetail.fromName}</span>
+                  <p className="text-xs text-gray-500 dark:text-neutral-400 flex items-center gap-1.5 pt-0.5">
+                    <span>{activeShipmentDetail.fromName.split(" ")[0]} {activeShipmentDetail.fromName.split(" ")[1]}</span>
                     <ArrowRight size={12} className="text-gray-400" />
-                    <span className="font-semibold text-gray-700 dark:text-neutral-200">
+                    <span className="font-semibold text-gray-700 dark:text-neutral-300">
                       {activeShipmentDetail.toName}
                     </span>
                   </p>
@@ -504,120 +591,122 @@ export default function LiveTrackingModule({
                 <button
                   type="button"
                   onClick={() => setActiveShipmentDetail(null)}
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="flex size-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
 
-              {/* 4-Stage Visual Stepper Timeline */}
-              <div className="py-5 border-b border-gray-100 dark:border-neutral-800">
-                <div className="relative flex items-center justify-between">
-                  <div className="absolute left-6 right-6 top-4 h-0.5 bg-gray-200 dark:bg-neutral-700 -z-0" />
+              {/* Dialog Body */}
+              <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+                {/* 4-Stage Stepper */}
+                <div className="relative flex items-center justify-between py-1">
+                  <div className="absolute left-6 right-6 top-3.5 h-0.5 bg-gray-200 dark:bg-neutral-800 -z-0" />
                   {activeShipmentDetail.steps.map((step, idx) => (
                     <div
                       key={step.title}
-                      className="relative z-10 flex flex-col items-center text-center max-w-[125px]"
+                      className="relative z-10 flex flex-col items-center text-center max-w-[110px]"
                     >
                       <div
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                        className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
                           step.done && !step.active
-                            ? "bg-emerald-600 text-white shadow-xs"
+                            ? "bg-emerald-600 text-white shadow-2xs"
                             : step.active
-                              ? "bg-amber-500 text-white ring-4 ring-amber-500/20 animate-pulse"
+                              ? "bg-gray-900 text-white dark:bg-neutral-100 dark:text-neutral-900 ring-4 ring-gray-900/10 dark:ring-neutral-100/10"
                               : "bg-gray-100 text-gray-400 dark:bg-neutral-800 dark:text-neutral-500 border border-gray-200 dark:border-neutral-700"
                         }`}
                       >
-                        {step.done && !step.active ? <CheckCircle2 size={16} /> : idx + 1}
+                        {step.done && !step.active ? <CheckCircle2 size={14} /> : idx + 1}
                       </div>
                       <p
-                        className={`mt-2 text-xs font-semibold leading-tight ${
+                        className={`mt-1.5 text-[11px] font-semibold leading-tight ${
                           step.active
-                            ? "text-amber-600 dark:text-amber-400"
+                            ? "text-gray-900 dark:text-neutral-100 font-bold"
                             : step.done
-                              ? "text-gray-900 dark:text-neutral-100"
+                              ? "text-gray-700 dark:text-neutral-300"
                               : "text-gray-400 dark:text-neutral-500"
                         }`}
                       >
                         {step.title}
                       </p>
-                      <p className="text-[10px] text-gray-400 dark:text-neutral-500 font-medium">{step.time}</p>
-                      <p className="text-[10px] text-gray-600 dark:text-neutral-400 font-bold truncate max-w-full">
-                        {step.actor}
-                      </p>
+                      <p className="text-[10px] text-gray-400 dark:text-neutral-500">{step.time}</p>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Driver & Route Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 py-4 border-b border-gray-100 dark:border-neutral-800">
-                <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/40">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-                    Armada &amp; Pengemudi
-                  </p>
-                  <p className="mt-1 text-xs font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-1.5">
-                    <Truck size={14} className="text-gray-500" />
-                    {activeShipmentDetail.courierName}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-neutral-400">{activeShipmentDetail.courierVehicle}</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">
-                    Telp: {activeShipmentDetail.courierPhone}
-                  </p>
+                {/* Driver & ETA Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-gray-200/80 bg-gray-50/60 p-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                      Armada &amp; Pengemudi
+                    </p>
+                    <p className="mt-0.5 text-xs font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-1.5">
+                      <Truck size={13} className="text-gray-500" />
+                      {activeShipmentDetail.courierName}
+                    </p>
+                    <p className="text-[11px] text-gray-600 dark:text-neutral-400 mt-0.5">
+                      {activeShipmentDetail.courierVehicle}
+                    </p>
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">
+                      Telp: {activeShipmentDetail.courierPhone}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200/80 bg-gray-50/60 p-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                      Estimasi &amp; Lokasi Tujuan
+                    </p>
+                    <p className="mt-0.5 text-xs font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-1.5">
+                      <Clock size={13} className="text-blue-500" />
+                      {activeShipmentDetail.eta}
+                    </p>
+                    <p className="text-[11px] text-gray-600 dark:text-neutral-400 mt-0.5 truncate">
+                      {activeShipmentDetail.toAddress}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/40">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-                    Estimasi Tiba &amp; Tujuan
-                  </p>
-                  <p className="mt-1 text-xs font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-1.5">
-                    <Clock size={14} className="text-blue-500" />
-                    {activeShipmentDetail.eta}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-neutral-400 mt-1">{activeShipmentDetail.toAddress}</p>
-                </div>
-              </div>
-
-              {/* Manifest Items List */}
-              <div className="py-4 border-b border-gray-100 dark:border-neutral-800">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold text-gray-900 dark:text-neutral-100">
-                    Daftar Muatan Manifest (
-                    {activeShipmentDetail.items.reduce((acc, i) => acc + i.qty, 0)} Unit)
-                  </p>
-                  <span className="text-[11px] text-gray-500">Kondisi: Tersegel Rapi</span>
-                </div>
-                <div className="rounded-xl border border-gray-100 dark:border-neutral-800 overflow-hidden">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50/70 text-[11px] font-bold uppercase text-gray-400 dark:border-neutral-800 dark:bg-neutral-800/40">
-                        <th className="py-2 px-3">SKU</th>
-                        <th className="py-2 px-3">Nama Barang</th>
-                        <th className="py-2 px-3 text-right">Jumlah</th>
-                        <th className="py-2 px-3">Satuan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activeShipmentDetail.items.map((it) => (
-                        <tr
-                          key={it.sku}
-                          className="border-b border-gray-50 dark:border-neutral-800/50 text-gray-700 dark:text-neutral-300"
-                        >
-                          <td className="py-2 px-3 font-mono font-bold text-gray-900 dark:text-neutral-100">
-                            {it.sku}
-                          </td>
-                          <td className="py-2 px-3">{it.name}</td>
-                          <td className="py-2 px-3 text-right font-bold">{it.qty}</td>
-                          <td className="py-2 px-3 text-gray-500">{it.unit}</td>
+                {/* Manifest Items List */}
+                <div>
+                  <div className="flex items-center justify-between pb-1.5">
+                    <p className="text-xs font-bold text-gray-900 dark:text-neutral-100">
+                      Manifest Muatan (
+                      {activeShipmentDetail.items.reduce((acc, i) => acc + i.qty, 0)} Unit)
+                    </p>
+                    <span className="text-[11px] text-gray-500">Kondisi: Tersegel Rapi</span>
+                  </div>
+                  <div className="rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-gray-50/70 text-[10px] font-bold uppercase text-gray-400 dark:border-neutral-800 dark:bg-neutral-800/50">
+                          <th className="py-2 px-3">SKU</th>
+                          <th className="py-2 px-3">Nama Barang</th>
+                          <th className="py-2 px-3 text-right">Qty</th>
+                          <th className="py-2 px-3">Satuan</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {activeShipmentDetail.items.map((it) => (
+                          <tr
+                            key={it.sku}
+                            className="border-b border-gray-50 dark:border-neutral-800/40 text-gray-700 dark:text-neutral-300 last:border-0"
+                          >
+                            <td className="py-2 px-3 font-mono font-bold text-gray-900 dark:text-neutral-100">
+                              {it.sku}
+                            </td>
+                            <td className="py-2 px-3">{it.name}</td>
+                            <td className="py-2 px-3 text-right font-bold">{it.qty}</td>
+                            <td className="py-2 px-3 text-gray-500">{it.unit}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
-              {/* Modal Footer Actions */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              {/* Dialog Footer Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 px-6 py-3.5 bg-gray-50/50 dark:border-neutral-800 dark:bg-neutral-900/50 shrink-0">
                 <div className="flex items-center gap-2">
                   <a
                     href={`https://wa.me/${activeShipmentDetail.courierPhone}?text=Halo%20${encodeURIComponent(
@@ -625,7 +714,7 @@ export default function LiveTrackingModule({
                     )}%20konfirmasi%20pengiriman%20${activeShipmentDetail.trackingNo}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700 transition-colors"
+                    className="h-8.5 rounded-lg border border-emerald-500/30 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <MessageCircle size={14} />
                     <span>WhatsApp Driver</span>
@@ -633,13 +722,11 @@ export default function LiveTrackingModule({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedForPrint(activeShipmentDetail);
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 transition-colors cursor-pointer"
+                    onClick={() => setSelectedForPrint(activeShipmentDetail)}
+                    className="h-8.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Printer size={14} />
-                    <span>Cetak Dokumen</span>
+                    <span>Cetak Surat Jalan</span>
                   </button>
                 </div>
 
@@ -648,10 +735,10 @@ export default function LiveTrackingModule({
                     <button
                       type="button"
                       onClick={() => handleDispatch(activeShipmentDetail.id, activeShipmentDetail.trackingNo)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer"
+                      className="h-8.5 rounded-lg bg-blue-600 px-3.5 text-xs font-bold text-white shadow-2xs hover:bg-blue-700 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Truck size={14} />
-                      Serahkan ke Kurir
+                      <span>Serahkan ke Kurir</span>
                     </button>
                   )}
 
@@ -661,17 +748,17 @@ export default function LiveTrackingModule({
                       onClick={() =>
                         handleConfirmReceived(activeShipmentDetail.id, activeShipmentDetail.trackingNo)
                       }
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
+                      className="h-8.5 rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <CheckCircle2 size={14} />
-                      Konfirmasi Barang Tiba &amp; Diterima
+                      <span>Konfirmasi Barang Tiba</span>
                     </button>
                   )}
 
                   {activeShipmentDetail.status === "RECEIVED" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300">
+                    <span className="h-8.5 rounded-lg bg-gray-100 px-3 text-xs font-bold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300 inline-flex items-center gap-1.5">
                       <CheckCircle2 size={14} className="text-emerald-500" />
-                      Selesai &amp; Masuk Stok Cabang
+                      <span>Selesai &amp; Stok Masuk</span>
                     </span>
                   )}
                 </div>
@@ -681,112 +768,116 @@ export default function LiveTrackingModule({
         )}
       </AnimatePresence>
 
-      {/* Surat Jalan Official Print Modal */}
+      {/* BagUI Dialog: Dokumen Resmi Surat Jalan / Pengiriman */}
       <AnimatePresence>
         {selectedForPrint && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 max-h-[90vh] overflow-y-auto"
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900 max-h-[92vh] flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-neutral-800">
+              {/* Dialog Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-neutral-800 shrink-0">
                 <div className="flex items-center gap-2">
-                  <FileText className="text-blue-600 size-5" />
-                  <h3 className="font-bold text-base text-gray-900 dark:text-neutral-100">
-                    Dokumen Resmi Surat Jalan / Pengiriman
+                  <FileText className="text-gray-900 dark:text-neutral-100 size-4.5" />
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-neutral-100">
+                    Dokumen Resmi Surat Jalan &amp; Pengiriman
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedForPrint(null)}
-                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="flex size-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
 
               {/* Printable Body */}
-              <div className="mt-4 p-5 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 dark:border-neutral-700 dark:bg-neutral-950 text-xs text-gray-800 dark:text-neutral-200 space-y-4">
-                <div className="flex justify-between items-start border-b border-gray-200 pb-3 dark:border-neutral-800">
+              <div className="px-6 py-5 overflow-y-auto flex-1">
+                <div className="p-6 rounded-lg border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-xs text-gray-800 dark:text-neutral-200 space-y-4 shadow-2xs">
+                  <div className="flex justify-between items-start border-b border-gray-200 pb-3 dark:border-neutral-800">
+                    <div>
+                      <p className="font-bold text-sm text-gray-900 dark:text-neutral-100">POS SEMBAKO MULTI-CABANG</p>
+                      <p className="text-gray-500">PT. Sembako Makmur Indonesia</p>
+                      <p className="text-gray-500">Jl. Pemuda No. 12, Cirebon • Telp: (0231) 234567</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-sm text-gray-900 dark:text-neutral-100">
+                        {selectedForPrint.trackingNo}
+                      </p>
+                      <p className="text-gray-500">Tanggal: 20 Nov 2026</p>
+                      <p className="font-bold text-gray-700 dark:text-neutral-300">SURAT JALAN / PENGANTAR</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg border border-gray-200 bg-gray-50/60 dark:border-neutral-800 dark:bg-neutral-900">
+                      <p className="font-bold text-gray-400 text-[10px] uppercase">PENGIRIM (ASAL):</p>
+                      <p className="font-bold text-gray-900 dark:text-neutral-100 mt-0.5">{selectedForPrint.fromName}</p>
+                      <p className="text-gray-600 dark:text-neutral-400">{selectedForPrint.fromAddress}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-gray-200 bg-gray-50/60 dark:border-neutral-800 dark:bg-neutral-900">
+                      <p className="font-bold text-gray-400 text-[10px] uppercase">PENERIMA (TUJUAN):</p>
+                      <p className="font-bold text-gray-900 dark:text-neutral-100 mt-0.5">{selectedForPrint.toName}</p>
+                      <p className="text-gray-600 dark:text-neutral-400">{selectedForPrint.toAddress}</p>
+                    </div>
+                  </div>
+
                   <div>
-                    <p className="font-bold text-sm text-gray-900 dark:text-neutral-100">POS SEMBAKO MULTI-CABANG</p>
-                    <p className="text-gray-500">PT. Sembako Makmur Indonesia</p>
-                    <p className="text-gray-500">Jl. Pemuda No. 12, Cirebon • Telp: (0231) 234567</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400">
-                      {selectedForPrint.trackingNo}
-                    </p>
-                    <p className="text-gray-500">Tanggal: 20 Nov 2026</p>
-                    <p className="font-bold text-gray-700 dark:text-neutral-300">SURAT JALAN / PENGANTAR</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800">
-                    <p className="font-bold text-gray-400 text-[10px] uppercase">PENGIRIM (ASAL):</p>
-                    <p className="font-bold text-gray-900 dark:text-neutral-100">{selectedForPrint.fromName}</p>
-                    <p className="text-gray-600 dark:text-neutral-400">{selectedForPrint.fromAddress}</p>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800">
-                    <p className="font-bold text-gray-400 text-[10px] uppercase">PENERIMA (TUJUAN):</p>
-                    <p className="font-bold text-gray-900 dark:text-neutral-100">{selectedForPrint.toName}</p>
-                    <p className="text-gray-600 dark:text-neutral-400">{selectedForPrint.toAddress}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="font-bold text-gray-700 dark:text-neutral-300 mb-2">RINCIAN BARANG:</p>
-                  <table className="w-full text-left border-collapse border border-gray-200 dark:border-neutral-700">
-                    <thead>
-                      <tr className="bg-gray-100 dark:bg-neutral-800">
-                        <th className="p-2 border border-gray-200 dark:border-neutral-700">No</th>
-                        <th className="p-2 border border-gray-200 dark:border-neutral-700">SKU</th>
-                        <th className="p-2 border border-gray-200 dark:border-neutral-700">Nama Barang</th>
-                        <th className="p-2 border border-gray-200 dark:border-neutral-700 text-right">Qty</th>
-                        <th className="p-2 border border-gray-200 dark:border-neutral-700">Satuan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedForPrint.items.map((it, idx) => (
-                        <tr key={it.sku}>
-                          <td className="p-2 border border-gray-200 dark:border-neutral-700">{idx + 1}</td>
-                          <td className="p-2 border border-gray-200 dark:border-neutral-700 font-mono">{it.sku}</td>
-                          <td className="p-2 border border-gray-200 dark:border-neutral-700 font-medium">{it.name}</td>
-                          <td className="p-2 border border-gray-200 dark:border-neutral-700 text-right font-bold">
-                            {it.qty}
-                          </td>
-                          <td className="p-2 border border-gray-200 dark:border-neutral-700">{it.unit}</td>
+                    <p className="font-bold text-gray-700 dark:text-neutral-300 mb-2">RINCIAN BARANG:</p>
+                    <table className="w-full text-left border-collapse border border-gray-200 dark:border-neutral-700">
+                      <thead>
+                        <tr className="bg-gray-100 dark:bg-neutral-800">
+                          <th className="p-2 border border-gray-200 dark:border-neutral-700">No</th>
+                          <th className="p-2 border border-gray-200 dark:border-neutral-700">SKU</th>
+                          <th className="p-2 border border-gray-200 dark:border-neutral-700">Nama Barang</th>
+                          <th className="p-2 border border-gray-200 dark:border-neutral-700 text-right">Qty</th>
+                          <th className="p-2 border border-gray-200 dark:border-neutral-700">Satuan</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {selectedForPrint.items.map((it, idx) => (
+                          <tr key={it.sku}>
+                            <td className="p-2 border border-gray-200 dark:border-neutral-700">{idx + 1}</td>
+                            <td className="p-2 border border-gray-200 dark:border-neutral-700 font-mono">{it.sku}</td>
+                            <td className="p-2 border border-gray-200 dark:border-neutral-700 font-medium">{it.name}</td>
+                            <td className="p-2 border border-gray-200 dark:border-neutral-700 text-right font-bold">
+                              {it.qty}
+                            </td>
+                            <td className="p-2 border border-gray-200 dark:border-neutral-700">{it.unit}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center pt-4 border-t border-gray-200 dark:border-neutral-800">
-                  <div>
-                    <p className="text-gray-500 text-[10px]">Petugas Gudang (Pengirim)</p>
-                    <div className="h-12 flex items-end justify-center font-bold">Rian Kurniawan</div>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-[10px]">Kurir / Pengemudi</p>
-                    <div className="h-12 flex items-end justify-center font-bold">{selectedForPrint.courierName}</div>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-[10px]">Penerima Barang</p>
-                    <div className="h-12 flex items-end justify-center font-bold">Dewi Lestari</div>
+                  <div className="grid grid-cols-3 gap-2 text-center pt-4 border-t border-gray-200 dark:border-neutral-800">
+                    <div>
+                      <p className="text-gray-500 text-[10px]">Petugas Gudang (Pengirim)</p>
+                      <div className="h-12 flex items-end justify-center font-bold">Rian Kurniawan</div>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-[10px]">Kurir / Pengemudi</p>
+                      <div className="h-12 flex items-end justify-center font-bold">{selectedForPrint.courierName}</div>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-[10px]">Penerima Barang</p>
+                      <div className="h-12 flex items-end justify-center font-bold">Dewi Lestari</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Modal Buttons */}
-              <div className="mt-4 flex items-center justify-end gap-2">
+              {/* Dialog Footer Actions */}
+              <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-3.5 bg-gray-50/50 dark:border-neutral-800 dark:bg-neutral-900/50 shrink-0">
                 <button
                   type="button"
                   onClick={() => setSelectedForPrint(null)}
-                  className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="h-8.5 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   Tutup
                 </button>
@@ -796,10 +887,10 @@ export default function LiveTrackingModule({
                     window.print();
                     onNotify("Mencetak Surat Jalan resmi...");
                   }}
-                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-colors cursor-pointer"
+                  className="h-8.5 rounded-lg bg-gray-900 px-4 text-xs font-bold text-white shadow-2xs hover:bg-gray-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Printer size={14} />
-                  Print Dokumen Surat Jalan
+                  <span>Print Dokumen</span>
                 </button>
               </div>
             </motion.div>
@@ -807,110 +898,118 @@ export default function LiveTrackingModule({
         )}
       </AnimatePresence>
 
-      {/* Create New Shipment Modal */}
+      {/* BagUI Dialog: Tambah Pengiriman Baru */}
       <AnimatePresence>
         {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800"
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900 flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-neutral-800">
-                <div className="flex items-center gap-2">
-                  <Truck className="text-blue-600 size-5" />
-                  <h3 className="font-bold text-base text-gray-900 dark:text-neutral-100">
-                    Terbitkan Surat Jalan Pengiriman Baru
+              {/* Dialog Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-neutral-800 shrink-0">
+                <div className="space-y-0.5">
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-neutral-100">
+                    Terbitkan Surat Jalan Baru
                   </h3>
+                  <p className="text-xs text-gray-500 dark:text-neutral-400">
+                    Buat jadwal pengiriman mutasi cabang atau order online
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="flex size-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateShipment} className="mt-4 space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 dark:text-neutral-300">
-                    Jenis Pengiriman:
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 mt-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setNewType("TRANSFER")}
-                      className={`flex items-center justify-center gap-1.5 rounded-xl p-2.5 text-xs font-bold border transition-all cursor-pointer ${
-                        newType === "TRANSFER"
-                          ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                          : "border-gray-200 text-gray-600 dark:border-neutral-700 dark:text-neutral-400"
-                      }`}
+              {/* Form Body */}
+              <form onSubmit={handleCreateShipment}>
+                <div className="px-6 py-5 space-y-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+                      Jenis Rute Pengiriman
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 mt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setNewType("TRANSFER")}
+                        className={`flex items-center justify-center gap-1.5 rounded-lg p-2.5 text-xs font-bold border transition-all cursor-pointer ${
+                          newType === "TRANSFER"
+                            ? "border-gray-900 bg-gray-50 text-gray-900 dark:border-neutral-100 dark:bg-neutral-800 dark:text-neutral-100"
+                            : "border-gray-200 text-gray-600 dark:border-neutral-700 dark:text-neutral-400 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Building2 size={13} />
+                        <span>Mutasi Antar-Cabang</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewType("DELIVERY")}
+                        className={`flex items-center justify-center gap-1.5 rounded-lg p-2.5 text-xs font-bold border transition-all cursor-pointer ${
+                          newType === "DELIVERY"
+                            ? "border-gray-900 bg-gray-50 text-gray-900 dark:border-neutral-100 dark:bg-neutral-800 dark:text-neutral-100"
+                            : "border-gray-200 text-gray-600 dark:border-neutral-700 dark:text-neutral-400 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Store size={13} />
+                        <span>Delivery Online</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+                      Pilih Armada &amp; Pengemudi
+                    </label>
+                    <select
+                      value={newDriver}
+                      onChange={(e) => setNewDriver(e.target.value)}
+                      className="mt-1.5 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-800 outline-none shadow-2xs dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 focus:ring-1 focus:ring-gray-900"
                     >
-                      <Building2 size={13} />
-                      Mutasi Pasokan (T1 ke T2)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNewType("DELIVERY")}
-                      className={`flex items-center justify-center gap-1.5 rounded-xl p-2.5 text-xs font-bold border transition-all cursor-pointer ${
-                        newType === "DELIVERY"
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          : "border-gray-200 text-gray-600 dark:border-neutral-700 dark:text-neutral-400"
-                      }`}
-                    >
-                      <Store size={13} />
-                      Delivery Belanja Online
-                    </button>
+                      <option value="Bpk. Ahmad Subarjo (Pickup Carry)">
+                        Bpk. Ahmad Subarjo — Pickup Carry (Plat E 4821 YZ)
+                      </option>
+                      <option value="Bpk. Dedi Supriyadi (Motor Toko)">
+                        Bpk. Dedi Supriyadi — Motor Kurir Cepat (Plat E 3190 XY)
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+                      Catatan Pengiriman
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={newNotes}
+                      onChange={(e) => setNewNotes(e.target.value)}
+                      placeholder="Contoh: Pasokan darurat sembako untuk Toko 2..."
+                      className="mt-1.5 w-full rounded-lg border border-gray-200 bg-white p-2.5 text-xs text-gray-800 placeholder:text-gray-400 outline-none shadow-2xs dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 focus:ring-1 focus:ring-gray-900"
+                    />
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-700 dark:text-neutral-300">
-                    Pilih Armada &amp; Pengemudi:
-                  </label>
-                  <select
-                    value={newDriver}
-                    onChange={(e) => setNewDriver(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white p-2.5 text-xs font-semibold text-gray-700 outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-                  >
-                    <option value="Bpk. Ahmad Subarjo (Pickup Carry)">
-                      Bpk. Ahmad Subarjo — Mobil Pickup Carry (Plat E 4821 YZ)
-                    </option>
-                    <option value="Bpk. Dedi Supriyadi (Motor Toko)">
-                      Bpk. Dedi Supriyadi — Motor Kurir Cepat (Plat E 3190 XY)
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-700 dark:text-neutral-300">
-                    Catatan Khusus Pengiriman:
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={newNotes}
-                    onChange={(e) => setNewNotes(e.target.value)}
-                    placeholder="Contoh: Pasokan darurat sembako untuk Toko 2..."
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white p-2.5 text-xs text-gray-800 placeholder:text-gray-400 outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-neutral-800">
+                {/* Dialog Footer Actions */}
+                <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-3.5 bg-gray-50/50 dark:border-neutral-800 dark:bg-neutral-900/50 shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 cursor-pointer"
+                    className="h-8.5 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-semibold text-gray-700 shadow-2xs hover:bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-gray-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
+                    className="h-8.5 rounded-lg bg-gray-900 px-4 text-xs font-bold text-white shadow-2xs hover:bg-gray-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Check size={14} />
-                    Terbitkan Surat Jalan
+                    <span>Terbitkan Surat Jalan</span>
                   </button>
                 </div>
               </form>
