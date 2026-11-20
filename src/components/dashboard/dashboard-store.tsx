@@ -50,9 +50,15 @@ import {
   Building2,
   LogOut,
   UserCheck,
+  Truck,
+  MapPin,
+  Clock,
+  Phone,
+  Printer,
 } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
 import { authStore, UserProfile, DEMO_ACCOUNTS, DemoAccount } from "@/lib/authStore";
+import LiveTrackingModule from "./live-tracking";
 
 const font = {
   fontFamily: "var(--font-geist-sans), Geist, Inter, system-ui, sans-serif",
@@ -126,10 +132,11 @@ type NavItem = {
 };
 
 const MAIN_MENU: NavItem[] = [
-  { label: "Dashboard Eksekutif", icon: LayoutGrid },
+  { label: "Dashboard", icon: LayoutGrid },
   { label: "Master Produk & Harga", icon: Package },
   { label: "Monitoring Stok Cabang", icon: Boxes },
-  { label: "Mutasi & Retur 2-Arah", icon: ArrowLeftRight },
+  { label: "Mutasi Antar-Cabang", icon: ArrowLeftRight },
+  { label: "Live Tracking Pengiriman", icon: Truck },
   { label: "Antrean Pesanan Online", icon: ShoppingBag },
   { label: "Transaksi Kasir POS", icon: Receipt },
 ];
@@ -139,7 +146,7 @@ const TOOLS_MENU: NavItem[] = [
 ];
 
 const BOTTOM_MENU: NavItem[] = [
-  { label: "SOP & Panduan Kasir", icon: HelpCircle },
+  { label: "SOP & Panduan Shift", icon: HelpCircle },
   { label: "Pengaturan Multi-Outlet", icon: Settings },
 ];
 
@@ -149,64 +156,118 @@ const WORKSPACES = [
   { label: "Konsolidasi Semua Cabang", count: 923, color: "bg-purple-600 dark:bg-purple-400", outletId: "all" },
 ];
 
-function getMenusForUser(user: UserProfile | null) {
+export interface OutletMenuConfig {
+  outletId: "toko-1" | "toko-2" | "all";
+  storeName: string;
+  storeTag: string;
+  storeAddress: string;
+  roleTitle: string;
+  accent: "blue" | "emerald" | "purple";
+  accentStripe: string;
+  badgeColor: string;
+  storeBadgeColor: string;
+  mainMenu: NavItem[];
+  toolsMenu: NavItem[];
+  bottomMenu: NavItem[];
+  workspaces: typeof WORKSPACES;
+  defaultActive: string;
+}
+
+function getMenusForUser(user: UserProfile | null): OutletMenuConfig {
   if (user?.outletId === "toko-1") {
     return {
+      outletId: "toko-1",
+      storeName: "Toko 1 (Pusat & Gudang)",
+      storeTag: "🏢 PUSAT & GUDANG UTAMA",
+      storeAddress: "Jl. Pemuda No. 12 • Hub Pasokan Multi-Cabang",
       roleTitle: "Kasir & Kepala Gudang Toko 1",
-      badgeColor: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+      accent: "blue",
+      accentStripe: "from-blue-600 via-indigo-500 to-cyan-400",
+      badgeColor: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+      storeBadgeColor: "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/40",
       mainMenu: [
-        { label: "Dashboard Kasir Toko 1", icon: Building2 },
-        { label: "Stok Fisik Gudang (Toko 1)", icon: Boxes },
-        { label: "Distribusi & Mutasi Stok", icon: ArrowLeftRight },
-        { label: "Pesanan Online Masuk (Toko 1)", icon: ShoppingBag },
-        { label: "Riwayat Transaksi (Toko 1)", icon: Receipt },
+        { label: "Dashboard", icon: Building2 },
+        { label: "Stok Gudang", icon: Boxes },
+        { label: "Mutasi Stok", icon: ArrowLeftRight },
+        { label: "Live Tracking Pengiriman", icon: Truck },
+        { label: "Pesanan Online", icon: ShoppingBag },
+        { label: "Transaksi Kasir", icon: Receipt },
       ],
       toolsMenu: [
-        { label: "Log Penjualan Toko 1", icon: BarChart3 },
+        { label: "Laporan Penjualan", icon: BarChart3 },
       ],
       bottomMenu: [
-        { label: "SOP & Shift Kasir Toko 1", icon: HelpCircle },
+        { label: "SOP & Panduan Shift", icon: HelpCircle },
       ],
       workspaces: [
         { label: "Toko 1 (Pusat & Gudang)", count: 797, color: "bg-blue-600 dark:bg-blue-400", outletId: "toko-1" },
       ],
-      defaultActive: "Dashboard Kasir Toko 1",
+      defaultActive: "Dashboard",
     };
   }
 
   if (user?.outletId === "toko-2") {
     return {
+      outletId: "toko-2",
+      storeName: "Toko 2 (Cabang Satelit)",
+      storeTag: "🏪 CABANG RETAIL SATELIT",
+      storeAddress: "Jl. Kesambi No. 45 • Kasir Frontline Satelit",
       roleTitle: "Kasir Frontline Toko 2",
-      badgeColor: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+      accent: "emerald",
+      accentStripe: "from-emerald-500 via-teal-500 to-green-400",
+      badgeColor: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+      storeBadgeColor: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40",
       mainMenu: [
-        { label: "Dashboard Kasir Toko 2", icon: Store },
-        { label: "Stok Rak Display (Toko 2)", icon: Boxes },
-        { label: "Permintaan Pasokan (Request Stok)", icon: ArrowLeftRight },
-        { label: "Pesanan Online Masuk (Toko 2)", icon: ShoppingBag },
-        { label: "Riwayat Transaksi (Toko 2)", icon: Receipt },
+        { label: "Dashboard", icon: Store },
+        { label: "Stok Rak Display", icon: Boxes },
+        { label: "Permintaan Pasokan", icon: ArrowLeftRight },
+        { label: "Live Tracking Pengiriman", icon: Truck },
+        { label: "Pesanan Online", icon: ShoppingBag },
+        { label: "Transaksi Kasir", icon: Receipt },
       ],
       toolsMenu: [
-        { label: "Log Penjualan Toko 2", icon: BarChart3 },
+        { label: "Laporan Penjualan", icon: BarChart3 },
       ],
       bottomMenu: [
-        { label: "SOP & Shift Kasir Toko 2", icon: HelpCircle },
+        { label: "SOP & Panduan Shift", icon: HelpCircle },
       ],
       workspaces: [
         { label: "Toko 2 (Cabang Satelit)", count: 126, color: "bg-emerald-600 dark:bg-emerald-400", outletId: "toko-2" },
       ],
-      defaultActive: "Dashboard Kasir Toko 2",
+      defaultActive: "Dashboard",
     };
   }
 
   // Super Admin / Owner (Default)
   return {
+    outletId: "all",
+    storeName: "Konsolidasi Semua Cabang",
+    storeTag: "👑 KONSOLIDASI MULTI-CABANG (HQ)",
+    storeAddress: "Master Headquarters • Neon Postgres",
     roleTitle: "Super Admin (Semua Cabang)",
-    badgeColor: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30",
-    mainMenu: MAIN_MENU,
-    toolsMenu: TOOLS_MENU,
-    bottomMenu: BOTTOM_MENU,
+    accent: "purple",
+    accentStripe: "from-purple-600 via-violet-500 to-pink-500",
+    badgeColor: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30",
+    storeBadgeColor: "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40",
+    mainMenu: [
+      { label: "Dashboard", icon: LayoutGrid },
+      { label: "Master Produk & Harga", icon: Package },
+      { label: "Monitoring Stok Cabang", icon: Boxes },
+      { label: "Mutasi Antar-Cabang", icon: ArrowLeftRight },
+      { label: "Live Tracking Pengiriman", icon: Truck },
+      { label: "Antrean Pesanan Online", icon: ShoppingBag },
+      { label: "Transaksi Kasir POS", icon: Receipt },
+    ],
+    toolsMenu: [
+      { label: "Analitik & Laporan", icon: BarChart3 },
+      { label: "Log Audit & Cloud", icon: ShieldCheck },
+    ],
+    bottomMenu: [
+      { label: "SOP & Panduan Shift", icon: HelpCircle },
+      { label: "Pengaturan Multi-Outlet", icon: Settings },
+    ],
     workspaces: WORKSPACES,
-    defaultActive: "Dashboard Eksekutif",
+    defaultActive: "Dashboard",
   };
 }
 
@@ -281,7 +342,9 @@ const AVATARS = [
   },
 ];
 
-function buildDatasets(): Record<string, Dataset> {
+function buildDatasets(user?: UserProfile | null): Record<string, Dataset> {
+  const isToko1 = user?.outletId === "toko-1";
+  const isToko2 = user?.outletId === "toko-2";
   const ds: Record<string, Dataset> = {
     "Dashboard Eksekutif": {
       key: "Dashboard Eksekutif",
@@ -1551,16 +1614,95 @@ function buildDatasets(): Record<string, Dataset> {
         { id: "rt2-2", status: "COMPLETED", cells: { receiptNo: "TRX-T2-0413", cashier: "Dewi Lestari", items: "Kopi Arabika 250g, Teh Celup", payment: "Tunai", total: "Rp 45.000" } },
       ],
     },
+    "Live Tracking Pengiriman": {
+      key: "Live Tracking Pengiriman",
+      title: "Live Tracking Pengiriman & Armada Logistik",
+      addLabel: "Buat Surat Jalan Baru",
+      columns: [
+        { key: "trackingNo", label: "No. Surat Jalan" },
+        { key: "type", label: "Jenis Kiriman" },
+        { key: "route", label: "Rute Pengiriman" },
+        { key: "courier", label: "Kurir & Kendaraan" },
+        { key: "eta", label: "Estimasi Tiba" },
+        { key: "status", label: "Status" },
+        { key: "tindakan", label: "Tindakan" },
+      ],
+      stats: [
+        { label: "Total Pengiriman Aktif", value: "2 Pengiriman", delta: "1 Mutasi • 1 Online" },
+        { label: "Armada In-Transit", value: "1 Mobil Carry", delta: "Bpk. Ahmad (E 4821 YZ)" },
+        { label: "Rute Antar-Cabang", value: "1.2 km (±10 Mnt)", delta: "Pemuda ➔ Kesambi" },
+        { label: "Akurasi Fisik & Barcode", value: "100% Cocok", delta: "Verifikasi Digital" },
+      ],
+      rows: [
+        {
+          id: "trf-1-row",
+          status: "DISPATCHED",
+          cells: {
+            trackingNo: "SJ-TRF-202611-001",
+            type: "Mutasi Antar-Cabang",
+            route: "Toko 1 (Pusat) ➔ Toko 2 (Satelit)",
+            courier: "Bpk. Ahmad (Mobil Carry E 4821 YZ)",
+            eta: "10 Menit Lagi Tiba",
+            tindakan: "Pantau Status Pengiriman",
+          },
+        },
+        {
+          id: "onl-1-row",
+          status: "PROCESSING",
+          cells: {
+            trackingNo: "DO-ONL-202611-088",
+            type: "Delivery Online Pelanggan",
+            route: "Toko 1 ➔ Jl. Siliwangi No. 24",
+            courier: "Bpk. Dedi (Motor Toko)",
+            eta: "Sedang Dikemas (Berangkat 08:30)",
+            tindakan: "Siapkan Barang (Packing)",
+          },
+        },
+        {
+          id: "trf-0-row",
+          status: "COMPLETED",
+          cells: {
+            trackingNo: "SJ-TRF-202611-000",
+            type: "Mutasi Antar-Cabang",
+            route: "Toko 1 (Pusat) ➔ Toko 2 (Satelit)",
+            courier: "Bpk. Ahmad (Mobil Carry)",
+            eta: "Telah diterima kemarin (16:30 WIB)",
+            tindakan: "Lihat Surat Jalan",
+          },
+        },
+      ],
+    },
   };
 
-  // Aliases for sub-menus
+  // Dynamically map "Dashboard" based on the active store/user
+  if (isToko1) {
+    ds["Dashboard"] = ds["Dashboard Kasir Toko 1"];
+  } else if (isToko2) {
+    ds["Dashboard"] = ds["Dashboard Kasir Toko 2"];
+  } else {
+    ds["Dashboard"] = ds["Dashboard Eksekutif"];
+  }
+
+  // Clean menu aliases
+  ds["Stok Gudang"] = ds["Stok Fisik Gudang (Toko 1)"];
+  ds["Stok Rak Display"] = ds["Stok Rak Display (Toko 2)"];
+  ds["Mutasi Stok"] = ds["Distribusi & Mutasi Stok"];
+  ds["Permintaan Pasokan"] = ds["Permintaan Pasokan (Request Stok)"];
+  ds["Pesanan Online"] = isToko2 ? ds["Pesanan Online Masuk (Toko 2)"] : ds["Pesanan Online Masuk (Toko 1)"];
+  ds["Transaksi Kasir"] = isToko2 ? ds["Riwayat Transaksi (Toko 2)"] : ds["Riwayat Transaksi (Toko 1)"];
+  ds["Laporan Penjualan"] = ds["Analitik & Laporan"];
+  ds["SOP & Panduan Shift"] = ds["SOP & Panduan Kasir"];
+  ds["Mutasi Antar-Cabang"] = ds["Mutasi & Retur 2-Arah"];
+
+  // Legacy aliases for sub-menus
+  ds["Dashboard Kasir Toko 1"] = ds["Dashboard Kasir Toko 1"] || ds["Dashboard"];
+  ds["Dashboard Kasir Toko 2"] = ds["Dashboard Kasir Toko 2"] || ds["Dashboard"];
   ds["SOP & Shift Kasir Toko 1"] = ds["SOP & Panduan Kasir"];
   ds["Log Penjualan Toko 1"] = ds["Analitik & Laporan"];
   ds["SOP & Shift Kasir Toko 2"] = ds["SOP & Panduan Kasir"];
   ds["Log Penjualan Toko 2"] = ds["Analitik & Laporan"];
 
   // Backwards-compatible aliases
-  ds["Dashboard"] = ds["Dashboard Eksekutif"];
   ds["Product"] = ds["Master Produk & Harga"];
   ds["Order"] = ds["Transaksi Kasir POS"];
   ds["Customer"] = ds["Antrean Pesanan Online"];
@@ -1825,6 +1967,10 @@ function Sidebar({
   bottomMenu,
   workspaces,
   roleTitle,
+  storeTag,
+  storeName,
+  storeAddress,
+  storeBadgeColor,
 }: {
   active: string;
   onActiveChange: (v: string) => void;
@@ -1840,6 +1986,10 @@ function Sidebar({
   bottomMenu: NavItem[];
   workspaces: typeof WORKSPACES;
   roleTitle: string;
+  storeTag: string;
+  storeName: string;
+  storeAddress: string;
+  storeBadgeColor: string;
 }) {
   const [isRoleSwitchOpen, setIsRoleSwitchOpen] = useState(false);
 
@@ -1850,18 +2000,19 @@ function Sidebar({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex h-full w-64 shrink-0 flex-col border-r border-gray-100 bg-white dark:border-neutral-800 dark:bg-black"
     >
-      <div className="flex items-center justify-between p-4">
-        <div className="flex min-w-0 items-center gap-3 rounded-xl px-1.5 py-1">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 shadow-xs overflow-hidden">
+      {/* Brand Header & Active Branch Card */}
+      <div className="p-3.5 border-b border-gray-100 dark:border-neutral-800">
+        <div className="flex min-w-0 items-center gap-2.5 rounded-xl px-1.5 py-1">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 shadow-xs overflow-hidden border border-gray-800">
             <img src="/brand-logo.svg" alt="POS Logo" className="h-full w-full object-contain" />
           </div>
 
-          <div className="min-w-0 text-left">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="truncate text-sm font-bold text-gray-900 dark:text-neutral-50">
-                POS Multi-Cabang
+                POS Sembako
               </p>
-              <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="rounded bg-emerald-500/10 px-1 py-0.2 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
                 BagUI
               </span>
             </div>
@@ -1869,6 +2020,22 @@ function Sidebar({
               {roleTitle}
             </p>
           </div>
+        </div>
+
+        {/* Dedicated Store Identity Box */}
+        <div className="mt-2.5 rounded-xl border border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-neutral-800 dark:bg-neutral-900/60 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${storeBadgeColor}`}>
+              {storeTag}
+            </span>
+          </div>
+          <p className="mt-1 text-xs font-bold text-gray-900 dark:text-neutral-100 truncate">
+            {storeName}
+          </p>
+          <p className="text-[10px] text-gray-500 dark:text-neutral-400 truncate flex items-center gap-1 mt-0.5">
+            <MapPin size={10} className="shrink-0 text-gray-400" />
+            {storeAddress}
+          </p>
         </div>
       </div>
 
@@ -1933,25 +2100,55 @@ function Sidebar({
           </>
         )}
 
-        <SectionLabel>Akses Cepat Kasir</SectionLabel>
+        <SectionLabel>Akses Cepat Operasional</SectionLabel>
         <div className="flex flex-col gap-0.5">
           <a
             href="/pos"
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
           >
-            <ShoppingCart size={16} className="text-gray-400 dark:text-neutral-500" />
+            <ShoppingCart size={15} className="text-gray-400 dark:text-neutral-500" />
             <span className="flex-1 text-left">Terminal Kasir POS</span>
             <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
               Live
             </span>
           </a>
           <a
-            href="/"
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+            href="/shop"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <Store size={16} className="text-gray-400 dark:text-neutral-500" />
-              <span>Toko Online /</span>
+              <Store size={15} className="text-gray-400 dark:text-neutral-500" />
+              <span>Toko Online (/shop)</span>
+            </div>
+            <ArrowUpRight size={13} className="text-gray-400" />
+          </a>
+          <a
+            href="/transfers"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <ArrowLeftRight size={15} className="text-gray-400 dark:text-neutral-500" />
+              <span>Mutasi Stok Lengkap</span>
+            </div>
+            <ArrowUpRight size={13} className="text-gray-400" />
+          </a>
+          <a
+            href="/inventory"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Boxes size={15} className="text-gray-400 dark:text-neutral-500" />
+              <span>Inventaris Penuh</span>
+            </div>
+            <ArrowUpRight size={13} className="text-gray-400" />
+          </a>
+          <a
+            href="/online-orders"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <ShoppingBag size={15} className="text-gray-400 dark:text-neutral-500" />
+              <span>Order Masuk Web</span>
             </div>
             <ArrowUpRight size={13} className="text-gray-400" />
           </a>
@@ -2157,7 +2354,7 @@ function ThemeToggle({
 
 function TopBar({
   title,
-  outletBadge,
+  outletInfo,
   onShare,
   onCustomizeWidget,
   notifCount,
@@ -2166,7 +2363,14 @@ function TopBar({
   setDarkMode,
 }: {
   title: string;
-  outletBadge?: { label: string; color: string };
+  outletInfo: {
+    storeName: string;
+    storeTag: string;
+    storeAddress: string;
+    badgeColor: string;
+    accentStripe: string;
+    outletId: string;
+  };
   onShare: () => void;
   onCustomizeWidget: () => void;
   notifCount: number;
@@ -2175,47 +2379,56 @@ function TopBar({
   setDarkMode: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-neutral-800">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-neutral-50">
-          {title}
-        </h1>
-        {outletBadge && (
-          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${outletBadge.color}`}>
-            {outletBadge.label}
-          </span>
-        )}
-      </div>
-      <div className="flex items-center gap-3">
-        <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
-        <button
-          onClick={onShare}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
-        >
-          <Share2 size={16} />
-        </button>
-        <button
-          onClick={onBell}
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
-        >
-          <Bell size={20} />
-          {notifCount > 0 && (
-            <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-semibold text-white dark:bg-red-500 dark:text-white">
-              {notifCount}
+    <div className="flex flex-col">
+      {/* Ambient Outlet Brand Stripe */}
+      <div className={`h-1 w-full bg-gradient-to-r ${outletInfo.accentStripe}`} />
+
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-3.5 dark:border-neutral-800 bg-white/80 dark:bg-black/80 backdrop-blur-xs">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-neutral-50">
+              {title}
+            </h1>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide uppercase shadow-2xs ${outletInfo.badgeColor}`}>
+              <span className={`size-1.5 rounded-full ${outletInfo.outletId === 'toko-1' ? 'bg-blue-500' : outletInfo.outletId === 'toko-2' ? 'bg-emerald-500' : 'bg-purple-500'} animate-pulse`} />
+              {outletInfo.storeTag}
             </span>
-          )}
-        </button>
-        <AvatarStack />
-        <span className="h-6 w-px bg-gray-200 dark:bg-neutral-700" />
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onCustomizeWidget}
-          className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-200 cursor-pointer"
-        >
-          <SlidersHorizontal size={14} />
-          Customize Widget
-        </motion.button>
+          </div>
+          <span className="hidden md:inline text-xs text-gray-400 dark:text-neutral-500">• {outletInfo.storeAddress}</span>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+          <button
+            onClick={onShare}
+            title="Bagikan"
+            className="flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
+          >
+            <Share2 size={15} />
+          </button>
+          <button
+            onClick={onBell}
+            title="Notifikasi"
+            className="relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
+          >
+            <Bell size={18} />
+            {notifCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-semibold text-white">
+                {notifCount}
+              </span>
+            )}
+          </button>
+          <AvatarStack />
+          <span className="h-5 w-px bg-gray-200 dark:bg-neutral-700" />
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onCustomizeWidget}
+            className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-200 cursor-pointer shadow-2xs"
+          >
+            <SlidersHorizontal size={13} />
+            Customize Widget
+          </motion.button>
+        </div>
       </div>
     </div>
   );
@@ -2459,6 +2672,7 @@ function ProductTable({
   editValue,
   setEditValue,
   onCommitEdit,
+  onActionClick,
 }: {
   columns: ColumnDef[];
   rows: Row[];
@@ -2473,6 +2687,7 @@ function ProductTable({
   editValue: string;
   setEditValue: (v: string) => void;
   onCommitEdit: () => void;
+  onActionClick?: (actionText: string, row: Row) => void;
 }) {
   const cols = columns.filter((c) => visibleCols[c.label] !== false);
   const allChecked = rows.length > 0 && selected.size === rows.length;
@@ -2613,6 +2828,25 @@ function ProductTable({
                       </td>
                     );
                   }
+                  if (c.key === "action" || c.key === "tindakan" || c.label === "Tindakan") {
+                    const actionText = String(raw ?? "");
+                    return (
+                      <td key={c.key} className="py-2.5 pr-4">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onActionClick?.(actionText, r);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-800 dark:text-neutral-200 border border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600 transition-all shadow-2xs group cursor-pointer"
+                        >
+                          <span>{actionText}</span>
+                          <ArrowUpRight size={13} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-neutral-100 transition-colors" />
+                        </button>
+                      </td>
+                    );
+                  }
+
                   return (
                     <td
                       key={c.key}
@@ -2823,7 +3057,7 @@ function Pagination({
 export default function Dashboard2() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authStore.getUser());
   const [datasets, setDatasets] = useState<Record<string, Dataset>>(() =>
-    buildDatasets(),
+    buildDatasets(authStore.getUser()),
   );
 
   const userMenus = useMemo(() => getMenusForUser(currentUser), [currentUser]);
@@ -2835,6 +3069,7 @@ export default function Dashboard2() {
     const unsubTheme = themeStore.subscribe((t) => setDarkMode(t === 'dark'));
     const unsubAuth = authStore.subscribe((u) => {
       setCurrentUser(u);
+      setDatasets(buildDatasets(u));
       const menus = getMenusForUser(u);
       setActive(menus.defaultActive);
     });
@@ -3089,6 +3324,37 @@ export default function Dashboard2() {
     push(`Exported ${filteredRows.length} rows as CSV`);
   };
 
+  const handleActionClick = (actionText: string) => {
+    if (actionText.includes('/pos') || actionText.toLowerCase().includes('terminal kasir')) {
+      window.location.href = '/pos';
+      return;
+    }
+    if (actionText.toLowerCase().includes('pengiriman') || actionText.toLowerCase().includes('surat jalan') || actionText.toLowerCase().includes('kurir')) {
+      setActive("Live Tracking Pengiriman");
+      push("Membuka Modul Live Tracking Pengiriman & Mutasi");
+      return;
+    }
+    if (actionText.toLowerCase().includes('packing') || actionText.toLowerCase().includes('online')) {
+      setActive("Pesanan Online");
+      push("Membuka Antrean Pesanan Online");
+      return;
+    }
+    if (actionText.toLowerCase().includes('pasok') || actionText.toLowerCase().includes('gudang') || actionText.toLowerCase().includes('stok') || actionText.toLowerCase().includes('mutasi')) {
+      if (currentUser?.outletId === 'toko-2') {
+        setActive("Permintaan Pasokan");
+      } else {
+        setActive("Mutasi Stok");
+      }
+      push("Membuka Modul Mutasi & Pasokan Stok");
+      return;
+    }
+    if (actionText.includes('/shop')) {
+      window.location.href = '/shop';
+      return;
+    }
+    push(`Aksi: ${actionText}`);
+  };
+
   const toggleCol = (label: string) =>
     setVisibleCols((prev) => ({
       ...prev,
@@ -3116,14 +3382,22 @@ export default function Dashboard2() {
           bottomMenu={userMenus.bottomMenu}
           workspaces={userMenus.workspaces}
           roleTitle={userMenus.roleTitle}
+          storeTag={userMenus.storeTag}
+          storeName={userMenus.storeName}
+          storeAddress={userMenus.storeAddress}
+          storeBadgeColor={userMenus.storeBadgeColor}
         />
 
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <TopBar
-            title={dataset.title}
-            outletBadge={{
-              label: currentUser?.outletName || "Semua Cabang",
-              color: userMenus.badgeColor,
+            title={active === "Live Tracking Pengiriman" ? "Live Tracking Pengiriman & Armada Logistik" : dataset.title}
+            outletInfo={{
+              storeName: userMenus.storeName,
+              storeTag: userMenus.storeTag,
+              storeAddress: userMenus.storeAddress,
+              badgeColor: userMenus.badgeColor,
+              accentStripe: userMenus.accentStripe,
+              outletId: userMenus.outletId,
             }}
             onShare={() => push("Tautan dashboard disalin")}
             onCustomizeWidget={() => setCustomizeOpen((o) => !o)}
@@ -3135,75 +3409,87 @@ export default function Dashboard2() {
             darkMode={darkMode}
             setDarkMode={handleToggleDark}
           />
-          <div className="relative flex-1 overflow-y-auto pb-4">
-            <Toolbar
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              sortOption={sortOption}
-              setSortOption={(v) => {
-                setSortOption(v);
-                setSortKey(null);
-              }}
-              statusOptions={statusOptions}
-              showStats={showStats}
-              setShowStats={setShowStats}
-              onCustomize={() => setCustomizeOpen((o) => !o)}
-              onExport={handleExport}
-              onAdd={handleAdd}
-              addLabel={dataset.addLabel}
-            />
-
-            <AnimatePresence>
-              {customizeOpen && (
-                <CustomizePopover
-                  columns={dataset.columns.map((c) => c.label)}
-                  visibleCols={visibleCols}
-                  toggleCol={toggleCol}
-                  onClose={() => setCustomizeOpen(false)}
+          <div className="relative flex-1 overflow-y-auto pb-6">
+            {active === "Live Tracking Pengiriman" ? (
+              <div className="px-6 pt-5">
+                <LiveTrackingModule
+                  currentUser={currentUser}
+                  onNotify={push}
                 />
-              )}
-            </AnimatePresence>
+              </div>
+            ) : (
+              <>
+                <Toolbar
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                  sortOption={sortOption}
+                  setSortOption={(v) => {
+                    setSortOption(v);
+                    setSortKey(null);
+                  }}
+                  statusOptions={statusOptions}
+                  showStats={showStats}
+                  setShowStats={setShowStats}
+                  onCustomize={() => setCustomizeOpen((o) => !o)}
+                  onExport={handleExport}
+                  onAdd={handleAdd}
+                  addLabel={dataset.addLabel}
+                />
 
-            {showStats && (
-              <StatsRow
-                stats={dataset.stats}
-                visible={statsVisibility}
-                focused={focusedStat}
-                setFocused={setFocusedStat}
-              />
+                <AnimatePresence>
+                  {customizeOpen && (
+                    <CustomizePopover
+                      columns={dataset.columns.map((c) => c.label)}
+                      visibleCols={visibleCols}
+                      toggleCol={toggleCol}
+                      onClose={() => setCustomizeOpen(false)}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {showStats && (
+                  <StatsRow
+                    stats={dataset.stats}
+                    visible={statsVisibility}
+                    focused={focusedStat}
+                    setFocused={setFocusedStat}
+                  />
+                )}
+
+                <div className="px-6 pt-5">
+                  <ProductTable
+                    columns={dataset.columns}
+                    rows={pagedRows}
+                    visibleCols={visibleCols}
+                    selected={selected}
+                    toggleRow={toggleRow}
+                    toggleAll={toggleAll}
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSortColumn={onSortColumn}
+                    editingId={editingId}
+                    editValue={editValue}
+                    setEditValue={setEditValue}
+                    onCommitEdit={commitEdit}
+                    onActionClick={handleActionClick}
+                  />
+                  <BulkActionBar
+                    count={selected.size}
+                    onClear={() => setSelected(new Set())}
+                    onApplyCode={handleApplyCode}
+                    onEditInfo={handleEditInfo}
+                    onDelete={handleDelete}
+                  />
+                  <Pagination
+                    page={page}
+                    setPage={setPage}
+                    pageSize={pageSize}
+                    setPageSize={setPageSize}
+                    totalRows={filteredRows.length}
+                  />
+                </div>
+              </>
             )}
-
-            <div className="px-6 pt-5">
-              <ProductTable
-                columns={dataset.columns}
-                rows={pagedRows}
-                visibleCols={visibleCols}
-                selected={selected}
-                toggleRow={toggleRow}
-                toggleAll={toggleAll}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onSortColumn={onSortColumn}
-                editingId={editingId}
-                editValue={editValue}
-                setEditValue={setEditValue}
-                onCommitEdit={commitEdit}
-              />
-              <BulkActionBar
-                count={selected.size}
-                onClear={() => setSelected(new Set())}
-                onApplyCode={handleApplyCode}
-                onEditInfo={handleEditInfo}
-                onDelete={handleDelete}
-              />
-              <Pagination
-                page={page}
-                setPage={setPage}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                totalRows={filteredRows.length}
-              />
-            </div>
           </div>
         </main>
 
