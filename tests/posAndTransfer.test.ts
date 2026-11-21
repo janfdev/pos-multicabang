@@ -98,6 +98,125 @@ describe('POS & Multi-Outlet Inventory Engineering Test Suite', () => {
       const invAfter = _testing.getInventory()['p-1'];
       expect(invAfter.t2Stock).toBe(4);
     });
+
+    it('should create a Midtrans Sandbox digital charge without deducting stock while pending (F-05 & BAB 3.3)', async () => {
+      const invBefore = _testing.getInventory()['p-3'];
+      const t2Before = invBefore.t2Stock; // 18
+
+      const chargeRes = await app.request('/api/pos/midtrans/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-2',
+          items: [{ productId: 'p-3', qty: 2 }],
+          cashierName: 'Dewi Lestari',
+        }),
+      });
+
+      expect(chargeRes.status).toBe(200);
+      const chargeData = await chargeRes.json();
+      expect(chargeData.success).toBe(true);
+      expect(chargeData.orderId).toMatch(/^TRX-/);
+      expect(chargeData.grossAmount).toBe(35000);
+      expect(chargeData.paymentType).toBe('qris');
+      expect(chargeData.transactionStatus).toBe('pending');
+
+      // Stock must NOT be deducted yet while payment is pending
+      expect(_testing.getInventory()['p-3'].t2Stock).toBe(t2Before);
+    });
+
+    it('should finalize order and deduct stock atomically once upon valid Midtrans webhook settlement (F-05)', async () => {
+      const invBefore = _testing.getInventory()['p-3'];
+      const t2Before = invBefore.t2Stock;
+
+      // 1. Create charge
+      const chargeRes = await app.request('/api/pos/midtrans/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-2',
+          items: [{ productId: 'p-3', qty: 2 }],
+          cashierName: 'Dewi Lestari',
+        }),
+      });
+      const orderId = (await chargeRes.json()).orderId;
+
+      // 2. Midtrans Webhook Callback (settlement)
+      const webhookRes = await app.request('/api/pos/midtrans/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: orderId,
+          transaction_status: 'settlement',
+          payment_type: 'qris',
+          gross_amount: '35000.00',
+          signature_key: 'mock-valid-signature',
+        }),
+      });
+
+      expect(webhookRes.status).toBe(200);
+      const webhookData = await webhookRes.json();
+      expect(webhookData.success).toBe(true);
+      expect(webhookData.status).toBe('SETTLED');
+
+      // Stock must decrease by 2 at Toko 2
+      expect(_testing.getInventory()['p-3'].t2Stock).toBe(t2Before - 2);
+
+      // 3. Idempotency test: duplicate webhook must NOT deduct stock a second time!
+      const duplicateRes = await app.request('/api/pos/midtrans/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: orderId,
+          transaction_status: 'settlement',
+          payment_type: 'qris',
+          gross_amount: '35000.00',
+          signature_key: 'mock-valid-signature',
+        }),
+      });
+
+      expect(duplicateRes.status).toBe(200);
+      const dupData = await duplicateRes.json();
+      expect(dupData.alreadyProcessed).toBe(true);
+
+      // Stock must remain unchanged (still t2Before - 2)
+      expect(_testing.getInventory()['p-3'].t2Stock).toBe(t2Before - 2);
+    });
+
+    it('should NOT deduct stock if Midtrans transaction expires or fails (BAB 3.3 rule 6)', async () => {
+      const invBefore = _testing.getInventory()['p-3'];
+      const t2Before = invBefore.t2Stock;
+
+      // 1. Create charge
+      const chargeRes = await app.request('/api/pos/midtrans/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-2',
+          items: [{ productId: 'p-3', qty: 1 }],
+        }),
+      });
+      const orderId = (await chargeRes.json()).orderId;
+
+      // 2. Webhook Callback (expire)
+      const webhookRes = await app.request('/api/pos/midtrans/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: orderId,
+          transaction_status: 'expire',
+          payment_type: 'qris',
+          gross_amount: '17500.00',
+        }),
+      });
+
+      expect(webhookRes.status).toBe(200);
+      const webhookData = await webhookRes.json();
+      expect(webhookData.status).toBe('EXPIRED');
+
+      // Stock must remain untouched
+      expect(_testing.getInventory()['p-3'].t2Stock).toBe(t2Before);
+    });
   });
 
   describe('Group 3: 3-Stage Stock Transfer Protocol', () => {

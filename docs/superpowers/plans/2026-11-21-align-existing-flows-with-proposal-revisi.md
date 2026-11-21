@@ -50,25 +50,25 @@
 - Consumes: `onlineOrders` table schema, `/api/online-orders` endpoint.
 - Produces: `subtotal`, `deliveryFee`, `totalAmount` terpisah pada pesanan online, validasi minimum order Rp30.000 untuk delivery.
 
-- [ ] **Step 1: Tulis unit test untuk aturan delivery & ongkir di `tests/onlineOrders.test.ts`**
+- [x] **Step 1: Tulis unit test untuk aturan delivery & ongkir di `tests/onlineOrders.test.ts`**
   - Uji penolakan pesanan delivery dengan subtotal Rp25.000 ($<$ Rp30.000).
   - Uji pesanan delivery subtotal Rp35.000 $\rightarrow$ ongkir Rp5.000 $\rightarrow$ total Rp40.000.
   - Uji pesanan delivery subtotal Rp76.000 $\rightarrow$ ongkir Rp0 (Gratis) $\rightarrow$ total Rp76.000.
   - Uji pesanan pickup subtotal Rp15.000 $\rightarrow$ ongkir Rp0 (Lolos).
-- [ ] **Step 2: Jalankan test dan pastikan gagal (Red)**
+- [x] **Step 2: Jalankan test dan pastikan gagal (Red)**
   - Run: `bun test tests/onlineOrders.test.ts`
   - Expected: FAIL pada aturan baru.
-- [ ] **Step 3: Implementasi logika validasi & ongkir di backend `src/server/app.ts`**
+- [x] **Step 3: Implementasi logika validasi & ongkir di backend `src/server/app.ts`**
   - Di `POST /online-orders`: hitung subtotal barang, jika `DELIVERY` validasi subtotal $\ge 30000$, tentukan `deliveryFee` (Rp5.000 jika subtotal $< 50000$, else 0), dan `totalAmount = subtotal + deliveryFee`.
-- [ ] **Step 4: Perbarui UI Checkout & Drawer Keranjang di `src/routes/shop.tsx`**
+- [x] **Step 4: Perbarui UI Checkout & Drawer Keranjang di `src/routes/shop.tsx`**
   - Tampilkan rincian: Subtotal, Ongkos Kirim (dengan badge Gratis Ongkir bila $\ge$ Rp50.000), dan Total Pembayaran.
   - Tambahkan validasi & pesan interaktif jika subtotal delivery belum mencapai Rp30.000 (contoh: "Tambah belanjaan Rp5.000 lagi untuk pengiriman delivery").
   - Tambahkan banner / toggle radius 5 km pada opsi delivery.
   - Perbarui draf WhatsApp agar memuat rincian ongkos kirim secara transparan.
-- [ ] **Step 5: Jalankan test dan pastikan lulus (Green)**
+- [x] **Step 5: Jalankan test dan pastikan lulus (Green)**
   - Run: `bun test tests/onlineOrders.test.ts`
   - Expected: PASS seluruh skenario.
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
   - `git add tests/onlineOrders.test.ts src/server/app.ts src/routes/shop.tsx`
   - `git commit -m "feat(shop): add delivery minimum Rp30k, shipping fee rules, and 5km radius indicator"`
 
@@ -85,25 +85,25 @@
 - Consumes: `/api/pos/checkout`, `orders` table.
 - Produces: `/api/pos/midtrans/charge`, `/api/pos/midtrans/webhook`, modal QRIS scanner di POS.
 
-- [ ] **Step 1: Tulis unit test untuk Midtrans Sandbox charge & webhook idempotency di `tests/posAndTransfer.test.ts`**
+- [x] **Step 1: Tulis unit test untuk Midtrans Sandbox charge & webhook idempotency di `tests/posAndTransfer.test.ts`**
   - Uji pembuatan pesanan berstatus digital dengan gateway reference.
   - Uji webhook notifikasi status settlement: stok terpotong tepat 1 kali.
   - Uji webhook duplikat kedua kali: respon sukses tetapi stok TIDAK terpotong lagi (*idempotency*).
   - Uji webhook status expire/cancel: transaksi digagalkan dan stok tidak berkurang.
-- [ ] **Step 2: Jalankan test dan pastikan gagal (Red)**
+- [x] **Step 2: Jalankan test dan pastikan gagal (Red)**
   - Run: `bun test tests/posAndTransfer.test.ts`
   - Expected: FAIL pada endpoint charge & webhook yang belum ada.
-- [ ] **Step 3: Implementasi endpoint Midtrans Sandbox di `src/server/app.ts`**
+- [x] **Step 3: Implementasi endpoint Midtrans Sandbox di `src/server/app.ts`**
   - Tambahkan route `POST /api/pos/midtrans/charge` (menghasilkan mock QRIS payment link & transaction ID).
   - Tambahkan route `POST /api/pos/midtrans/webhook` dengan pengecekan status, pemotongan stok tepat satu kali, dan verifikasi idempotensi.
-- [ ] **Step 4: Tambahkan opsi metode pembayaran di Terminal POS `src/routes/pos.tsx`**
+- [x] **Step 4: Tambahkan opsi metode pembayaran di Terminal POS `src/routes/pos.tsx`**
   - Tombol pemilih metode: "Uang Tunai (Cash)" vs "QRIS / Digital Sandbox (Midtrans)".
   - Jika memilih QRIS/Digital: tampilkan modal QRIS interaktif dengan timer kedaluwarsa dan tombol "Simulasi Pembayaran Berhasil (Sandbox Callback)" untuk kemudahan demo pengujian dosen.
   - Cetak struk kasir menampilkan metode pembayaran QRIS/Midtrans dan kode referensi transaksi.
-- [ ] **Step 5: Jalankan test dan pastikan lulus (Green)**
+- [x] **Step 5: Jalankan test dan pastikan lulus (Green)**
   - Run: `bun test tests/posAndTransfer.test.ts`
   - Expected: PASS.
-- [ ] **Step 6: Commit Task 2**
+- [x] **Step 6: Commit Task 2**
   - `git add tests/posAndTransfer.test.ts src/server/app.ts src/routes/pos.tsx`
   - `git commit -m "feat(pos): add Midtrans sandbox digital payment and idempotent webhook"`
 

@@ -300,6 +300,180 @@ app.post('/pos/checkout', async (c) => {
   return c.json({ success: true, order });
 });
 
+// 4.1. Midtrans Sandbox Digital Payment (QRIS & Webhook with Idempotency)
+interface MidtransTx {
+  orderId: string;
+  outletId: string;
+  grossAmount: number;
+  items: Array<{ productId: string; productName: string; qty: number; unitPrice: number; subtotal: number }>;
+  paymentType: string;
+  status: 'pending' | 'settlement' | 'expire' | 'cancel';
+  qrString: string;
+  cashierName: string;
+  createdAt: string;
+}
+
+const MIDTRANS_TRANSACTIONS: Record<string, MidtransTx> = {};
+const PROCESSED_WEBHOOK_IDS = new Set<string>();
+
+app.post('/pos/midtrans/charge', async (c) => {
+  const body = await c.req.json();
+  const { outletId, items, cashierName } = body;
+
+  const targetOutletId = outletId === 'toko-1' ? 'toko-1' : 'toko-2';
+  const currentOutlet = OUTLETS.find((o) => o.id === targetOutletId) || OUTLETS[1];
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return c.json({ success: false, error: 'Keranjang belanja kosong' }, 400);
+  }
+
+  // Pre-validate stock availability (WITHOUT deducting yet!)
+  for (const item of items) {
+    const inv = INVENTORY[item.productId];
+    const available = targetOutletId === 'toko-1' ? (inv?.t1Stock ?? 0) : (inv?.t2Stock ?? 0);
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    const prodName = prod?.name || item.name || item.productId;
+
+    if (available < item.qty) {
+      return c.json(
+        {
+          success: false,
+          error: `Stok "${prodName}" tidak mencukupi di ${currentOutlet.name}. Tersedia: ${available}, Diminta: ${item.qty}`,
+        },
+        400
+      );
+    }
+  }
+
+  let grossAmount = 0;
+  const processedItems = items.map((item: any) => {
+    const prod = PRODUCTS.find((p) => p.id === item.productId);
+    const unitPrice = prod?.sellingPrice || item.price || item.unitPrice || 0;
+    const subtotal = unitPrice * item.qty;
+    grossAmount += subtotal;
+
+    return {
+      productId: item.productId,
+      productName: prod?.name || item.name || item.productName || item.productId,
+      qty: item.qty,
+      unitPrice,
+      subtotal,
+    };
+  });
+
+  const orderId = `TRX-${Date.now().toString().slice(-6)}`;
+  const qrString = `00020101021226580016ID.CO.MIDTRANS.WWW01189360091800000000005204541153033605802ID5914POS MULTICABANG6007CIREBON62070703A016304${orderId.slice(-4)}`;
+
+  const tx: MidtransTx = {
+    orderId,
+    outletId: currentOutlet.id,
+    grossAmount,
+    items: processedItems,
+    paymentType: 'qris',
+    status: 'pending',
+    qrString,
+    cashierName: cashierName || 'Kasir',
+    createdAt: new Date().toISOString(),
+  };
+
+  MIDTRANS_TRANSACTIONS[orderId] = tx;
+
+  return c.json({
+    success: true,
+    orderId,
+    grossAmount,
+    paymentType: 'qris',
+    transactionStatus: 'pending',
+    qrString,
+    outletName: currentOutlet.name,
+    environment: 'sandbox',
+  });
+});
+
+app.post('/pos/midtrans/webhook', async (c) => {
+  const body = await c.req.json();
+  const orderId = body.order_id || body.orderId;
+  const transactionStatus = (body.transaction_status || body.transactionStatus || '').toLowerCase();
+
+  if (!orderId) {
+    return c.json({ success: false, error: 'order_id wajib disertakan' }, 400);
+  }
+
+  // Idempotency Guard: prevent duplicate stock deductions
+  if (PROCESSED_WEBHOOK_IDS.has(orderId)) {
+    return c.json({
+      success: true,
+      alreadyProcessed: true,
+      message: 'Notifikasi webhook telah diproses sebelumnya (Idempotency Active)',
+    });
+  }
+
+  const tx = MIDTRANS_TRANSACTIONS[orderId];
+  if (!tx) {
+    return c.json({ success: false, error: 'Transaksi tidak ditemukan' }, 404);
+  }
+
+  if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
+    // Deduct stock atomik TEPAT SATU KALI
+    const targetOutletId = tx.outletId;
+    for (const item of tx.items) {
+      const inv = INVENTORY[item.productId];
+      if (inv) {
+        if (targetOutletId === 'toko-1') {
+          inv.t1Stock = Math.max(0, inv.t1Stock - item.qty);
+        } else {
+          inv.t2Stock = Math.max(0, inv.t2Stock - item.qty);
+        }
+      }
+    }
+
+    const currentOutlet = OUTLETS.find((o) => o.id === targetOutletId) || OUTLETS[1];
+    const order = {
+      id: tx.orderId,
+      outletId: tx.outletId,
+      outletName: currentOutlet.name,
+      totalAmount: tx.grossAmount,
+      paymentMethod: 'QRIS_MIDTRANS',
+      cashReceived: tx.grossAmount,
+      cashChange: 0,
+      cashierName: tx.cashierName,
+      items: tx.items,
+      createdAt: new Date().toISOString(),
+    };
+
+    ORDERS.unshift(order);
+    PROCESSED_WEBHOOK_IDS.add(orderId);
+    tx.status = 'settlement';
+
+    // Persist to Neon DB asynchronously
+    DbService.recordOrder({
+      id: order.id,
+      outletId: order.outletId,
+      totalAmount: order.totalAmount,
+      paymentMethod: order.paymentMethod,
+      cashReceived: order.cashReceived,
+      cashChange: order.cashChange,
+      items: order.items,
+    }).catch((err) => console.error('DB async order record error:', err));
+
+    return c.json({ success: true, status: 'SETTLED', order });
+  }
+
+  if (transactionStatus === 'expire' || transactionStatus === 'cancel' || transactionStatus === 'deny') {
+    tx.status = 'expire';
+    return c.json({ success: true, status: 'EXPIRED', message: 'Transaksi kedaluwarsa atau dibatalkan. Stok aman.' });
+  }
+
+  return c.json({ success: true, status: tx.status });
+});
+
+app.get('/pos/midtrans/status/:orderId', (c) => {
+  const orderId = c.req.param('orderId');
+  const tx = MIDTRANS_TRANSACTIONS[orderId];
+  if (!tx) return c.json({ error: 'Transaksi tidak ditemukan' }, 404);
+  return c.json({ orderId, status: tx.status, grossAmount: tx.grossAmount });
+});
+
 // 5. Stock Transfers (Request, Dispatch, Receive)
 app.get('/transfers', (c) => c.json(TRANSFERS));
 

@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   LayoutDashboard,
   Package,
+  QrCode,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore, UserProfile } from '@/lib/authStore';
@@ -25,6 +26,7 @@ import { shiftStore, ShiftSession } from '@/lib/shiftStore';
 import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/ThermalReceiptModal';
 import { ShiftModal } from '@/components/pos/ShiftModal';
 import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
+import { MidtransQrisModal } from '@/components/pos/MidtransQrisModal';
 import { FALLBACK_PRODUCT_IMAGES, INITIAL_SEMBAKO_PRODUCTS } from '@/routes/shop';
 
 export const Route = createFileRoute('/pos')({
@@ -64,6 +66,12 @@ function PosPage() {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cashReceived, setCashReceived] = useState<number>(0);
+  const [posPaymentMethod, setPosPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
+  const [midtransModalData, setMidtransModalData] = useState<{
+    isOpen: boolean;
+    orderId: string | null;
+    grossAmount: number;
+  } | null>(null);
   const [lastOrder, setLastOrder] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -213,6 +221,38 @@ function PosPage() {
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    // Midtrans Sandbox Flow
+    if (posPaymentMethod === 'QRIS') {
+      try {
+        const res = await fetch('/api/pos/midtrans/charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            outletId: activeOutlet,
+            items: cart,
+            cashierName: currentUser?.name || 'Kasir',
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setMidtransModalData({
+            isOpen: true,
+            orderId: data.orderId,
+            grossAmount: data.grossAmount,
+          });
+        } else {
+          setErrorMessage(data.error || 'Gagal membuat tagihan QRIS Midtrans Sandbox.');
+        }
+      } catch {
+        setErrorMessage('Terjadi gangguan jaringan saat menghubungi gateway Midtrans.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Cash Payment Flow
     try {
       const res = await fetch('/api/pos/checkout', {
         method: 'POST',
@@ -596,48 +636,95 @@ function PosPage() {
               </div>
             </div>
 
-            {/* Cash Input */}
-            {totalAmount > 0 && (
-              <div className="flex gap-1.5 pt-1">
+            {/* Payment Method Switcher */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-[11px] font-bold text-gray-500 dark:text-neutral-400 block">
+                Metode Pembayaran Kasir
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
-                  onClick={() => handleQuickCash(totalAmount)}
-                  className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 text-[10px] font-bold text-gray-700 dark:text-neutral-300 cursor-pointer"
+                  onClick={() => setPosPaymentMethod('CASH')}
+                  className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    posPaymentMethod === 'CASH'
+                      ? 'bg-gray-900 dark:bg-neutral-100 text-white dark:text-neutral-900 border-gray-900 dark:border-neutral-100 shadow-2xs'
+                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
+                  }`}
                 >
-                  Uang Pas
+                  <Wallet className="size-3.5" />
+                  <span>Uang Tunai</span>
                 </button>
-                {[50000, 100000, 200000].map((amt) => (
-                  <button
-                    key={amt}
-                    type="button"
-                    onClick={() => handleQuickCash(amt)}
-                    className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 text-[10px] font-mono font-bold text-gray-700 dark:text-neutral-300 cursor-pointer"
-                  >
-                    {(amt / 1000)}k
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setPosPaymentMethod('QRIS')}
+                  className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    posPaymentMethod === 'QRIS'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
+                  }`}
+                >
+                  <QrCode className="size-3.5" />
+                  <span>QRIS Sandbox</span>
+                </button>
               </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-gray-500 dark:text-neutral-400 block">
-                Uang Tunai Diterima (Rp)
-              </label>
-              <input
-                type="number"
-                value={cashReceived || ''}
-                onChange={(e) => setCashReceived(Number(e.target.value))}
-                placeholder={`Contoh: ${totalAmount}`}
-                className="w-full bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl p-2.5 text-xs text-gray-900 dark:text-neutral-100 font-mono font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-              />
             </div>
 
-            {cashReceived > 0 && (
-              <div className="flex justify-between text-xs font-bold p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800/50 border border-gray-100 dark:border-neutral-800 text-gray-700 dark:text-neutral-300">
-                <span>Kembalian:</span>
-                <span className="tabular-nums font-black font-mono text-emerald-600 dark:text-emerald-400">
-                  Rp {change.toLocaleString('id-ID')}
-                </span>
+            {/* Cash Input Section (Only for Cash mode) */}
+            {posPaymentMethod === 'CASH' ? (
+              <>
+                {totalAmount > 0 && (
+                  <div className="flex gap-1.5 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickCash(totalAmount)}
+                      className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 text-[10px] font-bold text-gray-700 dark:text-neutral-300 cursor-pointer"
+                    >
+                      Uang Pas
+                    </button>
+                    {[50000, 100000, 200000].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => handleQuickCash(amt)}
+                        className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 text-[10px] font-mono font-bold text-gray-700 dark:text-neutral-300 cursor-pointer"
+                      >
+                        {(amt / 1000)}k
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-500 dark:text-neutral-400 block">
+                    Uang Tunai Diterima (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    value={cashReceived || ''}
+                    onChange={(e) => setCashReceived(Number(e.target.value))}
+                    placeholder={`Contoh: ${totalAmount}`}
+                    className="w-full bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl p-2.5 text-xs text-gray-900 dark:text-neutral-100 font-mono font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  />
+                </div>
+
+                {cashReceived > 0 && (
+                  <div className="flex justify-between text-xs font-bold p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800/50 border border-gray-100 dark:border-neutral-800 text-gray-700 dark:text-neutral-300">
+                    <span>Kembalian:</span>
+                    <span className="tabular-nums font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      Rp {change.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <QrCode className="size-3.5" />
+                  <span>Midtrans Sandbox Gateway</span>
+                </div>
+                <p className="text-[10px] opacity-90">
+                  QR dinamis akan dibuat otomatis. Stok baru terpotong saat webhook resmi settlement diterima.
+                </p>
               </div>
             )}
 
@@ -647,7 +734,11 @@ function PosPage() {
               onClick={handleCheckout}
               className="w-full py-3 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-neutral-50 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 font-extrabold text-xs shadow-xs disabled:opacity-40 transition-all cursor-pointer active:scale-[0.99]"
             >
-              {isSubmitting ? 'Memproses Transaksi...' : 'Selesaikan Transaksi & Struk Digital'}
+              {isSubmitting
+                ? 'Memproses Transaksi...'
+                : posPaymentMethod === 'CASH'
+                ? 'Selesaikan Transaksi Tunai & Struk'
+                : 'Buka QRIS Midtrans Sandbox'}
             </button>
           </div>
 
@@ -744,6 +835,31 @@ function PosPage() {
         products={products}
         onScanSuccess={(prod) => addToCart(prod)}
         onClose={() => setIsScannerModalOpen(false)}
+      />
+
+      {/* Midtrans Sandbox QRIS Digital Payment Modal */}
+      <MidtransQrisModal
+        isOpen={Boolean(midtransModalData?.isOpen)}
+        orderId={midtransModalData?.orderId || null}
+        grossAmount={midtransModalData?.grossAmount || 0}
+        outletName={currentOutletInfo.name}
+        cashierName={currentUser?.name || 'Kasir'}
+        onSuccess={(order) => {
+          playBeep(1200, 0.12);
+          setLastOrder(order);
+          shiftStore.recordTransaction(activeOutlet, 'QRIS', order.totalAmount);
+          setCurrentShift(shiftStore.getActiveShift(activeOutlet));
+          setThermalModalOrder({
+            ...order,
+            outletAddress: currentOutletInfo.address,
+            cashierName: currentUser?.name || 'Kasir',
+          });
+          setCart([]);
+          setCashReceived(0);
+          setMidtransModalData(null);
+          loadProducts();
+        }}
+        onClose={() => setMidtransModalData(null)}
       />
     </div>
   );
