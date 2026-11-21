@@ -153,19 +153,19 @@
 - Consumes: `authStore`, `DEMO_ACCOUNTS`.
 - Produces: 5 akun demo terpisah (Pemilik, Kasir T1, Kasir T2, Petugas Gudang T1, Petugas Cabang T2).
 
-- [ ] **Step 1: Perbarui data akun demo di `src/lib/authStore.ts`**
+- [x] **Step 1: Perbarui data akun demo di `src/lib/authStore.ts`**
   - Tambahkan 5 akun sesuai proposal:
     1. Pemilik / Super Admin (Akses semua gerai)
     2. Kasir Toko 1 (POS Toko 1)
     3. Kasir Toko 2 (POS Toko 2)
     4. Petugas Gudang Toko 1 (Kelola pengiriman & mutasi gudang pusat)
     5. Petugas Cabang Toko 2 (Pengajuan mutasi & stock opname cabang)
-- [ ] **Step 2: Perbarui tampilan halaman Login di `src/routes/login.tsx`**
+- [x] **Step 2: Perbarui tampilan halaman Login di `src/routes/login.tsx`**
   - Tampilkan tombol quick-login untuk 5 akun demo terstruktur dengan badge peran masing-masing.
-- [ ] **Step 3: Verifikasi build dan pengujian keseluruhan**
+- [x] **Step 3: Verifikasi build dan pengujian keseluruhan**
   - Run: `bun test`
   - Run: `npm run build`
   - Pastikan tidak ada type error dan seluruh build sukses.
-- [ ] **Step 4: Commit Task 4**
+- [x] **Step 4: Commit Task 4**
   - `git add src/lib/authStore.ts src/routes/login.tsx`
   - `git commit -m "feat(auth): align 5 demo roles with proposal specifications"`

@@ -1,6 +1,6 @@
 import { outletStore, OutletId } from './outletStore';
 
-export type UserRole = 'CASHIER' | 'MANAGER' | 'OWNER';
+export type UserRole = 'OWNER' | 'MANAGER' | 'CASHIER' | 'WAREHOUSE' | 'BRANCH_STAFF';
 
 export interface UserProfile {
   id: string;
@@ -22,37 +22,7 @@ export interface DemoAccount {
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
-    label: 'Toko 1 (Pusat & Gudang)',
-    email: 'toko1@pos.id',
-    password: 'password123',
-    user: {
-      id: 'usr-toko-1',
-      name: 'Rian Kurniawan',
-      email: 'toko1@pos.id',
-      role: 'MANAGER',
-      roleLabel: 'Kepala Gudang & Kasir Toko 1',
-      outletId: 'toko-1',
-      outletName: 'Toko 1 (Pusat & Gudang)',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
-    },
-  },
-  {
-    label: 'Toko 2 (Cabang Satelit)',
-    email: 'toko2@pos.id',
-    password: 'password123',
-    user: {
-      id: 'usr-toko-2',
-      name: 'Dewi Lestari',
-      email: 'toko2@pos.id',
-      role: 'CASHIER',
-      roleLabel: 'Kasir Frontline Toko 2',
-      outletId: 'toko-2',
-      outletName: 'Toko 2 (Cabang Satelit)',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces',
-    },
-  },
-  {
-    label: 'Owner / Multi-Cabang',
+    label: 'Pemilik Toko (Super Admin)',
     email: 'owner@pos.id',
     password: 'password123',
     user: {
@@ -60,10 +30,70 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
       name: 'H. Budi Santoso',
       email: 'owner@pos.id',
       role: 'OWNER',
-      roleLabel: 'Direktur / Owner Multi-Cabang',
+      roleLabel: 'Pemilik / Super Admin (Lintas Gerai)',
       outletId: 'ALL',
       outletName: 'Semua Cabang (Konsolidasi)',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
+    },
+  },
+  {
+    label: 'Petugas Gudang Toko 1',
+    email: 'gudang@pos.id',
+    password: 'password123',
+    user: {
+      id: 'usr-gudang-t1',
+      name: 'Rian Kurniawan',
+      email: 'gudang@pos.id',
+      role: 'WAREHOUSE',
+      roleLabel: 'Petugas Gudang Toko 1 (Pusat & Pasokan)',
+      outletId: 'toko-1',
+      outletName: 'Toko 1 (Pusat & Gudang)',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
+    },
+  },
+  {
+    label: 'Kasir Toko 1 (Pusat)',
+    email: 'kasir1@pos.id',
+    password: 'password123',
+    user: {
+      id: 'usr-kasir-t1',
+      name: 'Fajar Ramadhan',
+      email: 'kasir1@pos.id',
+      role: 'CASHIER',
+      roleLabel: 'Kasir POS Toko 1 (Pusat)',
+      outletId: 'toko-1',
+      outletName: 'Toko 1 (Pusat & Gudang)',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces',
+    },
+  },
+  {
+    label: 'Kasir Toko 2 (Cabang)',
+    email: 'kasir2@pos.id',
+    password: 'password123',
+    user: {
+      id: 'usr-kasir-t2',
+      name: 'Dewi Lestari',
+      email: 'kasir2@pos.id',
+      role: 'CASHIER',
+      roleLabel: 'Kasir POS Toko 2 (Cabang Satelit)',
+      outletId: 'toko-2',
+      outletName: 'Toko 2 (Cabang Satelit)',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces',
+    },
+  },
+  {
+    label: 'Petugas Toko 2 (Cabang)',
+    email: 'staf2@pos.id',
+    password: 'password123',
+    user: {
+      id: 'usr-staf-t2',
+      name: 'Agus Setiawan',
+      email: 'staf2@pos.id',
+      role: 'BRANCH_STAFF',
+      roleLabel: 'Petugas Gerai Toko 2 (Cabang)',
+      outletId: 'toko-2',
+      outletName: 'Toko 2 (Cabang Satelit)',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=faces',
     },
   },
 ];
