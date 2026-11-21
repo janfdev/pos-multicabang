@@ -140,4 +140,95 @@ describe('Online Customer Store & Order Management Test Suite', () => {
     expect(cancelRes.status).toBe(200);
     expect(_testing.getInventory()['p-1'].t1Stock).toBe(t1StockBefore);
   });
+
+  describe('Proposal Compliance: Delivery Minimum & Shipping Fee Rules (F-16 & F-17)', () => {
+    it('should reject DELIVERY order if subtotal is below Rp30.000 (minimum order rule)', async () => {
+      // p-3 (Gula Pasir 1kg) is 17500 -> 1 unit = 17500 (< 30000)
+      const res = await app.request('/api/online-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-1',
+          customerName: 'Rina Maryati',
+          customerPhone: '081234567890',
+          fulfillmentType: 'DELIVERY',
+          deliveryAddress: 'Jl. Pemuda No. 15, Cirebon',
+          items: [{ productId: 'p-3', qty: 1 }],
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.success).toBe(false);
+      expect(body.error).toContain('Rp30.000');
+    });
+
+    it('should charge Rp5.000 shipping fee for DELIVERY when subtotal is between Rp30.000 and Rp49.999', async () => {
+      // p-3 (Gula 17500) x 2 = 35000 (< 50000) -> delivery fee 5000 -> total 40000
+      const res = await app.request('/api/online-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-1',
+          customerName: 'Rina Maryati',
+          customerPhone: '081234567890',
+          fulfillmentType: 'DELIVERY',
+          deliveryAddress: 'Jl. Pemuda No. 15, Cirebon',
+          items: [{ productId: 'p-3', qty: 2 }],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.order.subtotal).toBe(35000);
+      expect(body.order.deliveryFee).toBe(5000);
+      expect(body.order.totalAmount).toBe(40000);
+    });
+
+    it('should grant FREE shipping (Rp0) for DELIVERY when subtotal is >= Rp50.000', async () => {
+      // p-1 (Beras 76000) x 1 = 76000 (>= 50000) -> delivery fee 0 -> total 76000
+      const res = await app.request('/api/online-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-1',
+          customerName: 'Bambang Irawan',
+          customerPhone: '081299998888',
+          fulfillmentType: 'DELIVERY',
+          deliveryAddress: 'Jl. Pemuda No. 20, Cirebon',
+          items: [{ productId: 'p-1', qty: 1 }],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.order.subtotal).toBe(76000);
+      expect(body.order.deliveryFee).toBe(0);
+      expect(body.order.totalAmount).toBe(76000);
+    });
+
+    it('should allow PICKUP order with subtotal below Rp30.000 and always Rp0 delivery fee', async () => {
+      // p-3 (17500) x 1 = 17500 -> PICKUP has no 30k minimum and 0 fee
+      const res = await app.request('/api/online-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-1',
+          customerName: 'Yuni Astuti',
+          customerPhone: '081277776666',
+          fulfillmentType: 'PICKUP',
+          items: [{ productId: 'p-3', qty: 1 }],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.order.subtotal).toBe(17500);
+      expect(body.order.deliveryFee).toBe(0);
+      expect(body.order.totalAmount).toBe(17500);
+    });
+  });
 });

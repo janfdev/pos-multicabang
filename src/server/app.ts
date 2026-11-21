@@ -497,30 +497,50 @@ app.post('/online-orders', async (c) => {
     }
   }
 
-  let totalAmount = 0;
+  let subtotalAmount = 0;
   const processedItems = rawItems.map((item: any) => {
     const prod = PRODUCTS.find((p) => p.id === item.productId);
     const unitPrice = prod?.sellingPrice || item.unitPrice || 0;
-    const subtotal = unitPrice * item.qty;
-    totalAmount += subtotal;
+    const itemSubtotal = unitPrice * item.qty;
+    subtotalAmount += itemSubtotal;
 
     return {
       productId: item.productId,
       productName: prod?.name || item.productName || item.productId,
       qty: item.qty,
       unitPrice,
-      subtotal,
+      subtotal: itemSubtotal,
     };
   });
+
+  const fulfillmentType = body.fulfillmentType || 'PICKUP';
+
+  // Proposal Rules: F-16 & F-17 (Minimum Belanja Rp30.000 & Ongkir Rp5.000 / Gratis)
+  if (fulfillmentType === 'DELIVERY') {
+    if (subtotalAmount < 30000) {
+      return c.json(
+        {
+          success: false,
+          error: 'Layanan delivery memerlukan subtotal belanja minimal Rp30.000. Silakan tambah item atau pilih opsi Ambil di Toko (Pickup).',
+        },
+        400
+      );
+    }
+  }
+
+  const deliveryFee = fulfillmentType === 'DELIVERY' ? (subtotalAmount < 50000 ? 5000 : 0) : 0;
+  const totalAmount = subtotalAmount + deliveryFee;
 
   const newOrder = {
     id: `ONL-${Date.now().toString().slice(-6)}`,
     outletId,
     customerName: body.customerName || 'Pelanggan Online',
     customerPhone: body.customerPhone || '-',
-    fulfillmentType: body.fulfillmentType || 'PICKUP',
+    fulfillmentType,
     deliveryAddress: body.deliveryAddress || null,
     status: 'PENDING',
+    subtotal: subtotalAmount,
+    deliveryFee,
     totalAmount,
     notes: body.notes || '',
     items: processedItems,

@@ -41,6 +41,7 @@ import { themeStore, Theme } from '@/lib/themeStore';
 import { authStore, UserProfile } from '@/lib/authStore';
 import { playBeep } from '@/lib/audio';
 import { cartStore, CartItem } from '@/lib/cartStore';
+import { CompletedOrderModal } from '@/components/shop/CompletedOrderModal';
 import {
   INITIAL_SEMBAKO_PRODUCTS,
   FALLBACK_PRODUCT_IMAGES,
@@ -188,6 +189,10 @@ export function PublicShopPage() {
 
   const totalCartCount = cartStore.getTotalCount();
   const totalCartAmount = cartStore.getTotalAmount();
+  const subtotalCartAmount = totalCartAmount;
+  const deliveryFee = fulfillmentType === 'DELIVERY' ? (subtotalCartAmount < 50000 ? 5000 : 0) : 0;
+  const finalCheckoutAmount = subtotalCartAmount + (fulfillmentType === 'DELIVERY' ? deliveryFee : 0);
+  const isDeliveryUnderMin = fulfillmentType === 'DELIVERY' && subtotalCartAmount < 30000;
 
   const categories = useMemo(() => {
     return ['ALL', ...Array.from(new Set(products.map((p) => p.category)))];
@@ -231,6 +236,15 @@ export function PublicShopPage() {
 
     if (fulfillmentType === 'DELIVERY' && !deliveryAddress.trim()) {
       setCheckoutError('Alamat pengiriman wajib diisi untuk layanan kurir.');
+      return;
+    }
+
+    if (fulfillmentType === 'DELIVERY' && subtotalCartAmount < 30000) {
+      setCheckoutError(
+        `Layanan delivery memerlukan subtotal belanja minimal Rp 30.000 (Subtotal Anda: ${formatRupiah(
+          subtotalCartAmount
+        )}, kurang ${formatRupiah(30000 - subtotalCartAmount)}).`
+      );
       return;
     }
 
@@ -806,9 +820,14 @@ export function PublicShopPage() {
                 <form id="checkout-form" onSubmit={handleCheckout} className="space-y-3.5 pt-2 border-t border-gray-100 dark:border-neutral-800">
                   {/* Fulfillment Type */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block">
-                      Metode Pemenuhan:
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block">
+                        Metode Pemenuhan:
+                      </label>
+                      <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                        Maksimal Radius 5 km
+                      </span>
+                    </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -821,6 +840,7 @@ export function PublicShopPage() {
                       >
                         <Store className="size-4" />
                         <span>Ambil di Toko (Pickup)</span>
+                        <span className="text-[10px] font-normal opacity-80">Tanpa Minimum • Gratis</span>
                       </button>
                       <button
                         type="button"
@@ -833,8 +853,25 @@ export function PublicShopPage() {
                       >
                         <Truck className="size-4" />
                         <span>Kirim Kurir (Delivery)</span>
+                        <span className="text-[10px] font-normal opacity-80">
+                          {subtotalCartAmount >= 50000 ? 'Gratis Ongkir' : 'Ongkir Rp5.000'}
+                        </span>
                       </button>
                     </div>
+
+                    {/* Delivery Rule Alert Banner */}
+                    {fulfillmentType === 'DELIVERY' && isDeliveryUnderMin && (
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[11px] flex items-start gap-2">
+                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                        <div>
+                          <strong className="font-bold">Min. Belanja Delivery Rp 30.000:</strong>
+                          <p className="mt-0.5 text-[10px]">
+                            Subtotal belanjaan Anda saat ini {formatRupiah(subtotalCartAmount)}. Kurang{' '}
+                            <strong>{formatRupiah(30000 - subtotalCartAmount)}</strong> lagi untuk pengiriman delivery, atau pilih opsi Ambil di Toko.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Customer Info */}
@@ -955,22 +992,50 @@ export function PublicShopPage() {
               </div>
 
               {/* Drawer Footer */}
-              <div className="p-4 border-t border-gray-100 dark:border-neutral-800 bg-gray-50/80 dark:bg-neutral-800/50 space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-gray-500 dark:text-neutral-400">Total Pembayaran</span>
-                  <span className="font-mono font-extrabold text-base text-gray-900 dark:text-neutral-50">
-                    {formatRupiah(totalCartAmount)}
-                  </span>
+              <div className="p-4 border-t border-gray-100 dark:border-neutral-800 bg-gray-50/80 dark:bg-neutral-800/50 space-y-2.5">
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between text-gray-500 dark:text-neutral-400">
+                    <span>Subtotal Barang ({totalCartCount} item)</span>
+                    <span className="font-mono font-bold text-gray-800 dark:text-neutral-200">
+                      {formatRupiah(subtotalCartAmount)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-gray-500 dark:text-neutral-400">
+                    <span>Ongkos Kirim Kurir</span>
+                    {fulfillmentType === 'DELIVERY' ? (
+                      deliveryFee === 0 ? (
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          GRATIS (Promo &ge; 50rb)
+                        </span>
+                      ) : (
+                        <span className="font-mono font-bold text-gray-800 dark:text-neutral-200">
+                          {formatRupiah(deliveryFee)}
+                        </span>
+                      )
+                    ) : (
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        GRATIS (Ambil Sendiri)
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-gray-200/60 dark:border-neutral-700/60 font-semibold">
+                    <span className="text-gray-900 dark:text-neutral-100 font-bold">Total Pembayaran</span>
+                    <span className="font-mono font-extrabold text-base text-gray-900 dark:text-neutral-50">
+                      {formatRupiah(finalCheckoutAmount)}
+                    </span>
+                  </div>
                 </div>
 
                 <button
                   type="submit"
                   form="checkout-form"
-                  disabled={isSubmitting || cart.length === 0}
+                  disabled={isSubmitting || cart.length === 0 || isDeliveryUnderMin}
                   className="w-full py-3 bg-gray-900 hover:bg-gray-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 rounded-2xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <span>Memproses Pesanan...</span>
+                  ) : isDeliveryUnderMin ? (
+                    <span>Min. Belanja Delivery Rp 30.000</span>
                   ) : (
                     <>
                       <span>Konfirmasi Pesanan Sembako</span>
@@ -985,79 +1050,11 @@ export function PublicShopPage() {
       </AnimatePresence>
 
       {/* Completed Order Modal with Direct WhatsApp Routing */}
-      <AnimatePresence>
-        {completedOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.94 }}
-              className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 dark:border-neutral-800 space-y-4 text-center"
-            >
-              <div className="size-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="size-8" />
-              </div>
-
-              <div className="space-y-1">
-                <h3 className="text-base font-extrabold text-gray-900 dark:text-neutral-50">
-                  Pesanan Berhasil Dibuat!
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-neutral-400">
-                  ID Pesanan:{' '}
-                  <strong className="font-mono text-gray-800 dark:text-neutral-200 font-bold">
-                    {completedOrder.id}
-                  </strong>
-                </p>
-              </div>
-
-              <div className="p-3.5 bg-gray-50 dark:bg-neutral-800/60 rounded-2xl border border-gray-100 dark:border-neutral-800 text-left text-xs space-y-1.5 font-mono">
-                <div className="flex justify-between">
-                  <span className="text-gray-400 font-sans">Pemesan:</span>
-                  <span className="font-bold text-gray-800 dark:text-neutral-200">
-                    {completedOrder.customerName}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 font-sans">Layanan:</span>
-                  <span className="font-bold text-gray-800 dark:text-neutral-200">
-                    {completedOrder.fulfillmentType}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-gray-200/60 dark:border-neutral-700/60 pt-1.5">
-                  <span className="text-gray-400 font-sans">Total Tagihan:</span>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                    {formatRupiah(completedOrder.totalAmount)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <a
-                  href={`https://wa.me/6281234567801?text=${encodeURIComponent(
-                    `Halo Admin Toko Sembako, saya sudah membuat pesanan dengan ID: *${completedOrder.id}* atas nama *${completedOrder.customerName}* sejumlah *${formatRupiah(
-                      completedOrder.totalAmount
-                    )}*. Mohon diproses ya. Terima kasih!`
-                  )}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <MessageCircle className="size-4" />
-                  <span>Kirim Rincian ke WhatsApp Toko</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => setCompletedOrder(null)}
-                  className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-neutral-800 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 cursor-pointer"
-                >
-                  Tutup &amp; Kembali Belanja
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <CompletedOrderModal
+        order={completedOrder}
+        onClose={() => setCompletedOrder(null)}
+        formatRupiah={formatRupiah}
+      />
     </div>
   );
 }
