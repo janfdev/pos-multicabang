@@ -120,24 +120,24 @@
 - Consumes: `inventory` per outlet.
 - Produces: `POST /api/inventory/stock-opname`, dialog Stock Opname pada UI `/inventory`.
 
-- [ ] **Step 1: Tulis unit test untuk Stock Opname di `tests/stockOpname.test.ts`**
+- [x] **Step 1: Tulis unit test untuk Stock Opname di `tests/stockOpname.test.ts`**
   - Uji penyesuaian stok Toko 2 dari 10 menjadi 8 (selisih -2, alasan: "Kemasan bocor/rusak").
   - Verifikasi stok sistem terbarui dan jejak audit tersimpan.
   - Uji penolakan penyesuaian jika alasan tidak diisi.
-- [ ] **Step 2: Jalankan test dan pastikan gagal (Red)**
+- [x] **Step 2: Jalankan test dan pastikan gagal (Red)**
   - Run: `bun test tests/stockOpname.test.ts`
   - Expected: FAIL.
-- [ ] **Step 3: Implementasi endpoint Stock Opname di `src/server/app.ts`**
+- [x] **Step 3: Implementasi endpoint Stock Opname di `src/server/app.ts`**
   - Buat handler `POST /api/inventory/stock-opname`: menerima `productId`, `outletId`, `actualStock`, `reason`, `adjustedBy`.
   - Hitung perbedaan selisih (`diff`), sesuaikan stok di memori & DB, simpan catatan audit penyesuaian.
-- [ ] **Step 4: Tambahkan dialog modal Stock Opname di `src/routes/inventory.tsx`**
+- [x] **Step 4: Tambahkan dialog modal Stock Opname di `src/routes/inventory.tsx`**
   - Tombol "Stock Opname" di header tabel inventaris.
   - Form modal BagUI: pilih barang, masukkan jumlah fisik riil, hitung selisih otomatis, masukkan alasan penyesuaian.
   - Notifikasi sukses dan reload data stok otomatis.
-- [ ] **Step 5: Jalankan test dan pastikan lulus (Green)**
+- [x] **Step 5: Jalankan test dan pastikan lulus (Green)**
   - Run: `bun test tests/stockOpname.test.ts`
   - Expected: PASS.
-- [ ] **Step 6: Commit Task 3**
+- [x] **Step 6: Commit Task 3**
   - `git add tests/stockOpname.test.ts src/server/app.ts src/routes/inventory.tsx`
   - `git commit -m "feat(inventory): add stock opname physical audit adjustment dialog and API"`
 

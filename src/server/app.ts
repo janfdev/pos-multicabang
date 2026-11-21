@@ -214,6 +214,104 @@ app.get('/inventory/monitoring', (c) => {
   return c.json(result);
 });
 
+// 3.1. Physical Stock Opname & Audit Logging (Proposal F-08, F-09, Aturan Bisnis 11)
+interface StockOpnameRecord {
+  id: string;
+  outletId: string;
+  outletName: string;
+  productId: string;
+  productName: string;
+  sku: string;
+  previousStock: number;
+  actualStock: number;
+  difference: number;
+  reason: string;
+  adjustedBy: string;
+  createdAt: string;
+}
+
+let STOCK_OPNAME_LOGS: StockOpnameRecord[] = [
+  {
+    id: 'OPN-20261025-001',
+    outletId: 'toko-2',
+    outletName: 'Toko 2 (Cabang Satelit)',
+    productId: 'p-1',
+    productName: 'Beras Pandan Wangi 5kg',
+    sku: 'BRG-001',
+    previousStock: 5,
+    actualStock: 4,
+    difference: -1,
+    reason: '1 Sak beras sobek terkena sudut etalase saat display',
+    adjustedBy: 'Kasir Toko 2',
+    createdAt: new Date(Date.now() - 259200000).toISOString(),
+  },
+];
+
+app.get('/inventory/stock-opname/audit', (c) => {
+  const outletId = c.req.query('outletId');
+  let result = [...STOCK_OPNAME_LOGS];
+  if (outletId && outletId !== 'ALL') {
+    result = result.filter((r) => r.outletId === outletId);
+  }
+  return c.json(result);
+});
+
+app.post('/inventory/stock-opname', async (c) => {
+  const body = await c.req.json();
+  const { outletId, productId, actualStock, reason, adjustedBy } = body;
+
+  const targetOutletId = outletId === 'toko-1' ? 'toko-1' : 'toko-2';
+  const currentOutlet = OUTLETS.find((o) => o.id === targetOutletId) || OUTLETS[1];
+  const prod = PRODUCTS.find((p) => p.id === productId);
+
+  if (!prod) {
+    return c.json({ success: false, error: 'Produk tidak ditemukan' }, 404);
+  }
+
+  if (actualStock === undefined || actualStock === null || isNaN(Number(actualStock)) || Number(actualStock) < 0) {
+    return c.json({ success: false, error: 'Jumlah stok fisik riil harus berupa angka positif' }, 400);
+  }
+
+  if (!reason || typeof reason !== 'string' || !reason.trim()) {
+    return c.json({ success: false, error: 'Alasan penyesuaian wajib diisi untuk jejak audit (Aturan Bisnis 11)' }, 400);
+  }
+
+  const parsedActual = Math.floor(Number(actualStock));
+  const inv = INVENTORY[prod.id] || { t1Stock: 0, t2Stock: 0, minAlert: 5 };
+  const previousStock = targetOutletId === 'toko-1' ? inv.t1Stock : inv.t2Stock;
+  const difference = parsedActual - previousStock;
+
+  // Apply atomic adjustment to memory inventory
+  if (targetOutletId === 'toko-1') {
+    inv.t1Stock = parsedActual;
+  } else {
+    inv.t2Stock = parsedActual;
+  }
+
+  const opnameRecord: StockOpnameRecord = {
+    id: `OPN-${Date.now().toString().slice(-6)}`,
+    outletId: currentOutlet.id,
+    outletName: currentOutlet.name,
+    productId: prod.id,
+    productName: prod.name,
+    sku: prod.sku,
+    previousStock,
+    actualStock: parsedActual,
+    difference,
+    reason: reason.trim(),
+    adjustedBy: adjustedBy?.trim() || 'Petugas Toko',
+    createdAt: new Date().toISOString(),
+  };
+
+  STOCK_OPNAME_LOGS.unshift(opnameRecord);
+
+  return c.json({
+    success: true,
+    message: `Stok "${prod.name}" di ${currentOutlet.name} disesuaikan dari ${previousStock} menjadi ${parsedActual} (Selisih: ${difference >= 0 ? '+' : ''}${difference})`,
+    opname: opnameRecord,
+  });
+});
+
 // 4. POS Checkout
 app.post('/pos/checkout', async (c) => {
   const body = await c.req.json();

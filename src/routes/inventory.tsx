@@ -13,10 +13,12 @@ import {
   Layers,
   Send,
   Package,
+  ClipboardCheck,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore } from '@/lib/authStore';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { StockOpnameModal } from '@/components/inventory/StockOpnameModal';
 
 export const Route = createFileRoute('/inventory')({
   component: InventoryPage,
@@ -28,6 +30,7 @@ function InventoryPage() {
   const [data, setData] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [onlyLowStock, setOnlyLowStock] = useState(false);
+  const [isOpnameModalOpen, setIsOpnameModalOpen] = useState(false);
   const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
   const currentUser = authStore.getUser();
 
@@ -101,6 +104,15 @@ function InventoryPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsOpnameModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
+          >
+            <ClipboardCheck className="size-3.5" />
+            <span>Stock Opname</span>
+          </button>
+
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300 text-xs font-medium">
             <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{totalSkuCount}</span> Total SKU
           </span>
@@ -454,6 +466,20 @@ function InventoryPage() {
         </div>
       </div>
       </div>
+
+      {/* Stock Opname Modal */}
+      <StockOpnameModal
+        isOpen={isOpnameModalOpen}
+        onClose={() => setIsOpnameModalOpen(false)}
+        products={data}
+        activeOutletId={targetOutletId === 'toko-1' ? 'toko-1' : 'toko-2'}
+        onOpnameSuccess={() => {
+          fetch('/api/inventory/monitoring')
+            .then((res) => res.json())
+            .then((d) => setData(d))
+            .catch(() => {});
+        }}
+      />
     </DashboardLayout>
   );
 }
