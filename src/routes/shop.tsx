@@ -36,12 +36,14 @@ import {
   Eye,
   BadgeCheck,
   Download,
+  ClipboardList,
 } from 'lucide-react';
 import { themeStore, Theme } from '@/lib/themeStore';
 import { authStore, UserProfile } from '@/lib/authStore';
 import { playBeep } from '@/lib/audio';
 import { cartStore, CartItem } from '@/lib/cartStore';
 import { CompletedOrderModal } from '@/components/shop/CompletedOrderModal';
+import { CustomerOrderHistoryModal } from '@/components/shop/CustomerOrderHistoryModal';
 import {
   INITIAL_SEMBAKO_PRODUCTS,
   FALLBACK_PRODUCT_IMAGES,
@@ -92,6 +94,7 @@ export function PublicShopPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
@@ -272,6 +275,9 @@ export function PublicShopPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         playBeep(1200, 0.15);
+        try {
+          if (customerPhone.trim()) localStorage.setItem('pos_last_customer_phone', customerPhone.trim());
+        } catch {}
         setCompletedOrder(data.order);
         cartStore.clearCart();
         setIsCartOpen(false);
@@ -322,6 +328,17 @@ export function PublicShopPage() {
                 <span className="hidden sm:inline">Install App</span>
               </button>
             )}
+
+            {/* Customer Order History Trigger (F-22) */}
+            <button
+              type="button"
+              onClick={() => setIsHistoryOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+              title="Lacak Status & Riwayat Pesanan Saya"
+            >
+              <ClipboardList className="size-3.5" />
+              <span className="hidden sm:inline">Pesanan Saya</span>
+            </button>
 
             {/* Cart Trigger */}
             <button
@@ -1053,6 +1070,14 @@ export function PublicShopPage() {
       <CompletedOrderModal
         order={completedOrder}
         onClose={() => setCompletedOrder(null)}
+        formatRupiah={formatRupiah}
+      />
+
+      {/* Customer Order History & 1-Click Re-Order Modal (F-22) */}
+      <CustomerOrderHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onReorderComplete={() => setIsCartOpen(true)}
         formatRupiah={formatRupiah}
       />
     </div>

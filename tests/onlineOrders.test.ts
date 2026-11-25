@@ -231,4 +231,49 @@ describe('Online Customer Store & Order Management Test Suite', () => {
       expect(body.order.totalAmount).toBe(17500);
     });
   });
+
+  describe('Proposal Compliance: Customer Order History & Re-Order (F-22)', () => {
+    it('should retrieve customer order history by normalized WhatsApp phone number', async () => {
+      // Query using +62 format for order placed with 081299998888
+      const res = await app.request('/api/online-orders?phone=6281299998888');
+      expect(res.status).toBe(200);
+      const orders = await res.json();
+      expect(Array.isArray(orders)).toBe(true);
+      expect(orders.length).toBeGreaterThanOrEqual(1);
+      expect(orders.every((o: any) => o.customerPhone.includes('81299998888'))).toBe(true);
+    });
+
+    it('should validate live stock & price on 1-click re-order and warn if stock is limited', async () => {
+      // Create an order for 2 units of p-1 at toko-2
+      _testing.setStock('p-1', 85, 5);
+      const createRes = await app.request('/api/online-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-2',
+          customerName: 'Siti Reorder',
+          customerPhone: '081355554444',
+          fulfillmentType: 'PICKUP',
+          items: [{ productId: 'p-1', qty: 4 }],
+        }),
+      });
+      const created = await createRes.json();
+      expect(created.success).toBe(true);
+
+      // Simulate stock dropping to 2 before customer clicks Re-Order
+      _testing.setStock('p-1', 85, 2);
+
+      const reorderRes = await app.request(`/api/online-orders/${created.order.id}/reorder`);
+      expect(reorderRes.status).toBe(200);
+      const reorderData = await reorderRes.json();
+      expect(reorderData.success).toBe(true);
+      expect(reorderData.items[0].requestedQty).toBe(4);
+      expect(reorderData.items[0].availableQty).toBe(2);
+      expect(reorderData.items[0].adjustedQty).toBe(2);
+      expect(reorderData.warnings.length).toBeGreaterThan(0);
+
+      // Restore stock
+      _testing.setStock('p-1', 85, 4);
+    });
+  });
 });
