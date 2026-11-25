@@ -275,5 +275,20 @@ describe('Online Customer Store & Order Management Test Suite', () => {
       // Restore stock
       _testing.setStock('p-1', 85, 4);
     });
+
+    it('should return live pending online order count and latest order for cashier notifications', async () => {
+      const resAll = await app.request('/api/online-orders/pending-count');
+      expect(resAll.status).toBe(200);
+      const allData = await resAll.json();
+      expect(allData.pendingCount).toBeGreaterThanOrEqual(1);
+      expect(allData.latestOrder).toBeDefined();
+      expect(allData.latestOrder.id).toBeDefined();
+
+      const resToko2 = await app.request('/api/online-orders/pending-count?outletId=toko-2');
+      expect(resToko2.status).toBe(200);
+      const t2Data = await resToko2.json();
+      expect(t2Data.pendingCount).toBeGreaterThanOrEqual(1);
+      expect(t2Data.latestOrder.outletId).toBe('toko-2');
+    });
   });
 });

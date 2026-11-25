@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Sun, Moon, Bell, Share2, SlidersHorizontal } from "lucide-react";
+import { Sun, Moon, Bell, Share2, ShoppingBag, ArrowRight } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
 import { UserProfile } from "@/lib/authStore";
+import { useOnlineOrderAlerts } from "@/lib/useOnlineOrderAlerts";
 import { getSidebarConfig } from "./sidebar";
 
 const AVATARS = [
@@ -104,8 +106,16 @@ export function TopBar({
   actions?: React.ReactNode;
 }) {
   const [darkMode, setDarkMode] = useState(() => themeStore.getTheme() === "dark");
-  const [notifCount, setNotifCount] = useState(3);
+  const [notifOpen, setNotifOpen] = useState(false);
   const config = getSidebarConfig(currentUser);
+  const outletScope =
+    currentUser?.outletId === "toko-1" || currentUser?.outletId === "toko-2"
+      ? currentUser.outletId
+      : "ALL";
+
+  const { pendingCount, latestOrder } = useOnlineOrderAlerts(outletScope, (order) => {
+    onNotify?.(`Pesanan online baru ${order.id} dari ${order.customerName} (Rp ${order.totalAmount.toLocaleString("id-ID")})`);
+  });
 
   useEffect(() => {
     const unsub = themeStore.subscribe((t) => setDarkMode(t === "dark"));
@@ -153,21 +163,75 @@ export function TopBar({
             <Share2 size={15} />
           </button>
 
-          <button
-            onClick={() => {
-              setNotifCount(0);
-              onNotify?.("Semua notifikasi ditandai telah dibaca");
-            }}
-            title="Notifikasi"
-            className="relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
-          >
-            <Bell size={18} />
-            {notifCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-semibold text-white">
-                {notifCount}
-              </span>
-            )}
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setNotifOpen((prev) => !prev)}
+              title="Notifikasi Pesanan Online Masuk"
+              className="relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
+            >
+              <Bell size={18} />
+              {pendingCount > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white animate-pulse">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {notifOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 mt-2 w-72 rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl p-3.5 z-50 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-900 dark:text-neutral-50 flex items-center gap-1.5">
+                      <ShoppingBag size={13} className="text-rose-500" />
+                      Antrean Pesanan Online
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                      {pendingCount} Menunggu
+                    </span>
+                  </div>
+
+                  {pendingCount > 0 && latestOrder ? (
+                    <div className="rounded-xl bg-gray-50 dark:bg-neutral-800/60 p-2.5 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-bold text-gray-900 dark:text-neutral-100">
+                          {latestOrder.id}
+                        </span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          Rp {latestOrder.totalAmount.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 dark:text-neutral-400 truncate">
+                        Pemesan: <span className="font-semibold text-gray-900 dark:text-neutral-200">{latestOrder.customerName}</span>
+                      </p>
+                      <p className="text-[10px] text-gray-400 dark:text-neutral-500">
+                        Layanan: {latestOrder.fulfillmentType === "DELIVERY" ? "Kirim Kurir" : "Ambil di Toko"}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-gray-500 dark:text-neutral-400 py-2 text-center">
+                      Tidak ada pesanan online yang menunggu konfirmasi.
+                    </p>
+                  )}
+
+                  <Link
+                    to="/online-orders"
+                    onClick={() => setNotifOpen(false)}
+                    className="w-full py-2 px-3 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <span>Buka Halaman Pesanan Online</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <AvatarStack />
         </div>

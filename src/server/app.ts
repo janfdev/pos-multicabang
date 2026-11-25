@@ -622,6 +622,29 @@ app.get('/online-orders', (c) => {
   return c.json(results);
 });
 
+app.get('/online-orders/pending-count', (c) => {
+  const outletId = c.req.query('outletId');
+  let pending = ONLINE_ORDERS.filter((o) => o.status === 'PENDING');
+  if (outletId && outletId !== 'ALL') {
+    pending = pending.filter((o) => o.outletId === outletId);
+  }
+  const latest = pending[0]
+    ? {
+        id: pending[0].id,
+        outletId: pending[0].outletId,
+        customerName: pending[0].customerName,
+        totalAmount: pending[0].totalAmount,
+        fulfillmentType: pending[0].fulfillmentType,
+        createdAt: pending[0].createdAt,
+      }
+    : null;
+
+  return c.json({
+    pendingCount: pending.length,
+    latestOrder: latest,
+  });
+});
+
 app.get('/online-orders/:id/reorder', (c) => {
   const id = c.req.param('id');
   const order = ONLINE_ORDERS.find((o) => o.id === id);

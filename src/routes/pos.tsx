@@ -18,11 +18,13 @@ import {
   LayoutDashboard,
   Package,
   QrCode,
+  Bell,
 } from 'lucide-react';
 import { outletStore, OutletId, OUTLET_CONFIG } from '@/lib/outletStore';
 import { authStore, UserProfile } from '@/lib/authStore';
 import { playBeep } from '@/lib/audio';
 import { shiftStore, ShiftSession } from '@/lib/shiftStore';
+import { useOnlineOrderAlerts } from '@/lib/useOnlineOrderAlerts';
 import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/ThermalReceiptModal';
 import { ShiftModal } from '@/components/pos/ShiftModal';
 import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
@@ -82,6 +84,7 @@ function PosPage() {
   const [currentShift, setCurrentShift] = useState<ShiftSession | null>(() =>
     shiftStore.getActiveShift(activeOutlet)
   );
+  const { pendingCount: pendingOnlineCount } = useOnlineOrderAlerts(activeOutlet);
 
   useEffect(() => {
     const unsubOutlet = outletStore.subscribe((id) => {
@@ -315,7 +318,26 @@ function PosPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Live Online Order Alert Pill */}
+          <Link
+            to="/online-orders"
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all ${
+              pendingOnlineCount > 0
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
+                : 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700'
+            }`}
+            title="Lihat antrean pesanan online masuk di cabang ini"
+          >
+            <Bell className={`size-3.5 ${pendingOnlineCount > 0 ? 'animate-bounce' : ''}`} />
+            <span className="hidden md:inline">Pesanan Online</span>
+            {pendingOnlineCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-mono font-bold">
+                {pendingOnlineCount}
+              </span>
+            )}
+          </Link>
+
           {/* Shift Button */}
           <button
             type="button"

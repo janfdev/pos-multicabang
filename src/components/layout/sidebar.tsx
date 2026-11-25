@@ -28,6 +28,7 @@ import {
   Crown,
 } from "lucide-react";
 import { authStore, UserProfile, DEMO_ACCOUNTS, DemoAccount } from "@/lib/authStore";
+import { useOnlineOrderAlerts } from "@/lib/useOnlineOrderAlerts";
 
 const stagger: Variants = {
   hidden: {},
@@ -201,6 +202,11 @@ export function Sidebar({
 
   const config = getSidebarConfig(currentUser);
   const navStyles = getNavStyles(config.accent);
+  const alertScope =
+    currentUser?.outletId === "toko-1" || currentUser?.outletId === "toko-2"
+      ? currentUser.outletId
+      : "ALL";
+  const { pendingCount } = useOnlineOrderAlerts(alertScope);
 
   const handleSwitchUser = (acc: DemoAccount) => {
     authStore.loginWithDemo(acc);
@@ -322,11 +328,15 @@ export function Sidebar({
                 <span className="flex-1 text-left tracking-tight group-hover:translate-x-0.5 transition-transform duration-150 truncate">
                   {item.label}
                 </span>
-                {item.badge && (
+                {item.path === "/online-orders" && pendingCount > 0 ? (
+                  <span className="rounded-full px-2 py-0.2 text-[9px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse shrink-0">
+                    {pendingCount} Baru
+                  </span>
+                ) : item.badge ? (
                   <span className={`rounded-full px-2 py-0.2 text-[9px] font-bold ${navStyles.badgeColor} animate-pulse shrink-0`}>
                     {item.badge}
                   </span>
-                )}
+                ) : null}
               </Link>
             );
           })}
