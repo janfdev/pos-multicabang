@@ -244,6 +244,7 @@ app.post('/pos/checkout', async (c) => {
     id: `TRX-${Date.now().toString().slice(-6)}`,
     outletId: currentOutlet.id,
     outletName: currentOutlet.name,
+    status: 'COMPLETED',
     totalAmount,
     paymentMethod: paymentMethod || 'CASH',
     cashReceived: cashReceived || totalAmount,
@@ -266,6 +267,52 @@ app.post('/pos/checkout', async (c) => {
   }).catch((err) => console.error('DB async order record error:', err));
 
   return c.json({ success: true, order });
+});
+
+// 4.0b. POS Order History & Void / Return (Proposal F-13)
+app.get('/pos/orders', (c) => {
+  const outletId = c.req.query('outletId');
+  const results = outletId && outletId !== 'ALL' ? ORDERS.filter((o) => o.outletId === outletId) : [...ORDERS];
+  return c.json(results);
+});
+
+app.post('/pos/orders/:id/void', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
+  const voidedBy = typeof body.voidedBy === 'string' && body.voidedBy.trim() ? body.voidedBy.trim() : 'Kasir';
+
+  if (!reason) {
+    return c.json({ success: false, error: 'Alasan pembatalan/retur wajib diisi (Proposal F-13)' }, 400);
+  }
+
+  const order = ORDERS.find((o) => o.id === id);
+  if (!order) {
+    return c.json({ success: false, error: 'Transaksi POS tidak ditemukan' }, 404);
+  }
+  if (order.status === 'VOIDED') {
+    return c.json({ success: false, error: 'Transaksi ini sudah pernah dibatalkan / diretur sebelumnya' }, 400);
+  }
+
+  // Atomic stock rollback to the order's branch
+  for (const item of order.items || []) {
+    const inv = INVENTORY[item.productId];
+    if (inv) {
+      if (order.outletId === 'toko-1') inv.t1Stock += item.qty;
+      else inv.t2Stock += item.qty;
+    }
+  }
+
+  order.status = 'VOIDED';
+  order.voidReason = reason;
+  order.voidedBy = voidedBy;
+  order.voidedAt = new Date().toISOString();
+
+  return c.json({
+    success: true,
+    message: `Transaksi ${order.id} berhasil dibatalkan/diretur dan stok dikembalikan ke ${order.outletName}.`,
+    order,
+  });
 });
 
 // 4.1. Midtrans Sandbox Digital Payment (QRIS & Webhook with Idempotency)
@@ -871,9 +918,10 @@ app.get('/analytics/dashboard', (c) => {
   const inTransitTransfersCount = TRANSFERS.filter((t) => t.status === 'DISPATCHED').length;
   const pendingOnlineOrdersCount = ONLINE_ORDERS.filter((o) => o.status === 'PENDING').length;
 
-  // Segmented Orders & Revenues
-  const toko1PosOrders = ORDERS.filter((o) => o.outletId === 'toko-1');
-  const toko2PosOrders = ORDERS.filter((o) => o.outletId === 'toko-2');
+  // Segmented Orders & Revenues (exclude VOIDED POS orders)
+  const activePosOrders = ORDERS.filter((o) => o.status !== 'VOIDED');
+  const toko1PosOrders = activePosOrders.filter((o) => o.outletId === 'toko-1');
+  const toko2PosOrders = activePosOrders.filter((o) => o.outletId === 'toko-2');
   const toko1OnlineOrders = ONLINE_ORDERS.filter((o) => o.outletId === 'toko-1' && o.status !== 'CANCELLED');
   const toko2OnlineOrders = ONLINE_ORDERS.filter((o) => o.outletId === 'toko-2' && o.status !== 'CANCELLED');
 
@@ -885,7 +933,7 @@ app.get('/analytics/dashboard', (c) => {
   const toko1TotalRevenue = toko1PosRevenue + toko1OnlineRevenue;
   const toko2TotalRevenue = toko2PosRevenue + toko2OnlineRevenue;
 
-  const posRevenue = ORDERS.reduce((acc, o) => acc + o.totalAmount, 0);
+  const posRevenue = activePosOrders.reduce((acc, o) => acc + o.totalAmount, 0);
   const onlineRevenue = ONLINE_ORDERS.filter((o) => o.status !== 'CANCELLED').reduce((acc, o) => acc + o.totalAmount, 0);
   const todayRevenue = posRevenue + onlineRevenue;
 
@@ -945,9 +993,10 @@ app.get('/analytics/dashboard', (c) => {
 app.get('/reports/financial', (c) => {
   const outletId = c.req.query('outletId') || 'ALL';
 
+  const validPosOrders = ORDERS.filter((o) => o.status !== 'VOIDED');
   const filteredOrders = outletId === 'ALL'
-    ? ORDERS
-    : ORDERS.filter((o) => o.outletId === outletId);
+    ? validPosOrders
+    : validPosOrders.filter((o) => o.outletId === outletId);
 
   const filteredOnline = outletId === 'ALL'
     ? ONLINE_ORDERS.filter((o) => o.status === 'COMPLETED' || o.status === 'READY' || o.status === 'PROCESSING')

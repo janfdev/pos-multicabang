@@ -217,6 +217,56 @@ describe('POS & Multi-Outlet Inventory Engineering Test Suite', () => {
       // Stock must remain untouched
       expect(_testing.getInventory()['p-3'].t2Stock).toBe(t2Before);
     });
+
+    it('should void/return a POS transaction with mandatory reason, rollback stock atomically, and prevent double-void (F-13)', async () => {
+      const t1Before = _testing.getInventory()['p-1'].t1Stock;
+
+      // 1. Create a POS cash order at toko-1 for 2 units of p-1
+      const checkoutRes = await app.request('/api/pos/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outletId: 'toko-1',
+          paymentMethod: 'CASH',
+          cashReceived: 200000,
+          items: [{ productId: 'p-1', qty: 2 }],
+        }),
+      });
+      const checkoutData = await checkoutRes.json();
+      expect(checkoutData.success).toBe(true);
+      const orderId = checkoutData.order.id;
+      expect(_testing.getInventory()['p-1'].t1Stock).toBe(t1Before - 2);
+
+      // 2. Reject void without reason
+      const rejectRes = await app.request(`/api/pos/orders/${orderId}/void`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: '' }),
+      });
+      expect(rejectRes.status).toBe(400);
+
+      // 3. Void with valid reason -> stock rolled back atomically
+      const voidRes = await app.request(`/api/pos/orders/${orderId}/void`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Kemasan bocor saat serah terima', voidedBy: 'Fajar Ramadhan' }),
+      });
+      expect(voidRes.status).toBe(200);
+      const voidData = await voidRes.json();
+      expect(voidData.success).toBe(true);
+      expect(voidData.order.status).toBe('VOIDED');
+      expect(voidData.order.voidReason).toBe('Kemasan bocor saat serah terima');
+      expect(_testing.getInventory()['p-1'].t1Stock).toBe(t1Before);
+
+      // 4. Reject duplicate void (must not double-restore stock)
+      const dupRes = await app.request(`/api/pos/orders/${orderId}/void`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Duplikat retur' }),
+      });
+      expect(dupRes.status).toBe(400);
+      expect(_testing.getInventory()['p-1'].t1Stock).toBe(t1Before);
+    });
   });
 
   describe('Group 3: 3-Stage Stock Transfer Protocol', () => {

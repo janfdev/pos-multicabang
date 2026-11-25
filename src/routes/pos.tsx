@@ -29,6 +29,7 @@ import { ThermalReceiptModal, ThermalReceiptData } from '@/components/pos/Therma
 import { ShiftModal } from '@/components/pos/ShiftModal';
 import { BarcodeScannerModal } from '@/components/pos/BarcodeScannerModal';
 import { MidtransQrisModal } from '@/components/pos/MidtransQrisModal';
+import { PosReturnModal } from '@/components/pos/PosReturnModal';
 import { FALLBACK_PRODUCT_IMAGES, INITIAL_SEMBAKO_PRODUCTS } from '@/routes/shop';
 
 export const Route = createFileRoute('/pos')({
@@ -81,6 +82,7 @@ function PosPage() {
   const [thermalModalOrder, setThermalModalOrder] = useState<ThermalReceiptData | null>(null);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [currentShift, setCurrentShift] = useState<ShiftSession | null>(() =>
     shiftStore.getActiveShift(activeOutlet)
   );
@@ -337,6 +339,17 @@ function PosPage() {
               </span>
             )}
           </Link>
+
+          {/* Riwayat & Retur POS Button (F-13) */}
+          <button
+            type="button"
+            onClick={() => setIsReturnModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+            title="Riwayat transaksi POS, cetak ulang struk & retur barang"
+          >
+            <RotateCcw className="size-3.5" />
+            <span className="hidden md:inline">Riwayat &amp; Retur</span>
+          </button>
 
           {/* Shift Button */}
           <button
@@ -882,6 +895,25 @@ function PosPage() {
           loadProducts();
         }}
         onClose={() => setMidtransModalData(null)}
+      />
+
+      {/* POS Transaction History & Void / Return Modal (F-13) */}
+      <PosReturnModal
+        isOpen={isReturnModalOpen}
+        onClose={() => setIsReturnModalOpen(false)}
+        activeOutlet={activeOutlet}
+        cashierName={currentUser?.name || 'Kasir Toko'}
+        onStockRestored={() => loadProducts()}
+        onPrintReceipt={(order) => {
+          setIsReturnModalOpen(false);
+          setThermalModalOrder({
+            ...order,
+            cashReceived: order.cashReceived ?? order.totalAmount,
+            cashChange: order.cashChange ?? 0,
+            outletAddress: currentOutletInfo.address,
+            cashierName: currentUser?.name || 'Kasir Toko',
+          });
+        }}
       />
     </div>
   );
