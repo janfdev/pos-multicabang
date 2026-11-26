@@ -2,10 +2,18 @@ import {
   pgTable,
   text,
   integer,
+  boolean,
   timestamp,
   pgEnum,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
+
+export const userRoleEnum = pgEnum('user_role', [
+  'OWNER',           // Pemilik / Super Admin
+  'WAREHOUSE',       // Petugas Gudang Toko 1
+  'CASHIER',         // Kasir Toko 1 / Toko 2
+  'BRANCH_STAFF',    // Petugas Gerai Toko 2
+]);
 
 export const outletTypeEnum = pgEnum('outlet_type', [
   'STORE_WAREHOUSE', // Toko 1 (Pusat & Gudang)
@@ -172,4 +180,19 @@ export const onlineOrderItems = pgTable('online_order_items', {
   qty: integer('qty').notNull(),
   unitPrice: integer('unit_price').notNull(),
   subtotal: integer('subtotal').notNull(),
+});
+
+// 7. USERS & RBAC ACCOUNTS (PROPOSAL F-01 & F-02)
+export const users = pgTable('users', {
+  id: text('id').primaryKey(), // e.g. "usr-owner", "usr-kasir-t1"
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role: userRoleEnum('role').notNull().default('CASHIER'),
+  roleLabel: text('role_label').notNull(),
+  outletId: text('outlet_id').references(() => outlets.id), // null for OWNER (ALL outlets)
+  outletName: text('outlet_name').notNull(),
+  avatar: text('avatar'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });

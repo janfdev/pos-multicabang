@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "bun test"
+    "test": "bun test",
+    "db:push": "drizzle-kit push",
+    "db:seed": "bun src/db/seed.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
