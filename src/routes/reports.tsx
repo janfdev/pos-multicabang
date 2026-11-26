@@ -44,10 +44,29 @@ interface FinancialReportData {
 }
 
 function ReportsPage() {
+  const [currentUser, setCurrentUser] = useState(() => authStore.getUser());
+  const isOwner = !currentUser || currentUser.outletId === "ALL";
+  const lockedOutlet =
+    currentUser?.outletId === "toko-1" || currentUser?.outletId === "toko-2"
+      ? currentUser.outletId
+      : null;
+
   const [data, setData] = useState<FinancialReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [outletFilter, setOutletFilter] = useState<string>("ALL");
+  const [outletFilter, setOutletFilter] = useState<string>(() => lockedOutlet || "ALL");
+
+  useEffect(() => {
+    const unsub = authStore.subscribe((u) => {
+      setCurrentUser(u);
+      if (u?.outletId === "toko-1" || u?.outletId === "toko-2") {
+        setOutletFilter(u.outletId);
+      } else {
+        setOutletFilter("ALL");
+      }
+    });
+    return unsub;
+  }, []);
 
   const loadReport = () => {
     setLoading(true);
@@ -174,43 +193,54 @@ function ReportsPage() {
       {/* Outlet Filter Switcher */}
       <div className="px-6 pt-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4 dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setOutletFilter("ALL")}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                outletFilter === "ALL"
-                  ? "bg-gray-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-2xs"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-              }`}
-            >
-              <Layers size={13} />
-              Konsolidasi Semua Cabang
-            </button>
-            <button
-              type="button"
-              onClick={() => setOutletFilter("toko-1")}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                outletFilter === "toko-1"
-                  ? "bg-blue-600 text-white dark:bg-blue-500 dark:text-white shadow-2xs"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-              }`}
-            >
-              <Building2 size={13} />
-              Toko 1 (Pusat &amp; Gudang)
-            </button>
-            <button
-              type="button"
-              onClick={() => setOutletFilter("toko-2")}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                outletFilter === "toko-2"
-                  ? "bg-emerald-600 text-white dark:bg-emerald-500 dark:text-white shadow-2xs"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-              }`}
-            >
-              <Store size={13} />
-              Toko 2 (Cabang Satelit)
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {isOwner ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setOutletFilter("ALL")}
+                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                    outletFilter === "ALL"
+                      ? "bg-gray-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-2xs"
+                      : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  }`}
+                >
+                  <Layers size={13} />
+                  Konsolidasi Semua Cabang
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOutletFilter("toko-1")}
+                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                    outletFilter === "toko-1"
+                      ? "bg-blue-600 text-white dark:bg-blue-500 dark:text-white shadow-2xs"
+                      : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  }`}
+                >
+                  <Building2 size={13} />
+                  Toko 1 (Pusat &amp; Gudang)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOutletFilter("toko-2")}
+                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                    outletFilter === "toko-2"
+                      ? "bg-emerald-600 text-white dark:bg-emerald-500 dark:text-white shadow-2xs"
+                      : "text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  }`}
+                >
+                  <Store size={13} />
+                  Toko 2 (Cabang Satelit)
+                </button>
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-gray-800 dark:text-neutral-200">
+                {lockedOutlet === "toko-1" ? <Building2 size={13} className="text-blue-600" /> : <Store size={13} className="text-emerald-600" />}
+                <span>
+                  Laporan Khusus: {lockedOutlet === "toko-1" ? "Toko 1 (Pusat & Gudang)" : "Toko 2 (Cabang Satelit)"}
+                </span>
+              </span>
+            )}
           </div>
 
           <button

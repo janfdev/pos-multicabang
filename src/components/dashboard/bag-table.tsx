@@ -215,7 +215,7 @@ export function BagTable({
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 outline-none dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 outline-none whitespace-nowrap shrink-0 min-w-[135px] dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
             >
               {statusOptions.map((opt) => (
                 <option key={opt} value={opt}>

@@ -303,7 +303,8 @@ export function PublicShopPage() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h1 className="font-extrabold text-xs sm:text-sm leading-tight text-gray-900 dark:text-neutral-50 tracking-tight truncate">
-                  Pasar Sembako Online
+                  <span className="sm:hidden">Sembako</span>
+                  <span className="hidden sm:inline">Pasar Sembako Online</span>
                 </h1>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
                   Official Store
@@ -611,18 +612,18 @@ export function PublicShopPage() {
                   </div>
 
                   {/* Price & Action Buttons */}
-                  <div className="pt-2.5 mt-2 border-t border-gray-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
-                    <div>
+                  <div className="pt-2.5 mt-2 border-t border-gray-100 dark:border-neutral-800/80 flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
                       <span className="text-[10px] text-gray-400 dark:text-neutral-500 block">Harga</span>
                       <div className="flex items-baseline gap-1 whitespace-nowrap">
-                        <span className="font-mono font-extrabold text-sm sm:text-base text-gray-900 dark:text-neutral-50">
+                        <span className="font-mono font-extrabold text-sm text-gray-900 dark:text-neutral-50">
                           {formatRupiah(p.sellingPrice)}
                         </span>
                         <span className="text-[10px] text-gray-400 font-mono">/{p.unit}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {/* Navigate to Dedicated Product Detail Page */}
                       <Link
                         to="/product/$productId"

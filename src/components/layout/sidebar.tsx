@@ -426,7 +426,7 @@ export function Sidebar({
               initial={{ opacity: 0, y: 8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              className="absolute bottom-full left-3 right-3 mb-2 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-xl p-2 z-50 space-y-1"
+              className="absolute bottom-full left-3 right-3 mb-2 rounded-2xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 shadow-2xl p-2 z-50 space-y-1"
             >
               <div className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                 Ganti Hak Akses / Role:

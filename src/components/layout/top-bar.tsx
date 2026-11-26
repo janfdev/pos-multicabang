@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { Sun, Moon, Bell, ShoppingBag, ArrowRight, UserCheck } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
@@ -82,8 +82,13 @@ export function TopBar({
   onNotify?: (msg: string) => void;
   actions?: React.ReactNode;
 }) {
+  const location = useLocation();
   const [darkMode, setDarkMode] = useState(() => themeStore.getTheme() === "dark");
   const [notifOpen, setNotifOpen] = useState(false);
+
+  useEffect(() => {
+    setNotifOpen(false);
+  }, [location.href]);
   const config = getSidebarConfig(currentUser);
   const outletScope =
     currentUser?.outletId === "toko-1" || currentUser?.outletId === "toko-2"
