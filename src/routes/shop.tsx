@@ -297,25 +297,25 @@ export function PublicShopPage() {
     <div style={font} className="min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-neutral-100 font-sans pb-28 transition-colors">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-neutral-800 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <img src="/brand-logo.svg" alt="POS Logo" className="size-9 rounded-xl shadow-xs shrink-0 object-contain" />
-            <div className="min-w-0">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+            <img src="/brand-logo.svg" alt="POS Logo" className="size-8 sm:size-9 rounded-xl shadow-xs shrink-0 object-contain" />
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <h1 className="font-extrabold text-sm leading-tight text-gray-900 dark:text-neutral-50 tracking-tight truncate">
+                <h1 className="font-extrabold text-xs sm:text-sm leading-tight text-gray-900 dark:text-neutral-50 tracking-tight truncate">
                   Pasar Sembako Online
                 </h1>
-                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
                   Official Store
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-neutral-400 truncate">
+              <p className="hidden sm:block text-[11px] text-gray-500 dark:text-neutral-400 truncate">
                 Belanja sembako segar multi-toko dengan harga grosir resmi
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Install PWA Button (Native Prompt) */}
             {installPrompt && (
               <button
@@ -614,8 +614,8 @@ export function PublicShopPage() {
                   <div className="pt-2.5 mt-2 border-t border-gray-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] text-gray-400 dark:text-neutral-500 block">Harga</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-mono font-extrabold text-base text-gray-900 dark:text-neutral-50">
+                      <div className="flex items-baseline gap-1 whitespace-nowrap">
+                        <span className="font-mono font-extrabold text-sm sm:text-base text-gray-900 dark:text-neutral-50">
                           {formatRupiah(p.sellingPrice)}
                         </span>
                         <span className="text-[10px] text-gray-400 font-mono">/{p.unit}</span>
@@ -660,10 +660,10 @@ export function PublicShopPage() {
                           type="button"
                           disabled={p.stock <= 0}
                           onClick={() => handleAddToCart(p)}
-                          className="px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer disabled:opacity-40 active:scale-95"
+                          className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs font-bold transition-all shadow-2xs flex items-center gap-1 whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-40 active:scale-95"
                         >
-                          <Plus className="size-3.5" />
-                          <span>+ Keranjang</span>
+                          <Plus className="size-3.5 shrink-0" />
+                          <span>Keranjang</span>
                         </button>
                       )}
                     </div>

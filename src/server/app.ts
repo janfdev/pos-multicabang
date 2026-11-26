@@ -9,6 +9,7 @@ import {
   INITIAL_ORDERS,
   INITIAL_SALES_TREND,
 } from './seedData';
+import { buildFinancialReport } from './reportsHelper';
 
 export const app = new Hono().basePath('/api');
 
@@ -992,88 +993,12 @@ app.get('/analytics/dashboard', (c) => {
 // 8. Financial Report & Profit/Loss Analysis
 app.get('/reports/financial', (c) => {
   const outletId = c.req.query('outletId') || 'ALL';
+  return c.json(buildFinancialReport(ORDERS, ONLINE_ORDERS, PRODUCTS, outletId));
+});
 
-  const validPosOrders = ORDERS.filter((o) => o.status !== 'VOIDED');
-  const filteredOrders = outletId === 'ALL'
-    ? validPosOrders
-    : validPosOrders.filter((o) => o.outletId === outletId);
-
-  const filteredOnline = outletId === 'ALL'
-    ? ONLINE_ORDERS.filter((o) => o.status === 'COMPLETED' || o.status === 'READY' || o.status === 'PROCESSING')
-    : ONLINE_ORDERS.filter((o) => o.outletId === outletId && (o.status === 'COMPLETED' || o.status === 'READY' || o.status === 'PROCESSING'));
-
-  let grossRevenue = 0;
-  let totalCost = 0;
-  let totalItemsSold = 0;
-  const productSalesMap: Record<string, { name: string; qty: number; revenue: number; cost: number }> = {};
-
-  filteredOrders.forEach((o) => {
-    grossRevenue += o.totalAmount;
-    o.items?.forEach((it: any) => {
-      totalItemsSold += it.qty;
-      const prod = PRODUCTS.find((p) => p.id === it.productId);
-      const cost = (prod?.costPrice || 0) * it.qty;
-      totalCost += cost;
-
-      if (!productSalesMap[it.productId]) {
-        productSalesMap[it.productId] = {
-          name: it.productName || prod?.name || it.productId,
-          qty: 0,
-          revenue: 0,
-          cost: 0,
-        };
-      }
-      productSalesMap[it.productId].qty += it.qty;
-      productSalesMap[it.productId].revenue += it.subtotal;
-      productSalesMap[it.productId].cost += cost;
-    });
-  });
-
-  filteredOnline.forEach((o) => {
-    grossRevenue += o.totalAmount;
-    o.items?.forEach((it: any) => {
-      totalItemsSold += it.qty;
-      const prod = PRODUCTS.find((p) => p.id === it.productId);
-      const cost = (prod?.costPrice || 0) * it.qty;
-      totalCost += cost;
-
-      if (!productSalesMap[it.productId]) {
-        productSalesMap[it.productId] = {
-          name: it.productName || prod?.name || it.productId,
-          qty: 0,
-          revenue: 0,
-          cost: 0,
-        };
-      }
-      productSalesMap[it.productId].qty += it.qty;
-      productSalesMap[it.productId].revenue += it.subtotal;
-      productSalesMap[it.productId].cost += cost;
-    });
-  });
-
-  const grossProfit = grossRevenue - totalCost;
-  const grossMarginPct = grossRevenue > 0 ? ((grossProfit / grossRevenue) * 100).toFixed(1) : '0';
-
-  const topProducts = Object.values(productSalesMap)
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5)
-    .map((p) => ({
-      ...p,
-      profit: p.revenue - p.cost,
-      margin: p.revenue > 0 ? ((p.revenue - p.cost) / p.revenue * 100).toFixed(1) : '0',
-    }));
-
-  return c.json({
-    outletId,
-    grossRevenue,
-    totalCost,
-    grossProfit,
-    grossMarginPct: Number(grossMarginPct),
-    totalTransactions: filteredOrders.length + filteredOnline.length,
-    totalItemsSold,
-    topProducts,
-    allOrders: filteredOrders,
-  });
+app.get('/analytics/financial-report', (c) => {
+  const outletId = c.req.query('outletId') || 'ALL';
+  return c.json(buildFinancialReport(ORDERS, ONLINE_ORDERS, PRODUCTS, outletId));
 });
 
 // Helper testing state accessors

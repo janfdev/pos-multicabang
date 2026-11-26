@@ -7,6 +7,7 @@ export interface StatItem {
   label: string;
   value: string;
   delta: string;
+  subtitle?: string;
 }
 
 const stagger: Variants = {
@@ -45,9 +46,9 @@ export function StatsCards({ stats }: { stats: StatItem[] }) {
             </div>
 
             <div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-400 dark:text-neutral-500">
-              <span>vs last month</span>
+              {s.subtitle && <span>{s.subtitle}</span>}
               <span
-                className={`inline-flex items-center gap-0.5 rounded-full border px-2 py-0.2 text-[10px] font-bold ${
+                className={`inline-flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] font-bold whitespace-nowrap ${
                   isNegative
                     ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400"
                     : "border-green-200 bg-green-50 text-green-700 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-400"

@@ -80,6 +80,7 @@ export function CustomerOrderHistoryModal({
   const [phoneQuery, setPhoneQuery] = useState('');
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   const [reorderLoadingId, setReorderLoadingId] = useState<string | null>(null);
   const [reorderWarnings, setReorderWarnings] = useState<string[]>([]);
@@ -103,17 +104,18 @@ export function CustomerOrderHistoryModal({
     const trimmed = phone.trim();
     if (!trimmed) return;
     setLoading(true);
+    setFetchError(null);
     setSearched(true);
     setReorderWarnings([]);
     setReorderSuccessMsg(null);
     try {
       const res = await fetch(`/api/online-orders?phone=${encodeURIComponent(trimmed)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(Array.isArray(data) ? data : []);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
     } catch {
       setOrders([]);
+      setFetchError('Gagal terhubung ke server untuk memuat riwayat pesanan. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -308,6 +310,18 @@ export function CustomerOrderHistoryModal({
               ) : loading ? (
                 <div className="py-10 text-center text-xs text-gray-400">
                   Memuat riwayat pesanan...
+                </div>
+              ) : fetchError ? (
+                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-center space-y-2.5">
+                  <AlertTriangle className="size-6 text-rose-500 mx-auto" />
+                  <p className="text-xs font-semibold text-rose-800 dark:text-rose-300">{fetchError}</p>
+                  <button
+                    type="button"
+                    onClick={() => fetchOrdersByPhone(phoneQuery)}
+                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold cursor-pointer"
+                  >
+                    Coba Lagi
+                  </button>
                 </div>
               ) : orders.length === 0 ? (
                 <div className="py-10 text-center space-y-1.5">

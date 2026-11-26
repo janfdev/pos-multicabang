@@ -527,7 +527,7 @@ export default function LiveTrackingModule({
             className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-gray-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 cursor-pointer"
           >
             <Plus size={14} />
-            <span>+ Tambah Pengiriman</span>
+            <span>Tambah Pengiriman</span>
           </button>
         </div>
       </div>

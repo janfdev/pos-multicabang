@@ -119,8 +119,7 @@ export function getSidebarConfig(user: UserProfile | null) {
     storeBadgeColor: "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40",
     mainMenu: [
       { label: "Dashboard", path: "/dashboard", icon: LayoutGrid },
-      { label: "Master Produk & Harga", path: "/inventory", icon: Package },
-      { label: "Monitoring Stok Cabang", path: "/inventory", icon: Boxes },
+      { label: "Produk & Stok Cabang", path: "/inventory", icon: Boxes },
       { label: "Mutasi Antar-Cabang", path: "/transfers", icon: ArrowLeftRight },
       { label: "Live Tracking Pengiriman", path: "/tracking", icon: Truck, badge: "Live" },
       { label: "Antrean Pesanan Online", path: "/online-orders", icon: ShoppingBag },
@@ -128,12 +127,8 @@ export function getSidebarConfig(user: UserProfile | null) {
     ],
     toolsMenu: [
       { label: "Analitik & Laporan", path: "/reports", icon: BarChart3 },
-      { label: "Log Audit & Cloud", path: "/dashboard", icon: ShieldCheck },
     ],
-    bottomMenu: [
-      { label: "SOP & Panduan Shift", path: "/dashboard", icon: HelpCircle },
-      { label: "Pengaturan Multi-Outlet", path: "/dashboard", icon: Settings },
-    ],
+    bottomMenu: [],
   };
 }
 

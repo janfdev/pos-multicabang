@@ -11,6 +11,8 @@ import {
   Building2,
   Store,
   Layers,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { StatsCards, StatItem } from "@/components/dashboard/stats-cards";
@@ -44,28 +46,45 @@ interface FinancialReportData {
 function ReportsPage() {
   const [data, setData] = useState<FinancialReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [outletFilter, setOutletFilter] = useState<string>("ALL");
 
-  useEffect(() => {
+  const loadReport = () => {
     setLoading(true);
+    setError(null);
     const url =
       outletFilter === "ALL"
         ? "/api/analytics/financial-report"
         : `/api/analytics/financial-report?outletId=${outletFilter}`;
 
     fetch(url)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((d) => {
         setData(d);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error("Error fetching financial report:", err);
+      .catch(() => {
+        setError("Gagal memuat laporan keuangan dari server. Silakan coba lagi.");
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    loadReport();
   }, [outletFilter]);
 
   const stats: StatItem[] = useMemo(() => {
+    if (error && !data) {
+      return [
+        { label: "Total Omzet Penjualan", value: "-", delta: "Gagal muat" },
+        { label: "Beban Pokok Penjualan (HPP)", value: "-", delta: "Gagal muat" },
+        { label: "Laba Kotor (Gross Profit)", value: "-", delta: "Gagal muat" },
+        { label: "Rata-rata Margin Laba", value: "-", delta: "Gagal muat" },
+      ];
+    }
     if (!data) {
       return [
         { label: "Total Omzet Penjualan", value: "Memuat...", delta: "0%" },
@@ -132,6 +151,23 @@ function ReportsPage() {
 
   return (
     <DashboardLayout title="Analitik & Laporan Penjualan Multi-Cabang">
+      {error && (
+        <div className="mx-6 mt-5 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-center justify-between gap-3 text-xs text-rose-800 dark:text-rose-300">
+          <div className="flex items-center gap-2 font-semibold">
+            <AlertTriangle size={15} className="shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            type="button"
+            onClick={loadReport}
+            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <RefreshCw size={12} />
+            <span>Muat Ulang</span>
+          </button>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <StatsCards stats={stats} />
 

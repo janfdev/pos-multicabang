@@ -50,6 +50,7 @@ function OnlineOrdersPage() {
   const [activeOutlet, setActiveOutlet] = useState<OutletId>(outletStore.getOutlet());
   const [orders, setOrders] = useState<OnlineOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [outletScope, setOutletScope] = useState<'CURRENT' | 'ALL'>('CURRENT');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -61,14 +62,21 @@ function OnlineOrdersPage() {
 
   const loadOrders = () => {
     setLoading(true);
+    setLoadError(null);
     const targetOutletParam = outletScope === 'CURRENT' ? activeOutlet : 'ALL';
     fetch(`/api/online-orders?outletId=${targetOutletParam}`)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
-        setOrders(data);
+        setOrders(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoadError('Gagal memuat antrean pesanan online dari server. Silakan muat ulang.');
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -167,6 +175,22 @@ function OnlineOrdersPage() {
   return (
     <DashboardLayout title="Antrean Pesanan Belanja Online">
       <div className="p-6 space-y-4">
+        {loadError && (
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-center justify-between gap-3 text-xs text-rose-800 dark:text-rose-300">
+            <div className="flex items-center gap-2 font-semibold">
+              <AlertCircle className="size-4 shrink-0" />
+              <span>{loadError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={loadOrders}
+              className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <RefreshCw className="size-3" />
+              <span>Coba Lagi</span>
+            </button>
+          </div>
+        )}
         {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div>

@@ -74,12 +74,12 @@ export function PosReturnModal({
     setLoading(true);
     try {
       const res = await fetch(`/api/pos/orders?outletId=${activeOutlet}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(Array.isArray(data) ? data : []);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
     } catch {
       setOrders([]);
+      setFeedback({ type: 'error', text: 'Gagal memuat riwayat transaksi dari server. Periksa koneksi lalu coba lagi.' });
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,7 @@ export function PosReturnModal({
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-gray-900 dark:text-neutral-50">
-                    Riwayat Transaksi &amp; Retur POS (F-13)
+                    Riwayat Transaksi &amp; Retur POS
                   </h2>
                   <p className="text-[11px] text-gray-500 dark:text-neutral-400">
                     Cetak ulang struk atau batalkan/retur transaksi dengan pengembalian stok atomik

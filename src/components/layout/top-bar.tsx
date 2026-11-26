@@ -128,11 +128,11 @@ export function TopBar({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="relative z-30 flex flex-col">
       {/* Ambient Outlet Brand Stripe */}
       <div className={`h-1 w-full bg-gradient-to-r ${config.accentStripe}`} />
 
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-3.5 dark:border-neutral-800 bg-white/80 dark:bg-black/80 backdrop-blur-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-6 py-3.5 dark:border-neutral-800 bg-white/85 dark:bg-black/85 backdrop-blur-xs">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold text-gray-900 dark:text-neutral-50">

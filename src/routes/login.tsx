@@ -94,7 +94,7 @@ function LoginPage() {
                 return (
                   <div
                     key={acc.label}
-                    className={`p-3 rounded-2xl border text-xs transition-all flex items-center justify-between gap-3 ${
+                    className={`p-3 rounded-2xl border text-xs transition-all flex flex-col gap-2 ${
                       isSelected
                         ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800/80 shadow-xs'
                         : 'border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900'
@@ -116,28 +116,28 @@ function LoginPage() {
                           <Building2 className="size-4" />
                         )}
                       </div>
-                      <div className="truncate">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-100 block truncate">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100 block leading-snug">
                           {acc.label}
                         </span>
-                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block truncate font-mono">
-                          {acc.email} &bull; {acc.user.roleLabel.split(' ')[0]}
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block font-mono">
+                          {acc.email} &bull; {acc.user.roleLabel}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center justify-end gap-1.5 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
                       <button
                         type="button"
                         onClick={() => handleApplyAutoFill(acc)}
-                        className="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
                       >
                         Auto-Fill
                       </button>
                       <button
                         type="button"
                         onClick={() => handleQuickLogin(acc)}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-[10px] font-bold shadow-xs cursor-pointer transition-colors"
+                        className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-[11px] font-bold shadow-xs cursor-pointer transition-colors"
                       >
                         Masuk Langsung &rarr;
                       </button>
