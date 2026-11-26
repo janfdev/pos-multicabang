@@ -1,5 +1,5 @@
 import { scryptSync, timingSafeEqual } from 'node:crypto';
-import { db } from './client.js';
+import { db, queryClient } from './client.js';
 import { outlets, products, inventory, users } from './schema.js';
 
 const PASSWORD_SALT = 'pos-multicabang-umc-2026';
@@ -80,6 +80,44 @@ export const SEED_USERS = [
 
 export async function seedDatabase() {
   console.log('--- Starting Neon PostgreSQL Database Seed ---');
+
+  // 0. Ensure audit & void schema extensions exist safely (idempotent DDL)
+  if (queryClient) {
+    await queryClient`
+      DO $$ BEGIN
+        CREATE TYPE order_status AS ENUM ('COMPLETED', 'VOIDED');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
+    `;
+    await queryClient`
+      ALTER TABLE orders
+        ADD COLUMN IF NOT EXISTS status order_status NOT NULL DEFAULT 'COMPLETED',
+        ADD COLUMN IF NOT EXISTS void_reason text,
+        ADD COLUMN IF NOT EXISTS voided_by text,
+        ADD COLUMN IF NOT EXISTS voided_at timestamp;
+    `;
+    await queryClient`
+      ALTER TABLE online_orders
+        ADD COLUMN IF NOT EXISTS subtotal integer NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS delivery_fee integer NOT NULL DEFAULT 0;
+    `;
+    await queryClient`
+      CREATE TABLE IF NOT EXISTS stock_opname_logs (
+        id text PRIMARY KEY,
+        outlet_id text NOT NULL REFERENCES outlets(id),
+        outlet_name text NOT NULL,
+        product_id text NOT NULL REFERENCES products(id),
+        product_name text NOT NULL,
+        sku text NOT NULL,
+        previous_stock integer NOT NULL,
+        actual_stock integer NOT NULL,
+        difference integer NOT NULL,
+        reason text NOT NULL,
+        adjusted_by text NOT NULL DEFAULT 'Petugas Toko',
+        created_at timestamp NOT NULL DEFAULT now()
+      );
+    `;
+  }
 
   // 1. Seed Outlets (Idempotent)
   await db

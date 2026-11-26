@@ -176,6 +176,11 @@ app.post('/inventory/stock-opname', async (c) => {
 
   STOCK_OPNAME_LOGS.unshift(opnameRecord);
 
+  // Persist opname audit log & updated stock to Neon DB asynchronously
+  DbService.recordStockOpname(opnameRecord).catch((err) =>
+    console.error('DB async stock opname record error:', err)
+  );
+
   return c.json({
     success: true,
     message: `Stok "${prod.name}" di ${currentOutlet.name} disesuaikan dari ${previousStock} menjadi ${parsedActual} (Selisih: ${difference >= 0 ? '+' : ''}${difference})`,
@@ -308,6 +313,15 @@ app.post('/pos/orders/:id/void', async (c) => {
   order.voidReason = reason;
   order.voidedBy = voidedBy;
   order.voidedAt = new Date().toISOString();
+
+  // Persist void status & stock rollback to Neon DB asynchronously
+  DbService.voidOrder({
+    orderId: order.id,
+    outletId: order.outletId,
+    reason,
+    voidedBy,
+    items: (order.items || []).map((it: any) => ({ productId: it.productId, qty: it.qty })),
+  }).catch((err) => console.error('DB async void order error:', err));
 
   return c.json({
     success: true,

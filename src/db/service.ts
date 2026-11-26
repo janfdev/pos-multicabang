@@ -9,6 +9,7 @@ import {
   transferItems,
   onlineOrders,
   onlineOrderItems,
+  stockOpnameLogs,
 } from './schema.js';
 import { sql } from 'drizzle-orm';
 
@@ -189,6 +190,88 @@ export class DbService {
       return true;
     } catch (e) {
       console.error('Failed to record online order to DB:', e);
+      return false;
+    }
+  }
+
+  static async recordStockOpname(opnameData: {
+    id: string;
+    outletId: string;
+    outletName: string;
+    productId: string;
+    productName: string;
+    sku: string;
+    previousStock: number;
+    actualStock: number;
+    difference: number;
+    reason: string;
+    adjustedBy: string;
+  }) {
+    try {
+      await db.insert(stockOpnameLogs).values({
+        id: opnameData.id,
+        outletId: opnameData.outletId,
+        outletName: opnameData.outletName,
+        productId: opnameData.productId,
+        productName: opnameData.productName,
+        sku: opnameData.sku,
+        previousStock: opnameData.previousStock,
+        actualStock: opnameData.actualStock,
+        difference: opnameData.difference,
+        reason: opnameData.reason,
+        adjustedBy: opnameData.adjustedBy,
+      });
+
+      await db
+        .update(inventory)
+        .set({
+          stockQty: opnameData.actualStock,
+          updatedAt: new Date(),
+        })
+        .where(
+          sql`${inventory.outletId} = ${opnameData.outletId} AND ${inventory.productId} = ${opnameData.productId}`
+        );
+
+      return true;
+    } catch (e) {
+      console.error('Failed to record stock opname to DB:', e);
+      return false;
+    }
+  }
+
+  static async voidOrder(voidData: {
+    orderId: string;
+    outletId: string;
+    reason: string;
+    voidedBy: string;
+    items: Array<{ productId: string; qty: number }>;
+  }) {
+    try {
+      await db
+        .update(orders)
+        .set({
+          status: 'VOIDED',
+          voidReason: voidData.reason,
+          voidedBy: voidData.voidedBy,
+          voidedAt: new Date(),
+        })
+        .where(sql`${orders.id} = ${voidData.orderId}`);
+
+      for (const item of voidData.items) {
+        await db
+          .update(inventory)
+          .set({
+            stockQty: sql`${inventory.stockQty} + ${item.qty}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            sql`${inventory.outletId} = ${voidData.outletId} AND ${inventory.productId} = ${item.productId}`
+          );
+      }
+
+      return true;
+    } catch (e) {
+      console.error('Failed to persist voided order to DB:', e);
       return false;
     }
   }

@@ -46,6 +46,11 @@ export const fulfillmentTypeEnum = pgEnum('fulfillment_type', [
   'DELIVERY',        // Dikirim kurir ke alamat
 ]);
 
+export const orderStatusEnum = pgEnum('order_status', [
+  'COMPLETED',       // Transaksi POS selesai
+  'VOIDED',          // Transaksi dibatalkan / diretur (Proposal F-13)
+]);
+
 // 1. OUTLETS
 export const outlets = pgTable('outlets', {
   id: text('id').primaryKey(), // e.g. "toko-1", "toko-2"
@@ -96,11 +101,15 @@ export const orders = pgTable('orders', {
   outletId: text('outlet_id')
     .notNull()
     .references(() => outlets.id),
+  status: orderStatusEnum('status').notNull().default('COMPLETED'),
   totalAmount: integer('total_amount').notNull(),
-  paymentMethod: text('payment_method').notNull().default('CASH'), // "CASH", "QRIS"
+  paymentMethod: text('payment_method').notNull().default('CASH'), // "CASH", "QRIS_MIDTRANS"
   cashReceived: integer('cash_received'),
   cashChange: integer('cash_change'),
   cashierName: text('cashier_name').notNull().default('Kasir'),
+  voidReason: text('void_reason'),
+  voidedBy: text('voided_by'),
+  voidedAt: timestamp('voided_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -162,6 +171,8 @@ export const onlineOrders = pgTable('online_orders', {
   fulfillmentType: fulfillmentTypeEnum('fulfillment_type').notNull().default('PICKUP'),
   deliveryAddress: text('delivery_address'),
   status: onlineOrderStatusEnum('status').notNull().default('PENDING'),
+  subtotal: integer('subtotal').notNull().default(0),
+  deliveryFee: integer('delivery_fee').notNull().default(0),
   totalAmount: integer('total_amount').notNull(),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -194,5 +205,25 @@ export const users = pgTable('users', {
   outletName: text('outlet_name').notNull(),
   avatar: text('avatar'),
   isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 8. STOCK OPNAME AUDIT LOGS (PROPOSAL F-08 & F-09)
+export const stockOpnameLogs = pgTable('stock_opname_logs', {
+  id: text('id').primaryKey(), // e.g. "OPN-123456"
+  outletId: text('outlet_id')
+    .notNull()
+    .references(() => outlets.id),
+  outletName: text('outlet_name').notNull(),
+  productId: text('product_id')
+    .notNull()
+    .references(() => products.id),
+  productName: text('product_name').notNull(),
+  sku: text('sku').notNull(),
+  previousStock: integer('previous_stock').notNull(),
+  actualStock: integer('actual_stock').notNull(),
+  difference: integer('difference').notNull(),
+  reason: text('reason').notNull(),
+  adjustedBy: text('adjusted_by').notNull().default('Petugas Toko'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
