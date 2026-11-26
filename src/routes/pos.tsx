@@ -371,7 +371,7 @@ function PosPage() {
             className="px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-neutral-50 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 font-bold text-xs flex items-center gap-1.5 shadow-2xs"
           >
             <LayoutDashboard className="size-3.5" />
-            <span className="hidden sm:inline">BagUI Dashboard</span>
+            <span className="hidden sm:inline">Dashboard</span>
           </Link>
         </div>
       </div>
@@ -422,29 +422,37 @@ function PosPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Switch Branch Buttons */}
-          <button
-            type="button"
-            onClick={() => outletStore.setOutlet('toko-1')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
-              activeOutlet === 'toko-1'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700'
-            }`}
-          >
-            Toko 1 (Gudang)
-          </button>
-          <button
-            type="button"
-            onClick={() => outletStore.setOutlet('toko-2')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
-              activeOutlet === 'toko-2'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700'
-            }`}
-          >
-            Toko 2 (Cabang)
-          </button>
+          {/* Switch Branch Buttons (Owner only; branch staff locked to assigned outlet) */}
+          {(!currentUser || currentUser.outletId === 'ALL') ? (
+            <>
+              <button
+                type="button"
+                onClick={() => outletStore.setOutlet('toko-1')}
+                className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                  activeOutlet === 'toko-1'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700'
+                }`}
+              >
+                Toko 1 (Gudang)
+              </button>
+              <button
+                type="button"
+                onClick={() => outletStore.setOutlet('toko-2')}
+                className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                  activeOutlet === 'toko-2'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700'
+                }`}
+              >
+                Toko 2 (Cabang)
+              </button>
+            </>
+          ) : (
+            <span className="px-3 py-1 rounded-xl text-[11px] font-bold bg-white/80 dark:bg-neutral-900/80 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300">
+              Cabang Terkunci: {activeOutlet === 'toko-1' ? 'Toko 1' : 'Toko 2'}
+            </span>
+          )}
         </div>
       </div>
 

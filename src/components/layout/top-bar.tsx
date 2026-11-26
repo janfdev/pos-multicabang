@@ -3,34 +3,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Sun, Moon, Bell, Share2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Sun, Moon, Bell, ShoppingBag, ArrowRight, UserCheck } from "lucide-react";
 import { themeStore } from "@/lib/themeStore";
 import { UserProfile } from "@/lib/authStore";
 import { useOnlineOrderAlerts } from "@/lib/useOnlineOrderAlerts";
 import { getSidebarConfig } from "./sidebar";
-
-const AVATARS = [
-  { id: 1, src: "https://api.dicebear.com/9.x/notionists/svg?seed=JK&backgroundColor=b6e3f4" },
-  { id: 2, src: "https://api.dicebear.com/9.x/notionists/svg?seed=AM&backgroundColor=c0aede" },
-  { id: 3, src: "https://api.dicebear.com/9.x/notionists/svg?seed=SL&backgroundColor=ffdfbf" },
-  { id: 4, src: "https://api.dicebear.com/9.x/notionists/svg?seed=TR&backgroundColor=d1d4f9" },
-  { id: 5, src: "https://api.dicebear.com/9.x/notionists/svg?seed=PW&backgroundColor=ffd5dc" },
-];
-
-function AvatarStack() {
-  return (
-    <div className="flex -space-x-1.5 overflow-hidden">
-      {AVATARS.map((a) => (
-        <img
-          key={a.id}
-          src={a.src}
-          alt={`User ${a.id}`}
-          className="inline-block size-6 rounded-full ring-2 ring-white dark:ring-neutral-900 object-cover"
-        />
-      ))}
-    </div>
-  );
-}
 
 function Toggle({
   checked,
@@ -70,7 +47,7 @@ function ThemeToggle({
       <button
         type="button"
         onClick={() => setDarkMode(false)}
-        aria-label="Switch to light mode"
+        aria-label="Mode Terang"
         className={`flex h-4 w-4 cursor-pointer items-center justify-center ${
           darkMode ? "text-gray-500 hover:text-gray-300" : "text-gray-900"
         }`}
@@ -83,7 +60,7 @@ function ThemeToggle({
       <button
         type="button"
         onClick={() => setDarkMode(true)}
-        aria-label="Switch to dark mode"
+        aria-label="Mode Gelap"
         className={`flex h-4 w-4 cursor-pointer items-center justify-center ${
           darkMode ? "text-gray-50" : "text-gray-300 hover:text-gray-500"
         }`}
@@ -114,7 +91,9 @@ export function TopBar({
       : "ALL";
 
   const { pendingCount, latestOrder } = useOnlineOrderAlerts(outletScope, (order) => {
-    onNotify?.(`Pesanan online baru ${order.id} dari ${order.customerName} (Rp ${order.totalAmount.toLocaleString("id-ID")})`);
+    onNotify?.(
+      `Pesanan online baru ${order.id} dari ${order.customerName} (Rp ${order.totalAmount.toLocaleString("id-ID")})`
+    );
   });
 
   useEffect(() => {
@@ -132,45 +111,34 @@ export function TopBar({
       {/* Ambient Outlet Brand Stripe */}
       <div className={`h-1 w-full bg-gradient-to-r ${config.accentStripe}`} />
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-6 py-3.5 dark:border-neutral-800 bg-white/85 dark:bg-black/85 backdrop-blur-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-neutral-50">
-              {title}
-            </h1>
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide uppercase shadow-2xs ${config.badgeColor}`}
-            >
-              <config.storeIcon size={12} className="shrink-0" />
-              {config.storeTag}
-            </span>
-          </div>
-          <span className="hidden md:inline text-xs text-gray-400 dark:text-neutral-500">
-            • {config.storeAddress}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-3 dark:border-neutral-800 bg-white/90 dark:bg-black/90 backdrop-blur-xs">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-neutral-50 truncate">
+            {title}
+          </h1>
+          <span
+            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase shrink-0 ${config.badgeColor}`}
+          >
+            <config.storeIcon size={11} className="shrink-0" />
+            {config.storeTag}
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
           {actions}
 
           <ThemeToggle darkMode={darkMode} setDarkMode={handleToggleDark} />
 
-          <button
-            onClick={() => onNotify?.("Tautan halaman telah disalin ke clipboard")}
-            title="Bagikan Tautan"
-            className="flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
-          >
-            <Share2 size={15} />
-          </button>
-
+          {/* Live Online Order Notification Bell */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setNotifOpen((prev) => !prev)}
+              aria-label="Notifikasi Pesanan Online Masuk"
               title="Notifikasi Pesanan Online Masuk"
-              className="relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 cursor-pointer"
+              className="relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 cursor-pointer"
             >
-              <Bell size={18} />
+              <Bell size={17} />
               {pendingCount > 0 && (
                 <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white animate-pulse">
                   {pendingCount}
@@ -208,7 +176,10 @@ export function TopBar({
                         </span>
                       </div>
                       <p className="text-gray-600 dark:text-neutral-400 truncate">
-                        Pemesan: <span className="font-semibold text-gray-900 dark:text-neutral-200">{latestOrder.customerName}</span>
+                        Pemesan:{" "}
+                        <span className="font-semibold text-gray-900 dark:text-neutral-200">
+                          {latestOrder.customerName}
+                        </span>
                       </p>
                       <p className="text-[10px] text-gray-400 dark:text-neutral-500">
                         Layanan: {latestOrder.fulfillmentType === "DELIVERY" ? "Kirim Kurir" : "Ambil di Toko"}
@@ -233,7 +204,25 @@ export function TopBar({
             </AnimatePresence>
           </div>
 
-          <AvatarStack />
+          {/* Active Logged-in User Pill (Dynamic, no hardcoded avatars) */}
+          {currentUser && (
+            <div className="hidden md:flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-neutral-800">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="size-7 rounded-full object-cover border border-gray-200 dark:border-neutral-700"
+              />
+              <div className="leading-tight">
+                <p className="text-xs font-bold text-gray-900 dark:text-neutral-100 max-w-[130px] truncate">
+                  {currentUser.name}
+                </p>
+                <p className="text-[10px] text-gray-500 dark:text-neutral-400 max-w-[130px] truncate flex items-center gap-1">
+                  <UserCheck size={10} className="shrink-0 text-emerald-500" />
+                  {currentUser.roleLabel}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
