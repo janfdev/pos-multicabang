@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { DbService } from '../db/service';
+import { DbService } from '../db/service.js';
 import {
   INITIAL_OUTLETS,
   INITIAL_PRODUCTS,
@@ -8,8 +8,8 @@ import {
   INITIAL_TRANSFERS,
   INITIAL_ORDERS,
   INITIAL_SALES_TREND,
-} from './seedData';
-import { buildFinancialReport } from './reportsHelper';
+} from './seedData.js';
+import { buildFinancialReport } from './reportsHelper.js';
 
 export const app = new Hono().basePath('/api');
 

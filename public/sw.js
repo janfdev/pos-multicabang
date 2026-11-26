@@ -1,5 +1,5 @@
 // Service Worker for POS & Multi-Outlet Sembako PWA
-const CACHE_NAME = 'pos-sembako-v1';
+const CACHE_NAME = 'pos-sembako-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {}))
       .then(() => self.skipWaiting())
   );
 });
@@ -34,6 +34,7 @@ self.addEventListener('activate', (event) => {
             if (key !== CACHE_NAME) {
               return caches.delete(key);
             }
+            return Promise.resolve();
           })
         )
       )
@@ -46,12 +47,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Bypass non-GET requests and browser extensions
-  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+  // Bypass non-GET requests, browser extensions, and cross-origin requests
+  if (request.method !== 'GET' || !url.protocol.startsWith('http') || url.origin !== self.location.origin) {
     return;
   }
 
-  // 1. API Requests: Network-first
+  // 1. API Requests: Network-first (never cache errors)
   if (url.pathname.startsWith('/api')) {
     event.respondWith(
       fetch(request).catch(async () => {
@@ -66,19 +67,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Navigation (HTML pages): Network-first with SPA index.html fallback
+  // 2. Navigation (HTML pages): Network-first with guaranteed Response fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(async () => {
         const cache = await caches.open(CACHE_NAME);
         const cachedIndex = await cache.match('/index.html');
-        return cachedIndex || cache.match('/');
+        if (cachedIndex) return cachedIndex;
+        const cachedRoot = await cache.match('/');
+        if (cachedRoot) return cachedRoot;
+        return new Response('Offline — silakan muat ulang saat koneksi kembali.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
       })
     );
     return;
   }
 
-  // 3. Static Assets: Stale-while-revalidate
+  // 3. Static Assets: Stale-while-revalidate with guaranteed Response fallback
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
@@ -91,7 +98,11 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
+        .catch(
+          () =>
+            cachedResponse ||
+            new Response('', { status: 503, statusText: 'Service Unavailable' })
+        );
 
       return cachedResponse || fetchPromise;
     })

@@ -1,4 +1,4 @@
-import { db } from './client';
+import { db } from './client.js';
 import {
   outlets,
   products,
@@ -9,7 +9,7 @@ import {
   transferItems,
   onlineOrders,
   onlineOrderItems,
-} from './schema';
+} from './schema.js';
 import { sql } from 'drizzle-orm';
 
 export class DbService {

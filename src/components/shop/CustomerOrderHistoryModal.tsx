@@ -152,7 +152,7 @@ export function CustomerOrderHistoryModal({
       for (const it of availableItems) {
         for (let i = 0; i < it.adjustedQty; i++) {
           cartStore.addItem({
-            productId: it.productId,
+            id: it.productId,
             name: it.productName,
             sellingPrice: it.currentUnitPrice,
             unit: it.unit || 'PCS',
